@@ -15,6 +15,8 @@
         <postgresql.version>42.7.2</postgresql.version>
         <lombok.version>1.18.30</lombok.version>
         <junit.jupiter.version>5.10.0</junit.jupiter.version>
+        <hibernate.version>6.4.4.Final</hibernate.version>
+        <jbcrypt.version>0.4</jbcrypt.version>
     </properties>
 
     <dependencyManagement>
@@ -45,6 +47,16 @@
                 <version>2.0.0</version>
             </dependency>
             <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mindrot</groupId>
+                <artifactId>jbcrypt</artifactId>
+                <version>${jbcrypt.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter</artifactId>
                 <version>${junit.jupiter.version}</version>
@@ -73,6 +85,14 @@
         <dependency>
             <groupId>jakarta.transaction</groupId>
             <artifactId>jakarta.transaction-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

@@ -4,7 +4,7 @@ public class Usuario {
     private Long id;
     private String username;
     private String passwordHash;
-    private String activo; // "true"/"false"
+    private boolean activo;
 
     private com.sicaproject.sica.personas.domain.Persona persona;
     private com.sicaproject.sica.iam.domain.Rol rol;
@@ -20,8 +20,8 @@ public class Usuario {
     public String getPasswordHash() { return passwordHash; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 
-    public String getActivo() { return activo; }
-    public void setActivo(String activo) { this.activo = activo; }
+    public boolean isActivo() { return activo; }
+    public void setActivo(boolean activo) { this.activo = activo; }
 
     public com.sicaproject.sica.iam.domain.Rol getRol() { return rol; }
     public void setRol(com.sicaproject.sica.iam.domain.Rol rol) { this.rol = rol; }

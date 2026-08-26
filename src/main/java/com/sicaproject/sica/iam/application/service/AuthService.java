@@ -1,65 +1,40 @@
 package com.sicaproject.sica.iam.application.service;
 
+import com.sicaproject.sica.iam.application.port.out.UsuarioRepository;
 import com.sicaproject.sica.iam.domain.Usuario;
-import java.util.HashMap;
-import java.util.Map;
+import org.mindrot.jbcrypt.BCrypt;
+import java.util.Optional;
 
 public class AuthService {
 
-    private static Map<String, Usuario> usuarios = new HashMap<>();
+    private final UsuarioRepository usuarioRepository;
 
-    public AuthService() {
-        // Inicializar con usuarios de prueba
-        if (usuarios.isEmpty()) {
-            var adminRol = new com.sicaproject.sica.iam.domain.Rol();
-            adminRol.setId(1);
-            adminRol.setNombre("ADMIN");
-
-            var admin = new Usuario();
-            admin.setId(1L);
-            admin.setUsername("admin");
-            admin.setPasswordHash("admin123"); // En producción: BCrypt
-            admin.setActivo("true");
-            admin.setRol(adminRol);
-            usuarios.put("admin", admin);
-
-            var guardaRol = new com.sicaproject.sica.iam.domain.Rol();
-            guardaRol.setId(2);
-            guardaRol.setNombre("GUARDA");
-
-            var guarda = new Usuario();
-            guarda.setId(2L);
-            guarda.setUsername("guarda");
-            guarda.setPasswordHash("guarda123");
-            guarda.setActivo("true");
-            guarda.setRol(guardaRol);
-            usuarios.put("guarda", guarda);
-
-            var funcionarioRol = new com.sicaproject.sica.iam.domain.Rol();
-            funcionarioRol.setId(3);
-            funcionarioRol.setNombre("FUNCIONARIO");
-
-            var funcionario = new Usuario();
-            funcionario.setId(3L);
-            funcionario.setUsername("funcionario");
-            funcionario.setPasswordHash("funcionario123");
-            funcionario.setActivo("true");
-            funcionario.setRol(funcionarioRol);
-            usuarios.put("funcionario", funcionario);
-        }
+    public AuthService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public Usuario login(String username, String password) {
-        var usuario = usuarios.get(username);
-        if (usuario == null) {
-            throw new RuntimeException("Usuario no encontrado");
+    /**
+     * Intenta autenticar. Nunca lanza excepción con detalle específico de
+     * "usuario no existe" vs "contraseña incorrecta" hacia afuera de este método,
+     * para no filtrar información útil a un atacante — solo Optional.empty()
+     * si algo no coincide.
+     */
+    public Optional<Usuario> login(String username, String passwordPlano) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+        if (usuarioOpt.isEmpty()) {
+            return Optional.empty();
         }
-        if (!usuario.getPasswordHash().equals(password)) {
-            throw new RuntimeException("Contraseña incorrecta");
+        Usuario usuario = usuarioOpt.get();
+        if (!usuario.isActivo()) {
+            return Optional.empty();
         }
-        if (!"true".equals(usuario.getActivo())) {
-            throw new RuntimeException("Usuario inactivo");
+        if (!BCrypt.checkpw(passwordPlano, usuario.getPasswordHash())) {
+            return Optional.empty();
         }
-        return usuario;
+        return Optional.of(usuario);
+    }
+
+    public static String hashPassword(String passwordPlano) {
+        return BCrypt.hashpw(passwordPlano, BCrypt.gensalt(10));
     }
 }
