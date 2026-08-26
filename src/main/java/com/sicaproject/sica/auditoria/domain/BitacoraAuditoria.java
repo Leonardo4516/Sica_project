@@ -26,6 +26,9 @@ public class BitacoraAuditoria {
     public String getEntidadAfectada() { return entidadAfectada; }
     public void setEntidadAfectada(String entidadAfectada) { this.entidadAfectada = entidadAfectada; }
 
+    public String getRecurso() { return entidadAfectada; }
+    public void setRecurso(String recurso) { this.entidadAfectada = recurso; }
+
     public long getEntidadId() { return entidadId; }
     public void setEntidadId(long entidadId) { this.entidadId = entidadId; }
 

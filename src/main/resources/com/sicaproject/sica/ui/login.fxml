@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.sicaproject.sica.ui.controller.LoginController"
+           stylesheets="@styles.css"
+           prefWidth="1280" prefHeight="720">
+
+    <Canvas id="particleCanvas" />
+
+    <VBox alignment="CENTER" spacing="0" StackPane.alignment="CENTER">
+        <StackPane styleClass="glass-panel" maxWidth="420" maxHeight="520">
+            <VBox spacing="0" styleClass="glass-panel-inner" alignment="CENTER">
+                <VBox spacing="6" alignment="CENTER" margin="$top">
+                    <Text text="SICA" styleClass="title-xl" />
+                    <Text text="Sistema Integrado de Control de Acceso" styleClass="subtitle" />
+                </VBox>
+
+                <Separator opacity="0.3" margin="24 0" />
+
+                <VBox spacing="16" alignment="CENTER" maxWidth="320">
+                    <VBox spacing="6">
+                        <Label text="Usuario" styleClass="label-text" />
+                        <TextField fx:id="txtUsuario" promptText="Ingrese su usuario" />
+                    </VBox>
+
+                    <VBox spacing="6">
+                        <Label text="Contraseña" styleClass="label-text" />
+                        <PasswordField fx:id="txtPassword" promptText="••••••••" />
+                    </VBox>
+
+                    <HBox alignment="CENTER" spacing="8">
+                        <CheckBox fx:id="chkRecordar" text="Recordar sesión" />
+                    </HBox>
+
+                    <Label fx:id="lblError" styleClass="label-text" opacity="0" />
+                </VBox>
+
+                <Separator opacity="0.3" margin="20 0" />
+
+                <Button fx:id="btnLogin" text="Iniciar Sesión" styleClass="btn, btn-primary" prefWidth="320" onAction="#handleLogin" />
+            </VBox>
+        </StackPane>
+
+        <Text text="© 2025 SICA — Todos los derechos reservados" styleClass="subtitle" StackPane.alignment="BOTTOM_CENTER" />
+    </VBox>
+
+</StackPane>

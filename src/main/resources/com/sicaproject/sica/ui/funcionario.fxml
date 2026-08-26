@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.sicaproject.sica.ui.controller.FuncionarioController"
+           stylesheets="@styles.css"
+           prefWidth="1280" prefHeight="720">
+
+    <BorderPane>
+        <left>
+            <VBox styleClass="sidebar" prefWidth="220" spacing="6" padding="$padding">
+                <padding>
+                    <Insets top="20" right="12" bottom="20" left="12" />
+                </padding>
+                <Text text="SICA" styleClass="title-md, brand-accent" />
+                <Text text="Panel Funcionario" styleClass="subtitle" margin="0 0 24 0" />
+                <HBox styleClass="nav-item, active" alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📋 Visitas Pendientes" />
+                </HBox>
+                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10">
+                    <Label text="🆕 Nueva Visita" />
+                </HBox>
+                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📋 Todas las Visitas" />
+                </HBox>
+                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
+                    <Label text="🚪 Cerrar Sesión" />
+                </HBox>
+            </VBox>
+        </left>
+
+        <center>
+            <VBox spacing="20" padding="$padding">
+                <padding>
+                    <Insets top="28" right="32" bottom="28" left="32" />
+                </padding>
+
+                <HBox alignment="CENTER_LEFT" spacing="20">
+                    <VBox>
+                        <Text text="Bienvenido, " styleClass="subtitle" />
+                        <Text fx:id="txtUsuario" text="Funcionario" styleClass="title-lg" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label fx:id="lblHora" text="00:00:00" styleClass="title-md, brand-accent" />
+                </HBox>
+
+                <Separator opacity="0.2" />
+
+                <HBox spacing="20" VBox.vgrow="ALWAYS">
+                    <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS" HBox.hgrow="ALWAYS">
+                        <VBox styleClass="glass-panel-inner" spacing="12">
+                            <HBox alignment="CENTER_LEFT">
+                                <Text text="📋 Solicitudes Pendientes" styleClass="title-md" />
+                                <Region HBox.hgrow="ALWAYS" />
+                                <Button text="🔄 Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                            </HBox>
+                            <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
+                                <columns>
+                                    <TableColumn text="ID" prefWidth="60" />
+                                    <TableColumn text="Persona" prefWidth="200" />
+                                    <TableColumn text="Empresa" prefWidth="160" />
+                                    <TableColumn text="Fecha" prefWidth="140" />
+                                    <TableColumn text="Tipo" prefWidth="130" />
+                                    <TableColumn text="Acciones" prefWidth="200" />
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </StackPane>
+                </HBox>
+
+                <StackPane styleClass="glass-panel" prefHeight="220">
+                    <VBox styleClass="glass-panel-inner" spacing="14">
+                        <Text text="🆕 Registrar Nueva Visita" styleClass="title-md" />
+                        <HBox spacing="14">
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Nombre Persona" styleClass="label-text" />
+                                <TextField fx:id="txtNombre" promptText="Nombre completo" />
+                            </VBox>
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Empresa Destino" styleClass="label-text" />
+                                <ComboBox fx:id="cmbEmpresa" prefWidth="220" />
+                            </VBox>
+                            <VBox spacing="6">
+                                <CheckBox fx:id="chkPaseTemporal" text="Pase temporal (carnet olvidado)" />
+                            </VBox>
+                            <Button text="Registrar" styleClass="btn, btn-primary" onAction="#handleRegistrar" />
+                        </HBox>
+                        <Label fx:id="lblMsg" styleClass="label-text" />
+                    </VBox>
+                </StackPane>
+            </VBox>
+        </center>
+
+        <bottom>
+            <HBox styleClass="status-bar" alignment="CENTER_LEFT">
+                <Text text="SICA © 2025 — Sesión iniciada como FUNCIONARIO" />
+            </HBox>
+        </bottom>
+    </BorderPane>
+
+</StackPane>

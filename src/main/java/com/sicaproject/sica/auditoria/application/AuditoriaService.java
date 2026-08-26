@@ -34,4 +34,8 @@ public class AuditoriaService {
     public List<BitacoraAuditoria> obtenerBitacora() {
         return repository.listarTodas();
     }
+
+    public List<BitacoraAuditoria> listarTodas() {
+        return repository.listarTodas();
+    }
 }
