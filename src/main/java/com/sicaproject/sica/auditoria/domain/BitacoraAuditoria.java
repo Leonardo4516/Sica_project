@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class BitacoraAuditoria {
     private long id;
-    private String usuarioId;
+    private Long usuarioId;
     private String accion;
     private String entidadAfectada;
     private long entidadId;
@@ -17,8 +17,8 @@ public class BitacoraAuditoria {
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
 
-    public String getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(String usuarioId) { this.usuarioId = usuarioId; }
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
 
     public String getAccion() { return accion; }
     public void setAccion(String accion) { this.accion = accion; }

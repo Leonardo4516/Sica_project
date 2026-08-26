@@ -1,70 +1,42 @@
 package com.sicaproject.sica.iam.application.service;
 
+import com.sicaproject.sica.iam.application.port.in.RbacUseCase;
+import com.sicaproject.sica.iam.domain.Permiso;
 import com.sicaproject.sica.iam.domain.Rol;
 import com.sicaproject.sica.iam.domain.Usuario;
-import com.sicaproject.sica.iam.application.port.in.RbacUseCase;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Implementación concreta del patrón Strategy para autorización RBAC.
- * Los permisos están definidos en esta clase, no en el código de negocio.
+ * Antes: los permisos vivían hardcodeados en un Map estático dentro de esta clase.
+ * Ahora: el Rol trae sus Permiso reales desde la base de datos (tabla rol_permiso),
+ * cargados por RolMapper/RolEntity. Esta clase solo pregunta al dominio, no decide.
+ * Esto es justo lo que pide el documento: "los permisos no están definidos en el
+ * código, sino en la base de datos".
  */
 public class RbacService implements RbacUseCase {
 
-    // Definición de permisos por rol (configurable, no hardcodeado en lógica de negocio)
-    // Estructura: rol -> set de permisos
-    private static final java.util.Map<String, Set<String>> PERMISOS_POR_ROL = new java.util.HashMap<>();
-
-    static {
-        // Permisos para el rol GUARDA
-        var guardaPermisos = new HashSet<String>();
-        guardaPermisos.add("registrar_visita");
-        guardaPermisos.add("registrar_salida");
-        guardaPermisos.add("ver_visitantes");
-        PERMISOS_POR_ROL.put("GUARDA", guardaPermisos);
-
-        // Permisos para el rol FUNCIONARIO
-        var funcionarioPermisos = new HashSet<String>();
-        funcionarioPermisos.add("aprobar_visita");
-        funcionarioPermisos.add("rechazar_visita");
-        funcionarioPermisos.add("ver_solicitudes");
-        PERMISOS_POR_ROL.put("FUNCIONARIO", funcionarioPermisos);
-
-        // Permisos para el rol ADMIN
-        var adminPermisos = new HashSet<String>();
-        adminPermisos.add("registrar_visita");
-        adminPermisos.add("registrar_salida");
-        adminPermisos.add("aprobar_visita");
-        adminPermisos.add("rechazar_visita");
-        adminPermisos.add("generar_reporte");
-        adminPermisos.add("bloquear_persona");
-        adminPermisos.add("desbloquear_persona");
-        adminPermisos.add("gestionar_usuarios");
-        adminPermisos.add("ver_todas_las_visitas");
-        PERMISOS_POR_ROL.put("ADMIN", adminPermisos);
-    }
-
     @Override
     public boolean tienePermiso(Usuario usuario, String permisoCodigo) {
-        if (usuario == null || usuario.getRol() == null) {
+        if (usuario == null || usuario.getRol() == null || !usuario.isActivo()) {
             return false;
         }
-        
-        var permisos = PERMISOS_POR_ROL.get(usuario.getRol().getNombre());
-        if (permisos == null) {
-            return false;
-        }
-        
-        return permisos.contains(permisoCodigo);
+        return usuario.getRol().tienePermiso(permisoCodigo);
     }
 
     @Override
-    public java.util.Set<String> obtenerPermisos(Rol rol) {
-        var permisos = PERMISOS_POR_ROL.get(rol.getNombre());
-        if (permisos != null) {
-            return new HashSet<>(permisos);
+    public Set<String> obtenerPermisos(Rol rol) {
+        if (rol == null) return Set.of();
+        return rol.getPermisos().stream().map(Permiso::getCodigo).collect(Collectors.toSet());
+    }
+
+    /**
+     * Lanza excepción de dominio si el usuario no tiene el permiso.
+     * Los Use Cases deben llamar esto ANTES de ejecutar cualquier operación crítica.
+     */
+    public void verificarPermiso(Usuario usuario, String permisoCodigo) {
+        if (!tienePermiso(usuario, permisoCodigo)) {
+            throw new PermisoDenegadoException(usuario, permisoCodigo);
         }
-        return new HashSet<>();
     }
 }

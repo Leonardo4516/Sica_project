@@ -20,7 +20,7 @@ public class PersonaService {
         return personaRepository.buscarPorDocumento(documento);
     }
 
-    public void bloquerPersona(Persona persona, String motivo) {
+    public void bloquearPersona(Persona persona, String motivo) {
         persona.setBloqueado(true);
         persona.setMotivoBloqueo(motivo);
         personaRepository.actualizar(persona);

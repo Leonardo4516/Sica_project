@@ -33,6 +33,19 @@ public class Visita {
     public EstadoVisita getEstado() { return estado; }
     public void setEstado(EstadoVisita estado) { this.estado = estado; }
 
+    /**
+     * Punto único para cambiar de estado. Valida contra EstadoVisita.puedeTransicionarA
+     * antes de aplicar el cambio -- evita que el sistema quede en un estado inconsistente
+     * (ej. intentar hacer check-out de una visita que nunca hizo check-in).
+     */
+    public void cambiarEstado(EstadoVisita nuevoEstado) {
+        if (this.estado != null && !this.estado.puedeTransicionarA(nuevoEstado)) {
+            throw new IllegalStateException(
+                "Transición de estado inválida: " + this.estado + " -> " + nuevoEstado);
+        }
+        this.estado = nuevoEstado;
+    }
+
     public boolean isPaseTemporal() { return paseTemporal; }
     public void setPaseTemporal(boolean paseTemporal) { this.paseTemporal = paseTemporal; }
 

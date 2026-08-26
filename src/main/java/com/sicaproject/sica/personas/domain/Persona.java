@@ -6,7 +6,7 @@ public class Persona {
     private String nombre;
     private String documento;
     private String fotoUrl;
-    private String empresa;
+    private Long empresaId;
     private boolean bloqueado;
     private String motivoBloqueo;
 
@@ -27,8 +27,8 @@ public class Persona {
     public String getFotoUrl() { return fotoUrl; }
     public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
 
-    public String getEmpresa() { return empresa; }
-    public void setEmpresa(String empresa) { this.empresa = empresa; }
+    public Long getEmpresaId() { return empresaId; }
+    public void setEmpresaId(Long empresaId) { this.empresaId = empresaId; }
 
     public boolean isBloqueado() { return bloqueado; }
     public void setBloqueado(boolean bloqueado) { this.bloqueado = bloqueado; }
