@@ -1,52 +1,50 @@
 package com.sicaproject.sica.acceso.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
-import com.sicaproject.sica.empresas.domain.Empresa;
-import com.sicaproject.sica.iam.domain.Usuario;
-import com.sicaproject.sica.personas.domain.Persona;
-
-@Entity
-@Table(name = "visita")
-@Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
 public class Visita {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "persona_id", nullable = false)
-    private Persona persona;
-
-    @ManyToOne
-    @JoinColumn(name = "empresa_destino_id", nullable = false)
-    private Empresa empresaDestino;
-
-    @ManyToOne
-    @JoinColumn(name = "funcionario_anfitrion_id", nullable = true)
-    private Usuario funcionarioAnfitrion;
-
-    @ManyToOne
-    @JoinColumn(name = "guarda_id", nullable = false)
-    private Usuario guarda;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    private long id;
+    private com.sicaproject.sica.personas.domain.Persona persona;
+    private com.sicaproject.sica.empresas.domain.Empresa empresaDestino;
+    private com.sicaproject.sica.iam.domain.Usuario funcionarioAnfitrion;
+    private com.sicaproject.sica.iam.domain.Usuario guarda;
     private EstadoVisita estado;
-
-    @Column(name = "es_pase_temporal", nullable = false)
     private boolean paseTemporal;
-
-    @Column(name = "fecha_hora_registro", nullable = false)
     private java.time.LocalDateTime fechaHoraRegistro;
-
-    @Column(name = "fecha_hora_entrada")
     private java.time.LocalDateTime fechaHoraEntrada;
-
-    @Column(name = "fecha_hora_salida")
     private java.time.LocalDateTime fechaHoraSalida;
-
-    @Column(length = 500)
     private String observaciones;
+
+    public Visita() {}
+
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
+
+    public com.sicaproject.sica.personas.domain.Persona getPersona() { return persona; }
+    public void setPersona(com.sicaproject.sica.personas.domain.Persona persona) { this.persona = persona; }
+
+    public com.sicaproject.sica.empresas.domain.Empresa getEmpresaDestino() { return empresaDestino; }
+    public void setEmpresaDestino(com.sicaproject.sica.empresas.domain.Empresa empresaDestino) { this.empresaDestino = empresaDestino; }
+
+    public com.sicaproject.sica.iam.domain.Usuario getFuncionarioAnfitrion() { return funcionarioAnfitrion; }
+    public void setFuncionarioAnfitrion(com.sicaproject.sica.iam.domain.Usuario funcionarioAnfitrion) { this.funcionarioAnfitrion = funcionarioAnfitrion; }
+
+    public com.sicaproject.sica.iam.domain.Usuario getGuarda() { return guarda; }
+    public void setGuarda(com.sicaproject.sica.iam.domain.Usuario guarda) { this.guarda = guarda; }
+
+    public EstadoVisita getEstado() { return estado; }
+    public void setEstado(EstadoVisita estado) { this.estado = estado; }
+
+    public boolean isPaseTemporal() { return paseTemporal; }
+    public void setPaseTemporal(boolean paseTemporal) { this.paseTemporal = paseTemporal; }
+
+    public java.time.LocalDateTime getFechaHoraRegistro() { return fechaHoraRegistro; }
+    public void setFechaHoraRegistro(java.time.LocalDateTime fechaHoraRegistro) { this.fechaHoraRegistro = fechaHoraRegistro; }
+
+    public java.time.LocalDateTime getFechaHoraEntrada() { return fechaHoraEntrada; }
+    public void setFechaHoraEntrada(java.time.LocalDateTime fechaHoraEntrada) { this.fechaHoraEntrada = fechaHoraEntrada; }
+
+    public java.time.LocalDateTime getFechaHoraSalida() { return fechaHoraSalida; }
+    public void setFechaHoraSalida(java.time.LocalDateTime fechaHoraSalida) { this.fechaHoraSalida = fechaHoraSalida; }
+
+    public String getObservaciones() { return observaciones; }
+    public void setObservaciones(String observaciones) { this.observaciones = observaciones; }
 }
