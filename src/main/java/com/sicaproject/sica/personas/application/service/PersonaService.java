@@ -16,6 +16,10 @@ public class PersonaService {
         return personaRepository.guardar(persona);
     }
 
+    public Persona guardar(Persona persona) {
+        return personaRepository.guardar(persona);
+    }
+
     public Optional<Persona> porDocumento(String documento) {
         return personaRepository.buscarPorDocumento(documento);
     }

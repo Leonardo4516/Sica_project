@@ -5,9 +5,8 @@ import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.shared.infrastructure.persistence.JpaConfig;
 
 /**
- * Smoke test temporal de la capa de persistencia.
- * Se reemplaza por una Application de JavaFX cuando empecemos la UI (siguiente fase).
- * Requiere que ya hayas corrido schema.sql y data.sql contra tu PostgreSQL local.
+ * Smoke test de la capa de persistencia (alternativa headless).
+ * Para iniciar la UI con JavaFX, ejecutar com.sicaproject.SicaApplication.
  */
 public class Main {
     public static void main(String[] args) {
@@ -19,7 +18,6 @@ public class Main {
             }
         } catch (Exception e) {
             System.err.println("Error conectando a la base de datos: " + e.getMessage());
-            e.printStackTrace();
         } finally {
             JpaConfig.close();
         }
