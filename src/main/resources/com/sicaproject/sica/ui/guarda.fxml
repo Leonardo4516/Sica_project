@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.sicaproject.sica.ui.controller.GuardaController"
+           stylesheets="@styles.css"
+           prefWidth="1280" prefHeight="720">
+
+    <BorderPane>
+        <left>
+            <VBox styleClass="sidebar" prefWidth="220" spacing="6" padding="$padding">
+                <padding>
+                    <Insets top="20" right="12" bottom="20" left="12" />
+                </padding>
+
+                <Text text="SICA" styleClass="title-md, brand-accent" />
+                <Text text="Panel Guardía" styleClass="subtitle" margin="0 0 24 0" />
+
+                <HBox styleClass="nav-item, active" alignment="CENTER_LEFT" spacing="10">
+                    <Label text="🏠 Check-in / Check-out" />
+                </HBox>
+                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10">
+                    <Label text="📋 Visitas Activas" />
+                </HBox>
+                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10">
+                    <Label text="⚠️ Salidas Olvidadas" />
+                </HBox>
+                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
+                    <Label text="🚪 Cerrar Sesión" />
+                </HBox>
+            </VBox>
+        </left>
+
+        <center>
+            <VBox spacing="20" padding="$padding">
+                <padding>
+                    <Insets top="28" right="32" bottom="28" left="32" />
+                </padding>
+
+                <HBox alignment="CENTER_LEFT" spacing="20">
+                    <VBox>
+                        <Text text="Bienvenido, " styleClass="subtitle" />
+                        <Text fx:id="txtUsuario" text="Guarda" styleClass="title-lg" />
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS" />
+                    <Label fx:id="lblHora" text="00:00:00" styleClass="title-md, brand-accent" />
+                </HBox>
+
+                <Separator opacity="0.2" />
+
+                <HBox spacing="20">
+                    <StackPane styleClass="glass-panel" prefWidth="380" prefHeight="280">
+                        <VBox styleClass="glass-panel-inner" spacing="14">
+                            <Text text="✅ Check-in" styleClass="title-md" />
+                            <Label text="Ingreso de visitante" styleClass="subtitle" />
+                            <VBox spacing="6">
+                                <Label text="ID Visita" styleClass="label-text" />
+                                <TextField fx:id="txtVisitaIdIn" promptText="Ej: 12" />
+                            </VBox>
+                            <Button fx:id="btnCheckIn" text="Realizar Check-in"
+                                    styleClass="btn, btn-success" prefWidth="320"
+                                    onAction="#handleCheckIn" />
+                            <Label fx:id="lblInMsg" styleClass="label-text" />
+                        </VBox>
+                    </StackPane>
+
+                    <StackPane styleClass="glass-panel" prefWidth="380" prefHeight="280">
+                        <VBox styleClass="glass-panel-inner" spacing="14">
+                            <Text text="🚪 Check-out" styleClass="title-md" />
+                            <Label text="Salida de visitante" styleClass="subtitle" />
+                            <VBox spacing="6">
+                                <Label text="ID Visita" styleClass="label-text" />
+                                <TextField fx:id="txtVisitaIdOut" promptText="Ej: 12" />
+                            </VBox>
+                            <Button fx:id="btnCheckOut" text="Realizar Check-out"
+                                    styleClass="btn, btn-danger" prefWidth="320"
+                                    onAction="#handleCheckOut" />
+                            <Label fx:id="lblOutMsg" styleClass="label-text" />
+                        </VBox>
+                    </StackPane>
+                </HBox>
+
+                <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
+                    <VBox styleClass="glass-panel-inner" spacing="12">
+                        <HBox alignment="CENTER_LEFT">
+                            <Text text="Visitas actualmente DENTRO" styleClass="title-md" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button text="🔄 Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                        </HBox>
+                        <TableView fx:id="tblActivas" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TableColumn text="ID" prefWidth="60" />
+                                <TableColumn text="Persona" prefWidth="220" />
+                                <TableColumn text="Empresa" prefWidth="200" />
+                                <TableColumn text="Hora Entrada" prefWidth="150" />
+                                <TableColumn text="Estado" prefWidth="120" />
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </StackPane>
+            </VBox>
+        </center>
+
+        <bottom>
+            <HBox styleClass="status-bar" alignment="CENTER_LEFT">
+                <Text text="SICA © 2025 — Sesión iniciada como GUARDA" />
+            </HBox>
+        </bottom>
+    </BorderPane>
+
+</StackPane>
