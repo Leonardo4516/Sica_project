@@ -5,6 +5,8 @@ import com.sicaproject.sica.acceso.domain.EstadoVisita;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.empresas.domain.Empresa;
 import com.sicaproject.sica.iam.domain.Usuario;
+import com.sicaproject.sica.auditoria.application.AuditorService;
+import com.sicaproject.sica.iam.application.service.RbacService;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,18 +17,24 @@ public class VisitaService {
     private static Map<Long, Visita> visitas = new HashMap<>();
     private static long nextVisitaId = 1;
 
-    // Referencias a otros servicios
+    // Servicios inyectados
     private final com.sicaproject.sica.iam.application.service.AuthService authService;
     private final com.sicaproject.sica.personas.application.service.PersonaService personaService;
     private final com.sicaproject.sica.empresas.application.service.EmpresaService empresaService;
+    private final RbacService rbacService;
+    private final com.sicaproject.sica.iam.application.service.AuthService iamAuthService;
 
     public VisitaService(
             com.sicaproject.sica.iam.application.service.AuthService authService,
             com.sicaproject.sica.personas.application.service.PersonaService personaService,
-            com.sicaproject.sica.empresas.application.service.EmpresaService empresaService) {
+            com.sicaproject.sica.empresas.application.service.EmpresaService empresaService,
+            RbacService rbacService,
+            com.sicaproject.sica.iam.application.service.AuthService iamAuthService) {
         this.authService = authService;
         this.personaService = personaService;
         this.empresaService = empresaService;
+        this.rbacService = rbacService;
+        this.iamAuthService = iamAuthService;
     }
 
     // Registrar check-in para un visitante pre-registrado
@@ -40,6 +48,15 @@ public class VisitaService {
         visita.setGuarda(usuario);
         visita.setEstado(EstadoVisita.APROBADA);
         visita.setFechaHoraRegistro(LocalDateTime.now());
+        // Registrar en auditoría
+        AuditorService.registrar(
+            String.valueOf(usuario.getId()),
+            "VISITA_APROBADA",
+            "VISITA",
+            visita.getId(),
+            "Check-in pre-registrado para " + usuario.getUsername(),
+            "EXITOSO"
+        );
         visitas.put(visita.getId(), visita);
         return visita;
     }
@@ -56,6 +73,15 @@ public class VisitaService {
         visita.setFuncionarioAnfitrion(funcionarioAnfitrion);
         visita.setEstado(EstadoVisita.PENDIENTE_APROBACION);
         visita.setFechaHoraRegistro(LocalDateTime.now());
+        // Registrar en auditoría
+        AuditorService.registrar(
+            String.valueOf(funcionarioAnfitrion.getId()),
+            "VISITA_SOLICITUD",
+            "VISITA",
+            visita.getId(),
+            "Solicitud de acceso para " + persona.getNombre() + " en " + empresaDestino.getNombre(),
+            "EXITOSO"
+        );
         visitas.put(visita.getId(), visita);
         return visita;
     }
@@ -67,6 +93,15 @@ public class VisitaService {
         
         if (visita.getEstado().puedeTransicionarA(EstadoVisita.APROBADA)) {
             visita.setEstado(EstadoVisita.APROBADA);
+            // Registrar en auditoría
+            AuditorService.registrar(
+                String.valueOf(visita.getGuarda().getId()),
+                "VISITA_APROBADA",
+                "VISITA",
+                visita.getId(),
+                "Visita aprobada por funcionario",
+                "EXITOSO"
+            );
             return true;
         }
         return false;
@@ -80,6 +115,15 @@ public class VisitaService {
         if (visita.getEstado() == EstadoVisita.APROBADA) {
             visita.setEstado(EstadoVisita.DENTRO);
             visita.setFechaHoraSalida(LocalDateTime.now());
+            // Registrar en auditoría
+            AuditorService.registrar(
+                String.valueOf(visita.getGuarda().getId()),
+                "VISITA_CHECK_OUT",
+                "VISITA",
+                visita.getId(),
+                "Check-out de visita #" + visitaId,
+                "EXITOSO"
+            );
             return true;
         }
         return false;
@@ -92,8 +136,15 @@ public class VisitaService {
             // La visita que estaba abierta se marca como CERRADA_POR_SISTEMA
             visita.setEstado(EstadoVisita.CERRADA_POR_SISTEMA);
             visita.setFechaHoraSalida(LocalDateTime.now());
-            // Se crea un nuevo registro para el nuevo ingreso
-            // (handled elsewhere)
+            // Registrar en auditoría
+            AuditorService.registrar(
+                String.valueOf(visita.getGuarda().getId()),
+                "SALIDA_OLVIDADA",
+                "VISITA",
+                visita.getId(),
+                "Salida olvidada detectada en próximo ingreso",
+                "EXITOSO"
+            );
         }
     }
 
