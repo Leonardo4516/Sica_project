@@ -13,11 +13,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <javafx.version>17.0.2</javafx.version>
         <postgresql.version>42.7.2</postgresql.version>
-        <hibernate.version>6.2.2.Final</hibernate.version>
         <lombok.version>1.18.30</lombok.version>
-        <jbcrypt.version>0.4</jbcrypt.version>
         <junit.jupiter.version>5.10.0</junit.jupiter.version>
-        <springboot.version>3.2.2</springboot.version>
     </properties>
 
     <dependencyManagement>
@@ -38,19 +35,14 @@
                 <version>${postgresql.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.hibernate.orm</groupId>
-                <artifactId>hibernate-core</artifactId>
-                <version>${hibernate.version}</version>
+                <groupId>jakarta.persistence</groupId>
+                <artifactId>jakarta.persistence-api</artifactId>
+                <version>3.1.0</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter</artifactId>
-                <version>${springboot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-jpa</artifactId>
-                <version>${springboot.version}</version>
+                <groupId>jakarta.transaction</groupId>
+                <artifactId>jakarta.transaction-api</artifactId>
+                <version>2.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
@@ -75,27 +67,18 @@
             <artifactId>postgresql</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <groupId>jakarta.transaction</groupId>
+            <artifactId>jakarta.transaction-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mindrot</groupId>
-            <artifactId>jbcrypt</artifactId>
-            <version>${jbcrypt.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

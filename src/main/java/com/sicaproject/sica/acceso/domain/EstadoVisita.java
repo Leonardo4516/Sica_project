@@ -1,13 +1,6 @@
 package com.sicaproject.sica.acceso.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-@Getter
-@Entity
-@Table(name = "estado_visita")
 public enum EstadoVisita {
-
     APROBADA,
     PENDIENTE_APROBACION,
     DENTRO,

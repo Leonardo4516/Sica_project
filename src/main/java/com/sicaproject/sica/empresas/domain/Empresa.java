@@ -1,20 +1,18 @@
 package com.sicaproject.sica.empresas.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
-
-@Entity
-@Table(name = "empresa")
-@Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
 public class Empresa {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, unique = true, length = 100)
+    private long id;
     private String nombre;
-
-    @Column(unique = true, nullable = false, length = 20)
     private String nit;
+
+    public Empresa() {}
+
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getNit() { return nit; }
+    public void setNit(String nit) { this.nit = nit; }
 }

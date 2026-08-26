@@ -1,37 +1,38 @@
 package com.sicaproject.sica.personas.domain;
 
-import jakarta.persistence.*;
-import lombok.*;
-import com.sicaproject.sica.empresas.domain.Empresa;
-
-@Entity
-@Table(name = "persona")
-@Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
 public class Persona {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 20)
+    private long id;
     private String tipo; // TRABAJADOR / INVITADO
-
-    @Column(nullable = false, length = 100)
     private String nombre;
-
-    @Column(unique = true, nullable = false, length = 20)
     private String documento;
-
-    @Column(length = 255)
     private String fotoUrl;
-
-    @ManyToOne
-    @JoinColumn(name = "empresa_id")
-    private Empresa empresa;
-
-    @Column(name = "bloqueado", nullable = false)
+    private String empresa;
     private boolean bloqueado;
-
-    @Column(length = 255)
     private String motivoBloqueo;
+
+    public Persona() {}
+
+    public long getId() { return id; }
+    public void setId(long id) { this.id = id; }
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getDocumento() { return documento; }
+    public void setDocumento(String documento) { this.documento = documento; }
+
+    public String getFotoUrl() { return fotoUrl; }
+    public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
+
+    public String getEmpresa() { return empresa; }
+    public void setEmpresa(String empresa) { this.empresa = empresa; }
+
+    public boolean isBloqueado() { return bloqueado; }
+    public void setBloqueado(boolean bloqueado) { this.bloqueado = bloqueado; }
+
+    public String getMotivoBloqueo() { return motivoBloqueo; }
+    public void setMotivoBloqueo(String motivoBloqueo) { this.motivoBloqueo = motivoBloqueo; }
 }
