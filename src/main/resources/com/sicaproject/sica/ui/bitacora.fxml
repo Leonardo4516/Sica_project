@@ -17,7 +17,10 @@
                     <Insets top="20" right="12" bottom="20" left="12" />
                 </padding>
                 <Text text="SICA" styleClass="title-md, brand-accent" />
-                <Text text="Bitácora" styleClass="subtitle" margin="0 0 24 0" />
+                <VBox spacing="0">
+                    <padding><Insets bottom="24" /></padding>
+                    <Text text="Bitácora" styleClass="subtitle" />
+                </VBox>
                 <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleAdmin">
                     <Label text="🔐 Volver a Admin" />
                 </HBox>
