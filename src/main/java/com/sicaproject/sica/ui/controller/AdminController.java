@@ -57,11 +57,7 @@ public class AdminController implements Initializable {
             txtUsuario.setText("Admin: " + SceneManager.getCurrentUser().getUsername());
         }
 
-        ParticleBackground particles = new ParticleBackground();
-        particles.setManaged(false);
-        particles.setMouseTransparent(true);
-        rootPane.getChildren().add(0, particles);
-        particles.start();
+        ParticleBackground.attachTo(rootPane);
 
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
             e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));

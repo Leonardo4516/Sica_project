@@ -1,7 +1,6 @@
 package com.sicaproject.sica.ui;
 
 import com.sicaproject.sica.iam.domain.Usuario;
-import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -29,40 +28,59 @@ public class SceneManager {
         return currentUser;
     }
 
+    public static String fxmlForRole(Usuario usuario) {
+        if (usuario == null || usuario.getRol() == null || usuario.getRol().getNombre() == null) {
+            throw new IllegalStateException("El usuario autenticado no tiene rol cargado");
+        }
+        return switch (usuario.getRol().getNombre().toUpperCase()) {
+            case "GUARDA" -> "/com/sicaproject/sica/ui/guarda.fxml";
+            case "FUNCIONARIO" -> "/com/sicaproject/sica/ui/funcionario.fxml";
+            case "ADMIN" -> "/com/sicaproject/sica/ui/admin.fxml";
+            default -> throw new IllegalStateException("Rol no reconocido: " + usuario.getRol().getNombre());
+        };
+    }
+
+    public static String titleForRole(Usuario usuario) {
+        return switch (usuario.getRol().getNombre().toUpperCase()) {
+            case "GUARDA" -> "SICA — Panel Guardía";
+            case "FUNCIONARIO" -> "SICA — Panel Funcionario";
+            case "ADMIN" -> "SICA — Administración";
+            default -> "SICA";
+        };
+    }
+
     public static void loadScene(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                SceneManager.class.getResource(fxmlPath)
-            );
+            var resource = SceneManager.class.getResource(fxmlPath);
+            if (resource == null) {
+                throw new IOException("No se encontró el FXML en el classpath: " + fxmlPath);
+            }
+            FXMLLoader loader = new FXMLLoader(resource);
             Parent root = loader.load();
             Scene scene = new Scene(root, 1280, 720);
-            scene.getStylesheets().add(
-                SceneManager.class.getResource("styles.css").toExternalForm()
-            );
+            var css = SceneManager.class.getResource("styles.css");
+            if (css != null) {
+                scene.getStylesheets().add(css.toExternalForm());
+            }
             primaryStage.setScene(scene);
             primaryStage.setTitle(title);
             primaryStage.centerOnScreen();
         } catch (IOException e) {
-            throw new RuntimeException("Error cargando " + fxmlPath, e);
+            throw new RuntimeException("Error cargando " + fxmlPath + ": " + rootCause(e).getMessage(), e);
         }
     }
 
     public static void navigateAfterLogin(Usuario usuario) {
         currentUser = usuario;
-        String rol = usuario.getRol().getNombre().toUpperCase();
-        switch (rol) {
-            case "GUARDA":
-                loadScene("/com/sicaproject/sica/ui/guarda.fxml", "SICA — Panel Guardía");
-                break;
-            case "FUNCIONARIO":
-                loadScene("/com/sicaproject/sica/ui/funcionario.fxml", "SICA — Panel Funcionario");
-                break;
-            case "ADMIN":
-                loadScene("/com/sicaproject/sica/ui/admin.fxml", "SICA — Administración");
-                break;
-            default:
-                loadScene("/com/sicaproject/sica/ui/login.fxml", "SICA — Login");
+        loadScene(fxmlForRole(usuario), titleForRole(usuario));
+    }
+
+    static Throwable rootCause(Throwable t) {
+        Throwable current = t;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
         }
+        return current;
     }
 
     public static void logout() {

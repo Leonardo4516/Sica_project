@@ -30,11 +30,7 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ParticleBackground particles = new ParticleBackground();
-        particles.setManaged(false);
-        particles.setMouseTransparent(true);
-        rootPane.getChildren().add(0, particles);
-        particles.start();
+        ParticleBackground.attachTo(rootPane);
     }
 
     @FXML
@@ -51,14 +47,18 @@ public class LoginController implements Initializable {
         try {
             Optional<Usuario> result = authService.login(usuario, password);
             if (result.isPresent()) {
-                Usuario u = result.get();
-                SceneManager.navigateAfterLogin(u);
+                SceneManager.navigateAfterLogin(result.get());
             } else {
                 showError("Credenciales inválidas");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            showError("Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            Throwable cause = e;
+            while (cause.getCause() != null && cause.getCause() != cause) {
+                cause = cause.getCause();
+            }
+            showError("No se pudo abrir el panel: " + cause.getClass().getSimpleName()
+                    + " - " + cause.getMessage());
         } finally {
             btnLogin.setDisable(false);
         }
