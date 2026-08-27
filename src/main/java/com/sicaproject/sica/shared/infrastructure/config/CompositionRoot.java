@@ -9,9 +9,11 @@ import com.sicaproject.sica.auditoria.infrastructure.adapter.out.persistence.Bit
 import com.sicaproject.sica.empresas.application.port.out.EmpresaRepository;
 import com.sicaproject.sica.empresas.application.service.EmpresaService;
 import com.sicaproject.sica.empresas.infrastructure.adapter.out.persistence.EmpresaRepositoryJpaAdapter;
+import com.sicaproject.sica.iam.application.port.out.RolRepository;
 import com.sicaproject.sica.iam.application.port.out.UsuarioRepository;
 import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.application.service.RbacService;
+import com.sicaproject.sica.iam.infrastructure.adapter.out.persistence.RolRepositoryJpaAdapter;
 import com.sicaproject.sica.iam.infrastructure.adapter.out.persistence.UsuarioRepositoryJpaAdapter;
 import com.sicaproject.sica.personas.application.port.out.PersonaRepository;
 import com.sicaproject.sica.personas.application.service.PersonaService;
@@ -32,6 +34,7 @@ public final class CompositionRoot {
     private final UsuarioRepository usuarioRepository = new UsuarioRepositoryJpaAdapter();
     private final VisitaRepository visitaRepository = new VisitaRepositoryJpaAdapter();
     private final BitacoraAuditoriaRepository bitacoraRepository = new BitacoraAuditoriaRepositoryJpaAdapter();
+    private final RolRepository rolRepository = new RolRepositoryJpaAdapter();
 
     private final AuditoriaService auditoriaService = new AuditoriaService(bitacoraRepository);
     private final RbacService rbacService = new RbacService();
@@ -50,6 +53,7 @@ public final class CompositionRoot {
     }
 
     public AuthService authService() { return authService; }
+    public RolRepository rolRepository() { return rolRepository; }
     public RbacService rbacService() { return rbacService; }
     public EmpresaService empresaService() { return empresaService; }
     public PersonaService personaService() { return personaService; }
