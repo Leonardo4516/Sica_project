@@ -18,7 +18,10 @@
                 </padding>
 
                 <Text text="SICA" styleClass="title-md, brand-accent" />
-                <Text text="Panel Guardía" styleClass="subtitle" margin="0 0 24 0" />
+                <VBox spacing="0">
+                    <padding><Insets bottom="24" /></padding>
+                    <Text text="Panel Guardía" styleClass="subtitle" />
+                </VBox>
 
                 <HBox styleClass="nav-item, active" alignment="CENTER_LEFT" spacing="10">
                     <Label text="🏠 Check-in / Check-out" />
