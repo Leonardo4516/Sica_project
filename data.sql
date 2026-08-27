@@ -65,3 +65,12 @@ INSERT INTO persona (id, tipo, nombre, documento, empresa_id, bloqueado) VALUES
 (2, 'TRABAJADOR', 'María González', 'CC87654321', 2, FALSE),
 (3, 'INVITADO', 'Juan Rodríguez', 'CC11223344', NULL, FALSE),
 (4, 'INVITADO', 'Ana Martínez', 'CC55667788', NULL, FALSE);
+
+-- Sincronizar secuencias para inserciones dinámicas de Hibernate
+SELECT setval(pg_get_serial_sequence('persona', 'id'), coalesce(max(id), 1)) FROM persona;
+SELECT setval(pg_get_serial_sequence('empresa', 'id'), coalesce(max(id), 1)) FROM empresa;
+SELECT setval(pg_get_serial_sequence('usuario', 'id'), coalesce(max(id), 1)) FROM usuario;
+SELECT setval(pg_get_serial_sequence('rol', 'id'), coalesce(max(id), 1)) FROM rol;
+SELECT setval(pg_get_serial_sequence('permiso', 'id'), coalesce(max(id), 1)) FROM permiso;
+SELECT setval(pg_get_serial_sequence('visita', 'id'), coalesce(max(id), 1)) FROM visita;
+SELECT setval(pg_get_serial_sequence('bitacora_auditoria', 'id'), coalesce(max(id), 1)) FROM bitacora_auditoria;
