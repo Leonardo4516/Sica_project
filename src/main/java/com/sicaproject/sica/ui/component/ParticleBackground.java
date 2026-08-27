@@ -28,23 +28,10 @@ public class ParticleBackground extends Pane {
     private final List<Particle> particles = new ArrayList<>();
     private final Timeline timeline;
     private final Random random = new Random();
-    private int width = 800;
-    private int height = 600;
 
     public ParticleBackground() {
         canvas = new Canvas();
-        canvas.widthProperty().bind(widthProperty());
-        canvas.heightProperty().bind(heightProperty());
         getChildren().add(canvas);
-
-        widthProperty().addListener((obs, o, n) -> {
-            width = n.intValue();
-            canvas.setWidth(width);
-        });
-        heightProperty().addListener((obs, o, n) -> {
-            height = n.intValue();
-            canvas.setHeight(height);
-        });
 
         for (int i = 0; i < PARTICLE_COUNT; i++) {
             particles.add(new Particle(random));
@@ -52,6 +39,17 @@ public class ParticleBackground extends Pane {
 
         timeline = new Timeline(new KeyFrame(Duration.millis(33), e -> animate()));
         timeline.setCycleCount(Animation.INDEFINITE);
+    }
+
+    @Override
+    protected void layoutChildren() {
+        super.layoutChildren();
+        double w = getWidth();
+        double h = getHeight();
+        if (w > 0 && h > 0) {
+            canvas.setWidth(w);
+            canvas.setHeight(h);
+        }
     }
 
     public void start() {
@@ -63,16 +61,24 @@ public class ParticleBackground extends Pane {
     }
 
     private void animate() {
+        double w = getWidth();
+        double h = getHeight();
+        if (w <= 0 || h <= 0) {
+            return;
+        }
+        if (canvas.getWidth() != w || canvas.getHeight() != h) {
+            canvas.setWidth(w);
+            canvas.setHeight(h);
+        }
+
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        gc.clearRect(0, 0, width, height);
+        gc.clearRect(0, 0, w, h);
 
         for (Particle p : particles) {
-            p.update(width, height);
+            p.update(w, h);
             p.draw(gc);
         }
 
-        gc.setStroke(Color.rgb(107, 138, 253, 0.18));
-        gc.setLineWidth(0.6);
         for (int i = 0; i < particles.size(); i++) {
             Particle a = particles.get(i);
             for (int j = i + 1; j < particles.size(); j++) {
@@ -83,6 +89,7 @@ public class ParticleBackground extends Pane {
                 if (dist < CONNECTION_DISTANCE) {
                     double alpha = 0.22 * (1.0 - dist / CONNECTION_DISTANCE);
                     gc.setStroke(Color.rgb(107, 138, 253, alpha));
+                    gc.setLineWidth(0.6);
                     gc.strokeLine(a.x, a.y, b.x, b.y);
                 }
             }
@@ -100,7 +107,7 @@ public class ParticleBackground extends Pane {
             radius = 1.2 + r.nextDouble() * 1.8;
         }
 
-        void update(int w, int h) {
+        void update(double w, double h) {
             x += vx;
             y += vy;
             if (x < 0 || x > w) vx = -vx;

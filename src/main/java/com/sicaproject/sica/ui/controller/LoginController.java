@@ -30,12 +30,10 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Inicializar partículas en el canvas
         ParticleBackground particles = new ParticleBackground();
         particles.setManaged(false);
         particles.setMouseTransparent(true);
         rootPane.getChildren().add(0, particles);
-        particles.resize(1280, 720);
         particles.start();
     }
 
@@ -59,7 +57,8 @@ public class LoginController implements Initializable {
                 showError("Credenciales inválidas");
             }
         } catch (Exception e) {
-            showError("Error de autenticación: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
         } finally {
             btnLogin.setDisable(false);
         }

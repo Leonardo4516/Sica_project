@@ -49,7 +49,6 @@ public class BitacoraController implements Initializable {
         particles.setManaged(false);
         particles.setMouseTransparent(true);
         rootPane.getChildren().add(0, particles);
-        particles.resize(1280, 720);
         particles.start();
 
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
