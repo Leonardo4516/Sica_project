@@ -3,6 +3,7 @@ package com.sicaproject.sica.ui.controller;
 import com.sicaproject.sica.acceso.application.service.VisitaService;
 import com.sicaproject.sica.acceso.domain.EstadoVisita;
 import com.sicaproject.sica.acceso.domain.Visita;
+import com.sicaproject.sica.iam.application.port.out.RolRepository;
 import com.sicaproject.sica.iam.application.service.RbacService;
 import com.sicaproject.sica.iam.domain.Rol;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
@@ -10,6 +11,7 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,7 +27,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class AdminController implements Initializable {
@@ -37,12 +38,16 @@ public class AdminController implements Initializable {
     @FXML private Label lblVisitasDentro;
     @FXML private Label lblPendientes;
     @FXML private Label lblCerradasHoy;
-    @FXML private TableView<Object> tblRoles;
+    @FXML private TableView<Rol> tblRoles;
+    @FXML private TableColumn<Rol, String> colRolNombre;
+    @FXML private TableColumn<Rol, String> colRolPermisos;
 
     private final VisitaService visitaService =
         CompositionRoot.getInstance().visitaService();
     private final RbacService rbacService =
         CompositionRoot.getInstance().rbacService();
+    private final RolRepository rolRepository =
+        CompositionRoot.getInstance().rolRepository();
 
     private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
 
@@ -99,17 +104,15 @@ public class AdminController implements Initializable {
     }
 
     private void refreshRoles() {
-        var rows = FXCollections.<Object>observableArrayList();
-        String[] rolesTipicos = {"GUARDA", "FUNCIONARIO", "ADMIN"};
-        for (String nombreRol : rolesTipicos) {
-            Rol rol = new Rol();
-            rol.setNombre(nombreRol);
-            Set<String> permisos = rbacService.obtenerPermisos(rol);
-            String lista = permisos.isEmpty()
-                ? "(use el usuario para ver permisos reales)"
-                : permisos.stream().sorted().collect(Collectors.joining(", "));
-            rows.add(new Object[]{nombreRol, lista});
-        }
-        tblRoles.setItems(rows);
+        colRolNombre.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().getNombre()));
+        colRolPermisos.setCellValueFactory(data -> {
+            String lista = data.getValue().getPermisos().stream()
+                .map(p -> p.getCodigo())
+                .sorted()
+                .collect(Collectors.joining(", "));
+            return new SimpleStringProperty(lista.isEmpty() ? "(sin permisos asignados)" : lista);
+        });
+        tblRoles.setItems(FXCollections.observableArrayList(rolRepository.listarTodos()));
     }
 }

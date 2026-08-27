@@ -12,12 +12,15 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -32,7 +35,13 @@ public class FuncionarioController implements Initializable {
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
     @FXML private Label lblHora;
-    @FXML private TableView<Object> tblPendientes;
+    @FXML private TableView<Visita> tblPendientes;
+    @FXML private TableColumn<Visita, String> colId;
+    @FXML private TableColumn<Visita, String> colPersona;
+    @FXML private TableColumn<Visita, String> colEmpresa;
+    @FXML private TableColumn<Visita, String> colFecha;
+    @FXML private TableColumn<Visita, String> colTipo;
+    @FXML private TableColumn<Visita, Void> colAcciones;
     @FXML private TextField txtNombre;
     @FXML private ComboBox<Empresa> cmbEmpresa;
     @FXML private CheckBox chkPaseTemporal;
@@ -80,7 +89,69 @@ public class FuncionarioController implements Initializable {
             }
         });
 
+        configurarColumnas();
         refreshTabla();
+    }
+
+    private void configurarColumnas() {
+        colId.setCellValueFactory(data ->
+            new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        colPersona.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        colEmpresa.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        colFecha.setCellValueFactory(data -> {
+            LocalDateTime f = data.getValue().getFechaHoraRegistro();
+            return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
+        });
+        colTipo.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Pase Temporal" : "Normal"));
+
+        colAcciones.setCellFactory(col -> new TableCell<>() {
+            private final Button btnAprobar = new Button("Aprobar");
+            private final Button btnRechazar = new Button("Rechazar");
+            private final HBox contenedor = new HBox(8, btnAprobar, btnRechazar);
+
+            {
+                contenedor.setAlignment(Pos.CENTER);
+                btnAprobar.getStyleClass().add("btn-aprobar");
+                btnRechazar.getStyleClass().add("btn-rechazar");
+                btnAprobar.setOnAction(e -> {
+                    Visita v = getTableView().getItems().get(getIndex());
+                    aprobar(v);
+                });
+                btnRechazar.setOnAction(e -> {
+                    Visita v = getTableView().getItems().get(getIndex());
+                    rechazar(v);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : contenedor);
+            }
+        });
+    }
+
+    private void aprobar(Visita visita) {
+        try {
+            visitaService.aprobarVisita(visita.getId(), SceneManager.getCurrentUser());
+            lblMsg.setText("✓ Visita #" + visita.getId() + " aprobada. El guarda ya puede hacer el check-in.");
+            refreshTabla();
+        } catch (Exception e) {
+            lblMsg.setText("✗ " + e.getMessage());
+        }
+    }
+
+    private void rechazar(Visita visita) {
+        try {
+            visitaService.rechazarVisita(visita.getId(), SceneManager.getCurrentUser());
+            lblMsg.setText("✓ Visita #" + visita.getId() + " rechazada.");
+            refreshTabla();
+        } catch (Exception e) {
+            lblMsg.setText("✗ " + e.getMessage());
+        }
     }
 
     @FXML
@@ -123,19 +194,9 @@ public class FuncionarioController implements Initializable {
     }
 
     private void refreshTabla() {
-        var rows = FXCollections.<Object>observableArrayList();
-        for (Visita v : visitaService.listarTodas()) {
-            if (v.getEstado() == EstadoVisita.PENDIENTE_APROBACION) {
-                rows.add(new Object[]{
-                    v.getId(),
-                    v.getPersona().getNombre(),
-                    v.getEmpresaDestino().getNombre(),
-                    v.getFechaHoraRegistro() != null
-                        ? v.getFechaHoraRegistro().format(dateTimeFmt) : "—",
-                    v.isPaseTemporal() ? "Pase Temporal" : "Normal"
-                });
-            }
-        }
-        tblPendientes.setItems(rows);
+        var pendientes = visitaService.listarTodas().stream()
+            .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
+            .toList();
+        tblPendientes.setItems(FXCollections.observableArrayList(pendientes));
     }
 }

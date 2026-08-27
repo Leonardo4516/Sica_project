@@ -8,8 +8,8 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -35,7 +35,12 @@ public class GuardaController implements Initializable {
     @FXML private Button btnCheckOut;
     @FXML private Label lblInMsg;
     @FXML private Label lblOutMsg;
-    @FXML private TableView<Object> tblActivas;
+    @FXML private TableView<Visita> tblActivas;
+    @FXML private TableColumn<Visita, String> colGId;
+    @FXML private TableColumn<Visita, String> colGPersona;
+    @FXML private TableColumn<Visita, String> colGEmpresa;
+    @FXML private TableColumn<Visita, String> colGHora;
+    @FXML private TableColumn<Visita, String> colGEstado;
 
     private final VisitaService visitaService =
         CompositionRoot.getInstance().visitaService();
@@ -60,6 +65,15 @@ public class GuardaController implements Initializable {
             e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
         clock.setCycleCount(Timeline.INDEFINITE);
         clock.play();
+
+        colGId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        colGPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        colGEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        colGHora.setCellValueFactory(data -> {
+            LocalDateTime f = data.getValue().getFechaHoraEntrada();
+            return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
+        });
+        colGEstado.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEstado().name()));
 
         refreshTabla();
     }
@@ -103,19 +117,9 @@ public class GuardaController implements Initializable {
     }
 
     private void refreshTabla() {
-        ObservableList<Object> rows = FXCollections.observableArrayList();
-        for (Visita v : visitaService.listarTodas()) {
-            if (v.getEstado() == EstadoVisita.DENTRO) {
-                rows.add(new Object[]{
-                    v.getId(),
-                    v.getPersona().getNombre(),
-                    v.getEmpresaDestino().getNombre(),
-                    v.getFechaHoraEntrada() != null
-                        ? v.getFechaHoraEntrada().format(dateTimeFmt) : "—",
-                    v.getEstado().name()
-                });
-            }
-        }
-        tblActivas.setItems(rows);
+        var activas = visitaService.listarTodas().stream()
+            .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
+            .toList();
+        tblActivas.setItems(FXCollections.observableArrayList(activas));
     }
 }

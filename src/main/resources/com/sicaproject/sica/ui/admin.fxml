@@ -89,8 +89,8 @@
                         </HBox>
                         <TableView fx:id="tblRoles" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn text="Rol" prefWidth="150" />
-                                <TableColumn text="Permisos asignados" prefWidth="500" />
+                                <TableColumn fx:id="colRolNombre" text="Rol" prefWidth="150" />
+                                <TableColumn fx:id="colRolPermisos" text="Permisos asignados" prefWidth="500" />
                             </columns>
                         </TableView>
                     </VBox>

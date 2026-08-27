@@ -60,12 +60,12 @@
                             </HBox>
                             <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
                                 <columns>
-                                    <TableColumn text="ID" prefWidth="60" />
-                                    <TableColumn text="Persona" prefWidth="200" />
-                                    <TableColumn text="Empresa" prefWidth="160" />
-                                    <TableColumn text="Fecha" prefWidth="140" />
-                                    <TableColumn text="Tipo" prefWidth="130" />
-                                    <TableColumn text="Acciones" prefWidth="200" />
+                                    <TableColumn fx:id="colId" text="ID" prefWidth="60" />
+                                    <TableColumn fx:id="colPersona" text="Persona" prefWidth="200" />
+                                    <TableColumn fx:id="colEmpresa" text="Empresa" prefWidth="160" />
+                                    <TableColumn fx:id="colFecha" text="Fecha" prefWidth="140" />
+                                    <TableColumn fx:id="colTipo" text="Tipo" prefWidth="130" />
+                                    <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="200" />
                                 </columns>
                             </TableView>
                         </VBox>
