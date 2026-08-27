@@ -27,7 +27,7 @@ public class VisitaEntity {
     private UsuarioEntity funcionarioAnfitrion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "guarda_id", nullable = false)
+    @JoinColumn(name = "guarda_id")
     private UsuarioEntity guarda;
 
     @Column(nullable = false, length = 30)

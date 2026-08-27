@@ -299,6 +299,29 @@
     -fx-background-color: rgba(120, 140, 200, 0.12);
 }
 
+/* ========== TAB PANE ========== */
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+.tab-pane .tab {
+    -fx-background-color: rgba(28, 34, 54, 0.6);
+    -fx-background-radius: 8 8 0 0;
+    -fx-padding: 8 16;
+}
+.tab-pane .tab:selected {
+    -fx-background-color: rgba(107, 138, 253, 0.25);
+    -fx-border-color: #6b8afd;
+    -fx-border-width: 0 0 2 0;
+}
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #9ca3b8;
+    -fx-font-weight: 600;
+    -fx-font-size: 13px;
+}
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #ffffff;
+}
+
 /* ========== STATUS BAR ========== */
 .status-bar {
     -fx-background-color: rgba(10, 14, 26, 0.7);
@@ -308,3 +331,4 @@
     -fx-font-size: 11px;
     -fx-text-fill: #9ca3b8;
 }
+

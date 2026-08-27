@@ -42,6 +42,7 @@ public class FuncionarioController implements Initializable {
     @FXML private TableColumn<Visita, String> colFecha;
     @FXML private TableColumn<Visita, String> colTipo;
     @FXML private TableColumn<Visita, Void> colAcciones;
+    @FXML private TextField txtDocumento;
     @FXML private TextField txtNombre;
     @FXML private ComboBox<Empresa> cmbEmpresa;
     @FXML private CheckBox chkPaseTemporal;
@@ -152,6 +153,7 @@ public class FuncionarioController implements Initializable {
     @FXML
     private void handleRegistrar(ActionEvent event) {
         try {
+            String documento = txtDocumento != null ? txtDocumento.getText().trim() : "";
             String nombre = txtNombre.getText().trim();
             Empresa empresa = cmbEmpresa.getValue();
             if (nombre.isEmpty() || empresa == null) {
@@ -159,19 +161,32 @@ public class FuncionarioController implements Initializable {
                 return;
             }
 
-            Persona persona = new Persona();
-            persona.setNombre(nombre);
-            persona.setDocumento("PENDIENTE-" + System.currentTimeMillis());
-            personaService.guardar(persona);
+            if (documento.isEmpty()) {
+                documento = "DOC-" + System.currentTimeMillis();
+            }
 
-            Visita v = visitaService.solicitarAcceso(
+            final String docFinal = documento;
+            Persona persona = personaService.porDocumento(docFinal).orElseGet(() -> {
+                Persona p = new Persona();
+                p.setDocumento(docFinal);
+                p.setNombre(nombre);
+                p.setTipo(chkPaseTemporal.isSelected() ? "TRABAJADOR" : "INVITADO");
+                p.setEmpresaId(empresa.getId());
+                return personaService.guardar(p);
+            });
+
+            Visita v = visitaService.registrarVisitaPreaprobada(
                 persona, empresa,
                 SceneManager.getCurrentUser(),
-                SceneManager.getCurrentUser(),
-                chkPaseTemporal.isSelected()
+                null
             );
-            lblMsg.setText("✓ Solicitud creada con ID " + v.getId());
+            if (chkPaseTemporal.isSelected()) {
+                v.setPaseTemporal(true);
+            }
+            lblMsg.setText("✓ Visita #" + v.getId() + " pre-registrada con éxito (Estado: APROBADA).");
+            if (txtDocumento != null) txtDocumento.clear();
             txtNombre.clear();
+            chkPaseTemporal.setSelected(false);
             refreshTabla();
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());

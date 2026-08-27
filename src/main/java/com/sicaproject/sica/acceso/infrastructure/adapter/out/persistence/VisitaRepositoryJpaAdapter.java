@@ -35,10 +35,18 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
             }
             VisitaMapper.copyToEntity(visita, entity);
             entity.setPersona(em.getReference(PersonaEntity.class, visita.getPersona().getId()));
-            entity.setEmpresaDestino(em.getReference(EmpresaEntity.class, visita.getEmpresaDestino().getId()));
-            entity.setGuarda(em.getReference(UsuarioEntity.class, visita.getGuarda().getId()));
+            if (visita.getEmpresaDestino() != null) {
+                entity.setEmpresaDestino(em.getReference(EmpresaEntity.class, visita.getEmpresaDestino().getId()));
+            }
+            if (visita.getGuarda() != null) {
+                entity.setGuarda(em.getReference(UsuarioEntity.class, visita.getGuarda().getId()));
+            } else {
+                entity.setGuarda(null);
+            }
             if (visita.getFuncionarioAnfitrion() != null) {
                 entity.setFuncionarioAnfitrion(em.getReference(UsuarioEntity.class, visita.getFuncionarioAnfitrion().getId()));
+            } else {
+                entity.setFuncionarioAnfitrion(null);
             }
             if (entity.getId() == null) {
                 em.persist(entity);
