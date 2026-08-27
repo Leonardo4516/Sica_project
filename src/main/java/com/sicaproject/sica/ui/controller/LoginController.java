@@ -9,9 +9,7 @@ import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.control.*;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
@@ -21,7 +19,6 @@ import java.util.ResourceBundle;
 
 public class LoginController implements Initializable {
 
-    @FXML private Canvas particleCanvas;
     @FXML private TextField txtUsuario;
     @FXML private PasswordField txtPassword;
     @FXML private CheckBox chkRecordar;
@@ -36,13 +33,10 @@ public class LoginController implements Initializable {
         // Inicializar partículas en el canvas
         ParticleBackground particles = new ParticleBackground();
         particles.setManaged(false);
-        particles.resize(particleCanvas.getWidth(), particleCanvas.getHeight());
+        particles.setMouseTransparent(true);
         rootPane.getChildren().add(0, particles);
+        particles.resize(1280, 720);
         particles.start();
-
-        // Ancho del canvas al de la ventana
-        particleCanvas.widthProperty().bind(rootPane.widthProperty());
-        particleCanvas.heightProperty().bind(rootPane.heightProperty());
     }
 
     @FXML
