@@ -1,4 +1,11 @@
 target/
-/.classpath
-/.project
-/.metadata
+*.class
+*.log
+*.zip
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store

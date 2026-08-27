@@ -6,6 +6,7 @@ import javafx.animation.Timeline;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
@@ -39,6 +40,16 @@ public class ParticleBackground extends Pane {
 
         timeline = new Timeline(new KeyFrame(Duration.millis(33), e -> animate()));
         timeline.setCycleCount(Animation.INDEFINITE);
+    }
+
+    public static ParticleBackground attachTo(StackPane parent) {
+        ParticleBackground particles = new ParticleBackground();
+        particles.setMouseTransparent(true);
+        particles.prefWidthProperty().bind(parent.widthProperty());
+        particles.prefHeightProperty().bind(parent.heightProperty());
+        parent.getChildren().add(0, particles);
+        particles.start();
+        return particles;
     }
 
     @Override

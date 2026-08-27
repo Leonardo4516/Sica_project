@@ -14,7 +14,8 @@ public class RolRepositoryJpaAdapter implements RolRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<RolEntity> query = em.createQuery(
-                    "SELECT r FROM RolEntity r ORDER BY r.nombre", RolEntity.class);
+                    "SELECT DISTINCT r FROM RolEntity r LEFT JOIN FETCH r.permisos ORDER BY r.nombre",
+                    RolEntity.class);
             return query.getResultList().stream().map(RolMapper::toDomain).toList();
         } finally {
             em.close();

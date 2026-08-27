@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/javafx/fxml/1"
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.sicaproject.sica.ui.controller.LoginController"
            fx:id="rootPane"
            stylesheets="@styles.css"
            prefWidth="1280" prefHeight="720">
-
-    <Canvas />
 
     <VBox alignment="CENTER" spacing="0" StackPane.alignment="CENTER">
         <StackPane styleClass="glass-panel" maxWidth="420" maxHeight="520">

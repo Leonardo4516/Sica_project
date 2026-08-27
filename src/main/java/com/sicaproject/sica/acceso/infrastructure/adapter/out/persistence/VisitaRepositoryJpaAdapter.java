@@ -14,6 +14,14 @@ import java.util.Optional;
 
 public class VisitaRepositoryJpaAdapter implements VisitaRepository {
 
+    private static final String FETCH_GRAPH =
+            "SELECT DISTINCT v FROM VisitaEntity v "
+                    + "LEFT JOIN FETCH v.persona p "
+                    + "LEFT JOIN FETCH p.empresa "
+                    + "LEFT JOIN FETCH v.empresaDestino "
+                    + "LEFT JOIN FETCH v.guarda "
+                    + "LEFT JOIN FETCH v.funcionarioAnfitrion ";
+
     @Override
     public Visita guardar(Visita visita) {
         EntityManager em = JpaConfig.newEntityManager();
@@ -50,8 +58,10 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
     public Optional<Visita> porId(long id) {
         EntityManager em = JpaConfig.newEntityManager();
         try {
-            VisitaEntity entity = em.find(VisitaEntity.class, id);
-            return Optional.ofNullable(VisitaMapper.toDomain(entity));
+            TypedQuery<VisitaEntity> query = em.createQuery(
+                    FETCH_GRAPH + "WHERE v.id = :id", VisitaEntity.class);
+            query.setParameter("id", id);
+            return query.getResultList().stream().findFirst().map(VisitaMapper::toDomain);
         } finally {
             em.close();
         }
@@ -62,7 +72,7 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<VisitaEntity> query = em.createQuery(
-                    "SELECT v FROM VisitaEntity v WHERE v.persona.id = :personaId AND v.estado = :estado",
+                    FETCH_GRAPH + "WHERE p.id = :personaId AND v.estado = :estado",
                     VisitaEntity.class);
             query.setParameter("personaId", personaId);
             query.setParameter("estado", estado.name());
@@ -77,8 +87,9 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<VisitaEntity> query = em.createQuery(
-                    "SELECT v FROM VisitaEntity v WHERE v.funcionarioAnfitrion.id = :funcionarioId " +
-                    "AND v.estado = 'PENDIENTE_APROBACION'", VisitaEntity.class);
+                    FETCH_GRAPH + "WHERE v.funcionarioAnfitrion.id = :funcionarioId "
+                            + "AND v.estado = 'PENDIENTE_APROBACION'",
+                    VisitaEntity.class);
             query.setParameter("funcionarioId", funcionarioId);
             return query.getResultList().stream().map(VisitaMapper::toDomain).toList();
         } finally {
@@ -91,7 +102,7 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<VisitaEntity> query = em.createQuery(
-                    "SELECT v FROM VisitaEntity v ORDER BY v.fechaHoraRegistro DESC", VisitaEntity.class);
+                    FETCH_GRAPH + "ORDER BY v.fechaHoraRegistro DESC", VisitaEntity.class);
             return query.getResultList().stream().map(VisitaMapper::toDomain).toList();
         } finally {
             em.close();

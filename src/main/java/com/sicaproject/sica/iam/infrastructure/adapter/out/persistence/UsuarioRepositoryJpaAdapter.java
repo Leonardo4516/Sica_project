@@ -14,9 +14,14 @@ public class UsuarioRepositoryJpaAdapter implements UsuarioRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<UsuarioEntity> query = em.createQuery(
-                    "SELECT u FROM UsuarioEntity u WHERE u.username = :username", UsuarioEntity.class);
+                    "SELECT DISTINCT u FROM UsuarioEntity u "
+                            + "JOIN FETCH u.rol r "
+                            + "LEFT JOIN FETCH r.permisos "
+                            + "LEFT JOIN FETCH u.persona "
+                            + "WHERE u.username = :username",
+                    UsuarioEntity.class);
             query.setParameter("username", username);
-            return query.getResultStream().findFirst().map(UsuarioMapper::toDomain);
+            return query.getResultList().stream().findFirst().map(UsuarioMapper::toDomain);
         } finally {
             em.close();
         }
