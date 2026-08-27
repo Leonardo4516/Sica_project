@@ -54,6 +54,7 @@ public class VisitaService {
 
         visita.cambiarEstado(EstadoVisita.DENTRO);
         visita.setFechaHoraEntrada(LocalDateTime.now());
+        visita.setGuarda(guarda);
         visitaRepository.guardar(visita);
 
         auditoriaService.registrar(guarda.getId(), "VISITA_CHECK_IN", "VISITA", visita.getId(),

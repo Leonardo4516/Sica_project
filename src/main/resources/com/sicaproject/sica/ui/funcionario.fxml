@@ -78,20 +78,24 @@
 
                 <StackPane styleClass="glass-panel" prefHeight="220">
                     <VBox styleClass="glass-panel-inner" spacing="14">
-                        <Text text="🆕 Registrar Nueva Visita" styleClass="title-md" />
-                        <HBox spacing="14">
+                        <Text text="🆕 Pre-registrar Visita Autorizada" styleClass="title-md" />
+                        <HBox spacing="14" alignment="BOTTOM_LEFT">
+                            <VBox spacing="6" prefWidth="180">
+                                <Label text="Documento" styleClass="label-text" />
+                                <TextField fx:id="txtDocumento" promptText="CC / Pasaporte" />
+                            </VBox>
                             <VBox spacing="6" HBox.hgrow="ALWAYS">
                                 <Label text="Nombre Persona" styleClass="label-text" />
                                 <TextField fx:id="txtNombre" promptText="Nombre completo" />
                             </VBox>
-                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                            <VBox spacing="6" prefWidth="220">
                                 <Label text="Empresa Destino" styleClass="label-text" />
                                 <ComboBox fx:id="cmbEmpresa" prefWidth="220" />
                             </VBox>
-                            <VBox spacing="6">
-                                <CheckBox fx:id="chkPaseTemporal" text="Pase temporal (carnet olvidado)" />
+                            <VBox spacing="6" alignment="CENTER_LEFT">
+                                <CheckBox fx:id="chkPaseTemporal" text="Pase temporal" />
                             </VBox>
-                            <Button text="Registrar" styleClass="btn, btn-primary" onAction="#handleRegistrar" />
+                            <Button text="Pre-registrar" styleClass="btn, btn-primary" onAction="#handleRegistrar" />
                         </HBox>
                         <Label fx:id="lblMsg" styleClass="label-text" />
                     </VBox>
