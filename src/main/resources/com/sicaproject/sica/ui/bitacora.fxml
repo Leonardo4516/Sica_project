@@ -49,13 +49,17 @@
                 <Separator opacity="0.2" />
 
                 <StackPane styleClass="glass-panel" prefHeight="80">
-                    <HBox styleClass="glass-panel-inner" alignment="CENTER_LEFT" spacing="14">
+                    <HBox styleClass="glass-panel-inner" alignment="CENTER_LEFT" spacing="12">
                         <Label text="Desde:" styleClass="label-text" />
-                        <DatePicker fx:id="dpDesde" />
+                        <DatePicker fx:id="dpDesde" prefWidth="130" />
                         <Label text="Hasta:" styleClass="label-text" />
-                        <DatePicker fx:id="dpHasta" />
+                        <DatePicker fx:id="dpHasta" prefWidth="130" />
+                        <TextField fx:id="txtFiltro" promptText="Buscar término..." prefWidth="200" />
                         <Button text="🔍 Filtrar" styleClass="btn, btn-primary" onAction="#handleFiltrar" />
                         <Button text="🔄 Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                        <Button text="📥 Exportar CSV" styleClass="btn, btn-secondary" onAction="#handleExportarCsv" />
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lblMsg" styleClass="label-text" />
                     </HBox>
                 </StackPane>
 

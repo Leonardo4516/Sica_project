@@ -85,18 +85,57 @@
                 </HBox>
 
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
-                    <VBox styleClass="glass-panel-inner" spacing="12">
+                    <VBox styleClass="glass-panel-inner" spacing="10">
                         <HBox alignment="CENTER_LEFT">
-                            <Text text="🔐 Roles y Permisos (RBAC)" styleClass="title-md" />
+                            <Text text="⚙️ Panel de Administración" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Button text="🔄 Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                            <Button text="🔄 Refrescar Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
-                        <TableView fx:id="tblRoles" VBox.vgrow="ALWAYS">
-                            <columns>
-                                <TableColumn fx:id="colRolNombre" text="Rol" prefWidth="150" />
-                                <TableColumn fx:id="colRolPermisos" text="Permisos asignados" prefWidth="500" />
-                            </columns>
-                        </TableView>
+                        <TabPane fx:id="tabPaneAdmin" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+                            <!-- Tab 1: Usuarios -->
+                            <Tab text="👥 Usuarios del Sistema">
+                                <VBox spacing="8">
+                                    <padding><Insets top="10" /></padding>
+                                    <TableView fx:id="tblUsuarios" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colUId" text="ID" prefWidth="50" />
+                                            <TableColumn fx:id="colUUsername" text="Usuario" prefWidth="150" />
+                                            <TableColumn fx:id="colURol" text="Rol" prefWidth="130" />
+                                            <TableColumn fx:id="colUPersona" text="Persona Asignada" prefWidth="220" />
+                                            <TableColumn fx:id="colUEstado" text="Estado" prefWidth="100" />
+                                            <TableColumn fx:id="colUAccion" text="Acción" prefWidth="150" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </Tab>
+
+                            <!-- Tab 2: Roles y Permisos -->
+                            <Tab text="🔐 Roles y Permisos (RBAC)">
+                                <VBox spacing="8">
+                                    <padding><Insets top="10" /></padding>
+                                    <TableView fx:id="tblRoles" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colRolNombre" text="Rol" prefWidth="150" />
+                                            <TableColumn fx:id="colRolPermisos" text="Permisos asignados" prefWidth="650" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </Tab>
+
+                            <!-- Tab 3: Empresas -->
+                            <Tab text="🏢 Empresas">
+                                <VBox spacing="8">
+                                    <padding><Insets top="10" /></padding>
+                                    <TableView fx:id="tblEmpresas" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colEId" text="ID" prefWidth="60" />
+                                            <TableColumn fx:id="colENombre" text="Razón Social" prefWidth="300" />
+                                            <TableColumn fx:id="colENit" text="NIT" prefWidth="200" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </Tab>
+                        </TabPane>
                     </VBox>
                 </StackPane>
             </VBox>
