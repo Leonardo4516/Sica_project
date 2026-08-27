@@ -39,19 +39,19 @@ WHERE r.nombre = 'ADMIN';
 
 -- ========== USUARIOS DE PRUEBA ==========
 -- Contraseña: "123456" (hasheada con BCrypt)
--- hash generado con BCrypt.gensalt(10): $2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iYqiS5FQ5e6ePPFR.bE6GhNBTu9u
+-- hash generado con BCrypt.gensalt(10): $2a$10$jfrWvSRFjdGMnDcGom6bl.jr6iFZ8Y1ItkxivH9hAVD.c284le3YC
 
 -- Usuario GUARDA
 INSERT INTO usuario (id, username, password_hash, activo, rol_id)
-VALUES (1, 'guarda1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iYqiS5FQ5e6ePPFR.bE6GhNBTu9u', TRUE, 1);
+VALUES (1, 'guarda1', '$2a$10$jfrWvSRFjdGMnDcGom6bl.jr6iFZ8Y1ItkxivH9hAVD.c284le3YC', TRUE, 1);
 
 -- Usuario FUNCIONARIO
 INSERT INTO usuario (id, username, password_hash, activo, rol_id)
-VALUES (2, 'funcionario1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iYqiS5FQ5e6ePPFR.bE6GhNBTu9u', TRUE, 2);
+VALUES (2, 'funcionario1', '$2a$10$jfrWvSRFjdGMnDcGom6bl.jr6iFZ8Y1ItkxivH9hAVD.c284le3YC', TRUE, 2);
 
 -- Usuario ADMIN
 INSERT INTO usuario (id, username, password_hash, activo, rol_id)
-VALUES (3, 'admin1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iYqiS5FQ5e6ePPFR.bE6GhNBTu9u', TRUE, 3);
+VALUES (3, 'admin1', '$2a$10$jfrWvSRFjdGMnDcGom6bl.jr6iFZ8Y1ItkxivH9hAVD.c284le3YC', TRUE, 3);
 
 -- ========== EMPRESAS DE PRUEBA ==========
 INSERT INTO empresa (id, nombre, nit) VALUES
