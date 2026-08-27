@@ -93,11 +93,11 @@
                         </HBox>
                         <TableView fx:id="tblActivas" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn text="ID" prefWidth="60" />
-                                <TableColumn text="Persona" prefWidth="220" />
-                                <TableColumn text="Empresa" prefWidth="200" />
-                                <TableColumn text="Hora Entrada" prefWidth="150" />
-                                <TableColumn text="Estado" prefWidth="120" />
+                                <TableColumn fx:id="colGId" text="ID" prefWidth="60" />
+                                <TableColumn fx:id="colGPersona" text="Persona" prefWidth="220" />
+                                <TableColumn fx:id="colGEmpresa" text="Empresa" prefWidth="200" />
+                                <TableColumn fx:id="colGHora" text="Hora Entrada" prefWidth="150" />
+                                <TableColumn fx:id="colGEstado" text="Estado" prefWidth="120" />
                             </columns>
                         </TableView>
                     </VBox>

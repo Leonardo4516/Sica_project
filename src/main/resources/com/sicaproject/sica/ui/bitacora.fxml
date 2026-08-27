@@ -60,12 +60,12 @@
                         <Text text="Eventos registrados" styleClass="title-md" />
                         <TableView fx:id="tblBitacora" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn text="Fecha/Hora" prefWidth="170" />
-                                <TableColumn text="Usuario ID" prefWidth="90" />
-                                <TableColumn text="Acción" prefWidth="180" />
-                                <TableColumn text="Recurso" prefWidth="110" />
-                                <TableColumn text="Detalle" prefWidth="380" />
-                                <TableColumn text="Resultado" prefWidth="120" />
+                                <TableColumn fx:id="colBFecha" text="Fecha/Hora" prefWidth="170" />
+                                <TableColumn fx:id="colBUsuario" text="Usuario ID" prefWidth="90" />
+                                <TableColumn fx:id="colBAccion" text="Acción" prefWidth="180" />
+                                <TableColumn fx:id="colBRecurso" text="Recurso" prefWidth="110" />
+                                <TableColumn fx:id="colBDetalle" text="Detalle" prefWidth="380" />
+                                <TableColumn fx:id="colBResultado" text="Resultado" prefWidth="120" />
                             </columns>
                         </TableView>
                     </VBox>

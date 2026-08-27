@@ -7,6 +7,7 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -28,7 +29,13 @@ public class BitacoraController implements Initializable {
     @FXML private Label lblHora;
     @FXML private DatePicker dpDesde;
     @FXML private DatePicker dpHasta;
-    @FXML private TableView<Object> tblBitacora;
+    @FXML private TableView<BitacoraAuditoria> tblBitacora;
+    @FXML private TableColumn<BitacoraAuditoria, String> colBFecha;
+    @FXML private TableColumn<BitacoraAuditoria, String> colBUsuario;
+    @FXML private TableColumn<BitacoraAuditoria, String> colBAccion;
+    @FXML private TableColumn<BitacoraAuditoria, String> colBRecurso;
+    @FXML private TableColumn<BitacoraAuditoria, String> colBDetalle;
+    @FXML private TableColumn<BitacoraAuditoria, String> colBResultado;
 
     private final AuditoriaService auditoriaService =
         CompositionRoot.getInstance().auditoriaService();
@@ -52,6 +59,18 @@ public class BitacoraController implements Initializable {
 
         dpHasta.setValue(LocalDate.now());
         dpDesde.setValue(LocalDate.now().minusDays(7));
+
+        colBFecha.setCellValueFactory(data -> {
+            LocalDateTime f = data.getValue().getFechaHora();
+            return new SimpleStringProperty(f != null ? f.format(dtFmt) : "—");
+        });
+        colBUsuario.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().getUsuarioId() != null
+                ? String.valueOf(data.getValue().getUsuarioId()) : "—"));
+        colBAccion.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAccion()));
+        colBRecurso.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getRecurso()));
+        colBDetalle.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDetalle()));
+        colBResultado.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getResultado()));
 
         refreshTabla();
     }
@@ -77,17 +96,17 @@ public class BitacoraController implements Initializable {
     }
 
     private void refreshTabla() {
-        var rows = FXCollections.<Object>observableArrayList();
-        for (BitacoraAuditoria b : auditoriaService.listarTodas()) {
-            rows.add(new Object[]{
-                b.getFechaHora() != null ? b.getFechaHora().format(dtFmt) : "—",
-                b.getUsuarioId(),
-                b.getAccion(),
-                b.getRecurso(),
-                b.getDetalle(),
-                b.getResultado()
-            });
-        }
-        tblBitacora.setItems(rows);
+        LocalDate desde = dpDesde.getValue();
+        LocalDate hasta = dpHasta.getValue();
+        var filtradas = auditoriaService.listarTodas().stream()
+            .filter(b -> {
+                if (b.getFechaHora() == null) return true;
+                LocalDate fecha = b.getFechaHora().toLocalDate();
+                boolean despuesDeDesde = desde == null || !fecha.isBefore(desde);
+                boolean antesDeHasta = hasta == null || !fecha.isAfter(hasta);
+                return despuesDeDesde && antesDeHasta;
+            })
+            .toList();
+        tblBitacora.setItems(FXCollections.observableArrayList(filtradas));
     }
 }
