@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  sica-db:
+    image: postgres:18-alpine
+    container_name: sica-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: sica_db
+      POSTGRES_USER: sica_user
+      POSTGRES_PASSWORD: sica_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - sica_pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./data.sql:/docker-entrypoint-initdb.d/02-data.sql
+
+volumes:
+  sica_pgdata:
