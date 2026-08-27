@@ -24,6 +24,14 @@ public class PersonaService {
         return personaRepository.buscarPorDocumento(documento);
     }
 
+    public Optional<Persona> porId(Long id) {
+        return personaRepository.porId(id);
+    }
+
+    public java.util.List<Persona> listarTodas() {
+        return personaRepository.listarTodas();
+    }
+
     public void bloquearPersona(Persona persona, String motivo) {
         persona.setBloqueado(true);
         persona.setMotivoBloqueo(motivo);

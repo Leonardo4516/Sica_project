@@ -28,6 +28,60 @@ public class UsuarioRepositoryJpaAdapter implements UsuarioRepository {
     }
 
     @Override
+    public Optional<Usuario> findById(Long id) {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            TypedQuery<UsuarioEntity> query = em.createQuery(
+                    "SELECT DISTINCT u FROM UsuarioEntity u "
+                            + "JOIN FETCH u.rol r "
+                            + "LEFT JOIN FETCH r.permisos "
+                            + "LEFT JOIN FETCH u.persona "
+                            + "WHERE u.id = :id",
+                    UsuarioEntity.class);
+            query.setParameter("id", id);
+            return query.getResultList().stream().findFirst().map(UsuarioMapper::toDomain);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public java.util.List<Usuario> findAll() {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            TypedQuery<UsuarioEntity> query = em.createQuery(
+                    "SELECT DISTINCT u FROM UsuarioEntity u "
+                            + "JOIN FETCH u.rol r "
+                            + "LEFT JOIN FETCH r.permisos "
+                            + "LEFT JOIN FETCH u.persona "
+                            + "ORDER BY u.id",
+                    UsuarioEntity.class);
+            return query.getResultList().stream().map(UsuarioMapper::toDomain).toList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public java.util.List<Usuario> findByRol(String rolNombre) {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            TypedQuery<UsuarioEntity> query = em.createQuery(
+                    "SELECT DISTINCT u FROM UsuarioEntity u "
+                            + "JOIN FETCH u.rol r "
+                            + "LEFT JOIN FETCH r.permisos "
+                            + "LEFT JOIN FETCH u.persona "
+                            + "WHERE UPPER(r.nombre) = UPPER(:rolNombre) "
+                            + "ORDER BY u.username",
+                    UsuarioEntity.class);
+            query.setParameter("rolNombre", rolNombre);
+            return query.getResultList().stream().map(UsuarioMapper::toDomain).toList();
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public Usuario save(Usuario usuario) {
         EntityManager em = JpaConfig.newEntityManager();
         try {
