@@ -4,8 +4,6 @@ import com.sicaproject.sica.auditoria.application.AuditoriaService;
 import com.sicaproject.sica.auditoria.domain.BitacoraAuditoria;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -14,7 +12,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
-import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -25,7 +22,6 @@ import java.util.ResourceBundle;
 public class BitacoraController implements Initializable {
 
     @FXML private StackPane rootPane;
-    @FXML private Label lblHora;
     @FXML private DatePicker dpDesde;
     @FXML private DatePicker dpHasta;
     @FXML private TableView<BitacoraAuditoria> tblBitacora;
@@ -39,17 +35,10 @@ public class BitacoraController implements Initializable {
     private final AuditoriaService auditoriaService =
         CompositionRoot.getInstance().auditoriaService();
 
-    private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final DateTimeFormatter dtFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
-        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
-            e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
-        clock.setCycleCount(Timeline.INDEFINITE);
-        clock.play();
-
         dpHasta.setValue(LocalDate.now());
         dpDesde.setValue(LocalDate.now().minusDays(7));
 

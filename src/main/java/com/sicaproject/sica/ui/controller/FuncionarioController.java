@@ -9,8 +9,6 @@ import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -22,7 +20,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -33,7 +30,6 @@ public class FuncionarioController implements Initializable {
 
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
-    @FXML private Label lblHora;
     @FXML private TableView<Visita> tblPendientes;
     @FXML private TableColumn<Visita, String> colId;
     @FXML private TableColumn<Visita, String> colPersona;
@@ -53,20 +49,13 @@ public class FuncionarioController implements Initializable {
     private final EmpresaService empresaService =
         CompositionRoot.getInstance().empresaService();
 
-    private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final DateTimeFormatter dateTimeFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (SceneManager.getCurrentUser() != null) {
-            txtUsuario.setText("Funcionario: " + SceneManager.getCurrentUser().getUsername());
+            txtUsuario.setText("Bienvenido, " + SceneManager.getCurrentUser().getUsername());
         }
-
-
-        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
-            e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
-        clock.setCycleCount(Timeline.INDEFINITE);
-        clock.play();
 
         cmbEmpresa.setItems(FXCollections.observableArrayList(empresaService.listar()));
         cmbEmpresa.setCellFactory(cb -> new ListCell<>() {

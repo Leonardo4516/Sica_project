@@ -11,8 +11,6 @@ import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -22,7 +20,6 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
-import javafx.util.Duration;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -35,7 +32,6 @@ public class GuardaController implements Initializable {
 
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
-    @FXML private Label lblHora;
     @FXML private TextField txtVisitaIdIn;
     @FXML private TextField txtVisitaIdOut;
     @FXML private Button btnCheckIn;
@@ -63,19 +59,13 @@ public class GuardaController implements Initializable {
     private final PersonaService personaService = CompositionRoot.getInstance().personaService();
     private final UsuarioRepository usuarioRepository = CompositionRoot.getInstance().usuarioRepository();
 
-    private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final DateTimeFormatter dateTimeFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (SceneManager.getCurrentUser() != null) {
-            txtUsuario.setText("Guarda: " + SceneManager.getCurrentUser().getUsername());
+            txtUsuario.setText("Bienvenido, " + SceneManager.getCurrentUser().getUsername());
         }
-
-        Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
-            e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
-        clock.setCycleCount(Timeline.INDEFINITE);
-        clock.play();
 
         cmbEmpresaSolicitud.setItems(FXCollections.observableArrayList(empresaService.listar()));
         cmbEmpresaSolicitud.setCellFactory(cb -> new ListCell<>() {
