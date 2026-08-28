@@ -11,7 +11,6 @@ import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
@@ -19,10 +18,8 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -39,14 +36,12 @@ public class GuardaController implements Initializable {
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
     @FXML private Label lblHora;
-
-    // Sección Acción Rápida
-    @FXML private TextField txtVisitaId;
+    @FXML private TextField txtVisitaIdIn;
+    @FXML private TextField txtVisitaIdOut;
     @FXML private Button btnCheckIn;
     @FXML private Button btnCheckOut;
-    @FXML private Label lblAccionMsg;
-
-    // Sección Solicitud
+    @FXML private Label lblInMsg;
+    @FXML private Label lblOutMsg;
     @FXML private TextField txtDocSolicitud;
     @FXML private TextField txtNombreSolicitud;
     @FXML private ComboBox<Empresa> cmbEmpresaSolicitud;
@@ -54,45 +49,18 @@ public class GuardaController implements Initializable {
     @FXML private CheckBox chkPaseTemporalSolicitud;
     @FXML private Button btnSolicitar;
     @FXML private Label lblSolicitudMsg;
-
-    // TabPane y Tablas
-    @FXML private TabPane tabPaneVisitas;
-
-    // Tabla Activas (DENTRO)
     @FXML private TableView<Visita> tblActivas;
     @FXML private TableColumn<Visita, String> colGId;
     @FXML private TableColumn<Visita, String> colGPersona;
-    @FXML private TableColumn<Visita, String> colGDocumento;
     @FXML private TableColumn<Visita, String> colGEmpresa;
     @FXML private TableColumn<Visita, String> colGHora;
-    @FXML private TableColumn<Visita, String> colGTipo;
-    @FXML private TableColumn<Visita, Void> colGAccionOut;
-
-    // Tabla Aprobadas
+    @FXML private TableColumn<Visita, String> colGEstado;
     @FXML private TableView<Visita> tblAprobadas;
-    @FXML private TableColumn<Visita, String> colAId;
-    @FXML private TableColumn<Visita, String> colAPersona;
-    @FXML private TableColumn<Visita, String> colADocumento;
-    @FXML private TableColumn<Visita, String> colAEmpresa;
-    @FXML private TableColumn<Visita, String> colAAnfitrion;
-    @FXML private TableColumn<Visita, String> colAFecha;
-    @FXML private TableColumn<Visita, String> colATipo;
-    @FXML private TableColumn<Visita, Void> colAAccionIn;
-
-    // Tabla Pendientes
     @FXML private TableView<Visita> tblPendientes;
-    @FXML private TableColumn<Visita, String> colPId;
-    @FXML private TableColumn<Visita, String> colPPersona;
-    @FXML private TableColumn<Visita, String> colPDocumento;
-    @FXML private TableColumn<Visita, String> colPEmpresa;
-    @FXML private TableColumn<Visita, String> colPAnfitrion;
-    @FXML private TableColumn<Visita, String> colPFecha;
-    @FXML private TableColumn<Visita, String> colPTipo;
-    @FXML private TableColumn<Visita, String> colPEstado;
 
     private final VisitaService visitaService = CompositionRoot.getInstance().visitaService();
-    private final PersonaService personaService = CompositionRoot.getInstance().personaService();
     private final EmpresaService empresaService = CompositionRoot.getInstance().empresaService();
+    private final PersonaService personaService = CompositionRoot.getInstance().personaService();
     private final UsuarioRepository usuarioRepository = CompositionRoot.getInstance().usuarioRepository();
 
     private final DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -104,19 +72,16 @@ public class GuardaController implements Initializable {
             txtUsuario.setText("Guarda: " + SceneManager.getCurrentUser().getUsername());
         }
 
-        ParticleBackground.attachTo(rootPane);
-
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
             e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
         clock.setCycleCount(Timeline.INDEFINITE);
         clock.play();
 
-        // Inicializar combos
         cmbEmpresaSolicitud.setItems(FXCollections.observableArrayList(empresaService.listar()));
         cmbEmpresaSolicitud.setCellFactory(cb -> new ListCell<>() {
             @Override protected void updateItem(Empresa e, boolean empty) {
                 super.updateItem(e, empty);
-                setText(empty || e == null ? null : e.getNombre() + " (" + e.getNit() + ")");
+                setText(empty || e == null ? null : e.getNombre());
             }
         });
         cmbEmpresaSolicitud.setButtonCell(new ListCell<>() {
@@ -126,11 +91,12 @@ public class GuardaController implements Initializable {
             }
         });
 
-        cmbFuncionarioSolicitud.setItems(FXCollections.observableArrayList(usuarioRepository.findByRol("FUNCIONARIO")));
+        List<Usuario> funcionarios = usuarioRepository.findByRol("FUNCIONARIO");
+        cmbFuncionarioSolicitud.setItems(FXCollections.observableArrayList(funcionarios));
         cmbFuncionarioSolicitud.setCellFactory(cb -> new ListCell<>() {
             @Override protected void updateItem(Usuario u, boolean empty) {
                 super.updateItem(u, empty);
-                setText(empty || u == null ? null : u.getUsername() + (u.getPersona() != null ? " (" + u.getPersona().getNombre() + ")" : ""));
+                setText(empty || u == null ? null : u.getUsername());
             }
         });
         cmbFuncionarioSolicitud.setButtonCell(new ListCell<>() {
@@ -140,199 +106,115 @@ public class GuardaController implements Initializable {
             }
         });
 
-        configurarTablas();
+        configurarColumnas(tblActivas, colGId, colGPersona, colGEmpresa, colGHora, colGEstado);
+        configurarColumnasAprobadas();
+        configurarColumnasPendientes();
+
         refreshTablas();
     }
 
-    private void configurarTablas() {
-        // 1. Tabla Activas (DENTRO)
-        colGId.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getId())));
-        colGPersona.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPersona() != null ? d.getValue().getPersona().getNombre() : "—"));
-        colGDocumento.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPersona() != null ? d.getValue().getPersona().getDocumento() : "—"));
-        colGEmpresa.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEmpresaDestino() != null ? d.getValue().getEmpresaDestino().getNombre() : "—"));
-        colGHora.setCellValueFactory(d -> {
-            LocalDateTime f = d.getValue().getFechaHoraEntrada();
+    private void configurarColumnas(TableView<Visita> tabla, TableColumn<Visita, String> colId,
+            TableColumn<Visita, String> colPersona, TableColumn<Visita, String> colEmpresa,
+            TableColumn<Visita, String> colHora, TableColumn<Visita, String> colEstado) {
+        colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        colPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        colEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        colHora.setCellValueFactory(data -> {
+            LocalDateTime f = data.getValue().getFechaHoraEntrada();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
-        colGTipo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().isPaseTemporal() ? "Pase Temporal" : "Normal"));
-        colGAccionOut.setCellFactory(col -> new TableCell<>() {
-            private final Button btn = new Button("🚪 Check-out");
-            private final HBox box = new HBox(btn);
-            {
-                box.setAlignment(Pos.CENTER);
-                btn.getStyleClass().add("btn-rechazar");
-                btn.setOnAction(e -> {
-                    Visita v = getTableView().getItems().get(getIndex());
-                    ejecutarCheckOut(v.getId());
-                });
-            }
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : box);
-            }
-        });
-
-        // 2. Tabla Aprobadas (Listas para check-in)
-        colAId.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getId())));
-        colAPersona.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPersona() != null ? d.getValue().getPersona().getNombre() : "—"));
-        colADocumento.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPersona() != null ? d.getValue().getPersona().getDocumento() : "—"));
-        colAEmpresa.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEmpresaDestino() != null ? d.getValue().getEmpresaDestino().getNombre() : "—"));
-        colAAnfitrion.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFuncionarioAnfitrion() != null ? d.getValue().getFuncionarioAnfitrion().getUsername() : "—"));
-        colAFecha.setCellValueFactory(d -> {
-            LocalDateTime f = d.getValue().getFechaHoraRegistro();
-            return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
-        });
-        colATipo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().isPaseTemporal() ? "Pase Temporal" : "Normal"));
-        colAAccionIn.setCellFactory(col -> new TableCell<>() {
-            private final Button btn = new Button("✅ Check-in");
-            private final HBox box = new HBox(btn);
-            {
-                box.setAlignment(Pos.CENTER);
-                btn.getStyleClass().add("btn-aprobar");
-                btn.setOnAction(e -> {
-                    Visita v = getTableView().getItems().get(getIndex());
-                    ejecutarCheckIn(v.getId());
-                });
-            }
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : box);
-            }
-        });
-
-        // 3. Tabla Pendientes
-        colPId.setCellValueFactory(d -> new SimpleStringProperty(String.valueOf(d.getValue().getId())));
-        colPPersona.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPersona() != null ? d.getValue().getPersona().getNombre() : "—"));
-        colPDocumento.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getPersona() != null ? d.getValue().getPersona().getDocumento() : "—"));
-        colPEmpresa.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEmpresaDestino() != null ? d.getValue().getEmpresaDestino().getNombre() : "—"));
-        colPAnfitrion.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getFuncionarioAnfitrion() != null ? d.getValue().getFuncionarioAnfitrion().getUsername() : "—"));
-        colPFecha.setCellValueFactory(d -> {
-            LocalDateTime f = d.getValue().getFechaHoraRegistro();
-            return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
-        });
-        colPTipo.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().isPaseTemporal() ? "Pase Temporal" : "Normal"));
-        colPEstado.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().getEstado().name()));
+        colEstado.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEstado().name()));
     }
 
-    private void ejecutarCheckIn(long visitaId) {
-        try {
-            Visita v = visitaService.checkIn(visitaId, SceneManager.getCurrentUser());
-            lblAccionMsg.setText("✓ Check-in exitoso para visita #" + v.getId() + " (" + v.getPersona().getNombre() + ")");
-            refreshTablas();
-        } catch (Exception e) {
-            lblAccionMsg.setText("✗ Error en Check-in: " + e.getMessage());
-        }
+    private void configurarColumnasAprobadas() {
+        TableColumn<Visita, String> colAId = new TableColumn<>("ID");
+        colAId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        TableColumn<Visita, String> colAPersona = new TableColumn<>("Persona");
+        colAPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        TableColumn<Visita, String> colAEmpresa = new TableColumn<>("Empresa");
+        colAEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        tblAprobadas.getColumns().addAll(colAId, colAPersona, colAEmpresa);
     }
 
-    private void ejecutarCheckOut(long visitaId) {
-        try {
-            Visita v = visitaService.checkOut(visitaId, SceneManager.getCurrentUser());
-            lblAccionMsg.setText("✓ Check-out exitoso para visita #" + v.getId() + " (" + v.getPersona().getNombre() + ")");
-            refreshTablas();
-        } catch (Exception e) {
-            lblAccionMsg.setText("✗ Error en Check-out: " + e.getMessage());
-        }
+    private void configurarColumnasPendientes() {
+        TableColumn<Visita, String> colPId = new TableColumn<>("ID");
+        colPId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        TableColumn<Visita, String> colPPersona = new TableColumn<>("Persona");
+        colPPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        TableColumn<Visita, String> colPEmpresa = new TableColumn<>("Empresa");
+        colPEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        tblPendientes.getColumns().addAll(colPId, colPPersona, colPEmpresa);
     }
 
     @FXML
     private void handleCheckIn(ActionEvent event) {
-        String input = txtVisitaId.getText().trim();
-        if (input.isEmpty()) {
-            lblAccionMsg.setText("Ingrese un ID o documento");
-            return;
-        }
-
         try {
-            long id = Long.parseLong(input);
-            ejecutarCheckIn(id);
-            txtVisitaId.clear();
+            String txt = txtVisitaIdIn.getText().trim();
+            if (txt.isEmpty()) { lblInMsg.setText("Ingrese un ID"); return; }
+            long id = Long.parseLong(txt);
+            Visita v = visitaService.checkIn(id, SceneManager.getCurrentUser());
+            lblInMsg.setText("Check-in OK. Estado: " + v.getEstado());
+            txtVisitaIdIn.clear();
+            refreshTablas();
         } catch (NumberFormatException e) {
-            // Intentar buscar por documento en visitas aprobadas
-            List<Visita> todas = visitaService.listarTodas();
-            Optional<Visita> encontrada = todas.stream()
-                .filter(v -> v.getEstado() == EstadoVisita.APROBADA && v.getPersona() != null
-                        && input.equalsIgnoreCase(v.getPersona().getDocumento()))
-                .findFirst();
-            if (encontrada.isPresent()) {
-                ejecutarCheckIn(encontrada.get().getId());
-                txtVisitaId.clear();
-            } else {
-                lblAccionMsg.setText("No hay visita APROBADA con documento: " + input);
-            }
+            lblInMsg.setText("ID inválido");
+        } catch (Exception e) {
+            lblInMsg.setText("Error: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleCheckOut(ActionEvent event) {
-        String input = txtVisitaId.getText().trim();
-        if (input.isEmpty()) {
-            lblAccionMsg.setText("Ingrese un ID o documento");
-            return;
-        }
-
         try {
-            long id = Long.parseLong(input);
-            ejecutarCheckOut(id);
-            txtVisitaId.clear();
+            String txt = txtVisitaIdOut.getText().trim();
+            if (txt.isEmpty()) { lblOutMsg.setText("Ingrese un ID"); return; }
+            long id = Long.parseLong(txt);
+            Visita v = visitaService.checkOut(id, SceneManager.getCurrentUser());
+            lblOutMsg.setText("Check-out OK. Estado: " + v.getEstado());
+            txtVisitaIdOut.clear();
+            refreshTablas();
         } catch (NumberFormatException e) {
-            // Intentar buscar por documento en visitas activas (DENTRO)
-            List<Visita> todas = visitaService.listarTodas();
-            Optional<Visita> encontrada = todas.stream()
-                .filter(v -> v.getEstado() == EstadoVisita.DENTRO && v.getPersona() != null
-                        && input.equalsIgnoreCase(v.getPersona().getDocumento()))
-                .findFirst();
-            if (encontrada.isPresent()) {
-                ejecutarCheckOut(encontrada.get().getId());
-                txtVisitaId.clear();
-            } else {
-                lblAccionMsg.setText("No hay visita DENTRO con documento: " + input);
-            }
+            lblOutMsg.setText("ID inválido");
+        } catch (Exception e) {
+            lblOutMsg.setText("Error: " + e.getMessage());
         }
     }
 
     @FXML
     private void handleSolicitarAcceso(ActionEvent event) {
         try {
-            String doc = txtDocSolicitud.getText().trim();
+            String documento = txtDocSolicitud.getText().trim();
             String nombre = txtNombreSolicitud.getText().trim();
             Empresa empresa = cmbEmpresaSolicitud.getValue();
-            Usuario funcionario = cmbFuncionarioSolicitud.getValue();
-            boolean paseTemporal = chkPaseTemporalSolicitud.isSelected();
+            Usuario anfitrion = cmbFuncionarioSolicitud.getValue();
 
-            if (doc.isEmpty() || nombre.isEmpty() || empresa == null || funcionario == null) {
-                lblSolicitudMsg.setText("Complete todos los campos de la solicitud.");
-                return;
+            if (nombre.isEmpty()) { lblSolicitudMsg.setText("Ingrese nombre del visitante"); return; }
+            if (empresa == null) { lblSolicitudMsg.setText("Seleccione empresa destino"); return; }
+
+            Optional<Persona> personaOpt = personaService.porDocumento(documento);
+            Persona persona;
+            if (personaOpt.isPresent()) {
+                persona = personaOpt.get();
+            } else {
+                persona = new Persona();
+                persona.setNombre(nombre);
+                persona.setDocumento(documento.isEmpty() ? "PEND-" + System.currentTimeMillis() : documento);
+                persona = personaService.guardar(persona);
             }
 
-            Persona persona = personaService.porDocumento(doc).orElseGet(() -> {
-                Persona p = new Persona();
-                p.setDocumento(doc);
-                p.setNombre(nombre);
-                p.setTipo(paseTemporal ? "TRABAJADOR" : "INVITADO");
-                p.setEmpresaId(empresa.getId());
-                return personaService.guardar(p);
-            });
-
-            Visita visita = visitaService.solicitarAcceso(
-                persona, empresa, funcionario,
-                SceneManager.getCurrentUser(), paseTemporal
+            boolean esTemporal = chkPaseTemporalSolicitud.isSelected();
+            Visita v = visitaService.solicitarAcceso(
+                persona, empresa, anfitrion, SceneManager.getCurrentUser(), esTemporal
             );
 
-            lblSolicitudMsg.setText("✓ Solicitud #" + visita.getId() + " enviada al funcionario " + funcionario.getUsername());
+            lblSolicitudMsg.setText("Solicitud creada #" + v.getId() + " (" + v.getEstado() + ")");
             txtDocSolicitud.clear();
             txtNombreSolicitud.clear();
             chkPaseTemporalSolicitud.setSelected(false);
             refreshTablas();
         } catch (Exception e) {
-            lblSolicitudMsg.setText("✗ " + e.getMessage());
+            lblSolicitudMsg.setText("Error: " + e.getMessage());
         }
-    }
-
-    @FXML
-    private void handleRefresh(ActionEvent event) {
-        refreshTablas();
     }
 
     @FXML
@@ -346,16 +228,21 @@ public class GuardaController implements Initializable {
     }
 
     private void refreshTablas() {
-        List<Visita> todas = visitaService.listarTodas();
+        var todas = visitaService.listarTodas();
 
-        var activas = todas.stream().filter(v -> v.getEstado() == EstadoVisita.DENTRO).toList();
+        var activas = todas.stream()
+            .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
+            .toList();
         tblActivas.setItems(FXCollections.observableArrayList(activas));
 
-        var aprobadas = todas.stream().filter(v -> v.getEstado() == EstadoVisita.APROBADA).toList();
+        var aprobadas = todas.stream()
+            .filter(v -> v.getEstado() == EstadoVisita.APROBADA)
+            .toList();
         tblAprobadas.setItems(FXCollections.observableArrayList(aprobadas));
 
-        var pendientes = todas.stream().filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION).toList();
+        var pendientes = todas.stream()
+            .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
+            .toList();
         tblPendientes.setItems(FXCollections.observableArrayList(pendientes));
     }
 }
-

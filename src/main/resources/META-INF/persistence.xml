@@ -22,9 +22,11 @@
             <!-- IMPORTANTE: "validate", NO "update" ni "create".
                  El esquema real vive en schema.sql. Hibernate solo verifica
                  que las entidades coincidan con las tablas ya creadas. -->
-            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.hbm2ddl.auto" value="none"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.jdbc.batch_size" value="20"/>
+            <property name="hibernate.generate_statistics" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>

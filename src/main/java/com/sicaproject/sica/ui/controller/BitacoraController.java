@@ -4,7 +4,6 @@ import com.sicaproject.sica.auditoria.application.AuditoriaService;
 import com.sicaproject.sica.auditoria.domain.BitacoraAuditoria;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,14 +16,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.ResourceBundle;
 
 public class BitacoraController implements Initializable {
@@ -33,8 +28,6 @@ public class BitacoraController implements Initializable {
     @FXML private Label lblHora;
     @FXML private DatePicker dpDesde;
     @FXML private DatePicker dpHasta;
-    @FXML private TextField txtFiltro;
-    @FXML private Label lblMsg;
     @FXML private TableView<BitacoraAuditoria> tblBitacora;
     @FXML private TableColumn<BitacoraAuditoria, String> colBFecha;
     @FXML private TableColumn<BitacoraAuditoria, String> colBUsuario;
@@ -51,7 +44,6 @@ public class BitacoraController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ParticleBackground.attachTo(rootPane);
 
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
             e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
@@ -59,7 +51,7 @@ public class BitacoraController implements Initializable {
         clock.play();
 
         dpHasta.setValue(LocalDate.now());
-        dpDesde.setValue(LocalDate.now().minusDays(30));
+        dpDesde.setValue(LocalDate.now().minusDays(7));
 
         colBFecha.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHora();
@@ -83,34 +75,7 @@ public class BitacoraController implements Initializable {
 
     @FXML
     private void handleRefresh(ActionEvent event) {
-        dpHasta.setValue(LocalDate.now());
-        dpDesde.setValue(LocalDate.now().minusDays(30));
-        if (txtFiltro != null) txtFiltro.clear();
         refreshTabla();
-    }
-
-    @FXML
-    private void handleExportarCsv(ActionEvent event) {
-        try {
-            List<BitacoraAuditoria> items = tblBitacora.getItems();
-            File csvFile = new File("bitacora_export.csv");
-            try (PrintWriter writer = new PrintWriter(new FileWriter(csvFile))) {
-                writer.println("Fecha,UsuarioID,Accion,Recurso,Detalle,Resultado");
-                for (BitacoraAuditoria b : items) {
-                    writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
-                        b.getFechaHora() != null ? b.getFechaHora().format(dtFmt) : "",
-                        b.getUsuarioId() != null ? b.getUsuarioId() : "",
-                        b.getAccion() != null ? b.getAccion() : "",
-                        b.getRecurso() != null ? b.getRecurso() : "",
-                        b.getDetalle() != null ? b.getDetalle().replace("\"", "\"\"") : "",
-                        b.getResultado() != null ? b.getResultado() : ""
-                    );
-                }
-            }
-            if (lblMsg != null) lblMsg.setText("✓ " + items.size() + " registros exportados a bitacora_export.csv");
-        } catch (Exception e) {
-            if (lblMsg != null) lblMsg.setText("✗ Error al exportar: " + e.getMessage());
-        }
     }
 
     @FXML
@@ -123,30 +88,50 @@ public class BitacoraController implements Initializable {
         SceneManager.logout();
     }
 
+    @FXML
+    private void handleExportarCsv(ActionEvent event) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Fecha,Usuario,Accion,Recurso,Detalle,Resultado\n");
+            DateTimeFormatter csvFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            for (var b : tblBitacora.getItems()) {
+                String fecha = b.getFechaHora() != null ? b.getFechaHora().format(csvFmt) : "";
+                String usuario = b.getUsuarioId() != null ? String.valueOf(b.getUsuarioId()) : "";
+                sb.append(fecha).append(",")
+                  .append(usuario).append(",")
+                  .append(csvEscape(b.getAccion())).append(",")
+                  .append(csvEscape(b.getRecurso())).append(",")
+                  .append(csvEscape(b.getDetalle())).append(",")
+                  .append(csvEscape(b.getResultado())).append("\n");
+            }
+            java.nio.file.Path out = java.nio.file.Paths.get(System.getProperty("user.home"), "sica_bitacora.csv");
+            java.nio.file.Files.writeString(out, sb.toString());
+            new Alert(Alert.AlertType.INFORMATION, "Exportado a " + out).show();
+        } catch (Exception e) {
+            new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage()).show();
+        }
+    }
+
+    private String csvEscape(String s) {
+        if (s == null) return "";
+        if (s.contains(",") || s.contains("\"") || s.contains("\n")) {
+            return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
+        return s;
+    }
+
     private void refreshTabla() {
         LocalDate desde = dpDesde.getValue();
         LocalDate hasta = dpHasta.getValue();
-        String filtro = txtFiltro != null ? txtFiltro.getText().trim().toLowerCase() : "";
-
         var filtradas = auditoriaService.listarTodas().stream()
             .filter(b -> {
-                if (b.getFechaHora() != null) {
-                    LocalDate fecha = b.getFechaHora().toLocalDate();
-                    if (desde != null && fecha.isBefore(desde)) return false;
-                    if (hasta != null && fecha.isAfter(hasta)) return false;
-                }
-                if (!filtro.isEmpty()) {
-                    String texto = (b.getAccion() + " " + b.getRecurso() + " " + b.getDetalle() + " " + b.getUsuarioId()).toLowerCase();
-                    if (!texto.contains(filtro)) return false;
-                }
-                return true;
+                if (b.getFechaHora() == null) return true;
+                LocalDate fecha = b.getFechaHora().toLocalDate();
+                boolean despuesDeDesde = desde == null || !fecha.isBefore(desde);
+                boolean antesDeHasta = hasta == null || !fecha.isAfter(hasta);
+                return despuesDeDesde && antesDeHasta;
             })
             .toList();
-
         tblBitacora.setItems(FXCollections.observableArrayList(filtradas));
-        if (lblMsg != null) {
-            lblMsg.setText(filtradas.size() + " eventos encontrados");
-        }
     }
 }
-

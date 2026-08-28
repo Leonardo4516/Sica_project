@@ -9,7 +9,6 @@ import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
@@ -42,7 +41,6 @@ public class FuncionarioController implements Initializable {
     @FXML private TableColumn<Visita, String> colFecha;
     @FXML private TableColumn<Visita, String> colTipo;
     @FXML private TableColumn<Visita, Void> colAcciones;
-    @FXML private TextField txtDocumento;
     @FXML private TextField txtNombre;
     @FXML private ComboBox<Empresa> cmbEmpresa;
     @FXML private CheckBox chkPaseTemporal;
@@ -64,7 +62,6 @@ public class FuncionarioController implements Initializable {
             txtUsuario.setText("Funcionario: " + SceneManager.getCurrentUser().getUsername());
         }
 
-        ParticleBackground.attachTo(rootPane);
 
         Timeline clock = new Timeline(new KeyFrame(Duration.seconds(1),
             e -> lblHora.setText(LocalDateTime.now().format(timeFmt))));
@@ -153,7 +150,6 @@ public class FuncionarioController implements Initializable {
     @FXML
     private void handleRegistrar(ActionEvent event) {
         try {
-            String documento = txtDocumento != null ? txtDocumento.getText().trim() : "";
             String nombre = txtNombre.getText().trim();
             Empresa empresa = cmbEmpresa.getValue();
             if (nombre.isEmpty() || empresa == null) {
@@ -161,32 +157,19 @@ public class FuncionarioController implements Initializable {
                 return;
             }
 
-            if (documento.isEmpty()) {
-                documento = "DOC-" + System.currentTimeMillis();
-            }
+            Persona persona = new Persona();
+            persona.setNombre(nombre);
+            persona.setDocumento("PENDIENTE-" + System.currentTimeMillis());
+            personaService.guardar(persona);
 
-            final String docFinal = documento;
-            Persona persona = personaService.porDocumento(docFinal).orElseGet(() -> {
-                Persona p = new Persona();
-                p.setDocumento(docFinal);
-                p.setNombre(nombre);
-                p.setTipo(chkPaseTemporal.isSelected() ? "TRABAJADOR" : "INVITADO");
-                p.setEmpresaId(empresa.getId());
-                return personaService.guardar(p);
-            });
-
-            Visita v = visitaService.registrarVisitaPreaprobada(
+            Visita v = visitaService.solicitarAcceso(
                 persona, empresa,
                 SceneManager.getCurrentUser(),
-                null
+                SceneManager.getCurrentUser(),
+                chkPaseTemporal.isSelected()
             );
-            if (chkPaseTemporal.isSelected()) {
-                v.setPaseTemporal(true);
-            }
-            lblMsg.setText("✓ Visita #" + v.getId() + " pre-registrada con éxito (Estado: APROBADA).");
-            if (txtDocumento != null) txtDocumento.clear();
+            lblMsg.setText("✓ Solicitud creada con ID " + v.getId());
             txtNombre.clear();
-            chkPaseTemporal.setSelected(false);
             refreshTabla();
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());

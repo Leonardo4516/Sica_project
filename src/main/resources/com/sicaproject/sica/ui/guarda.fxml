@@ -59,31 +59,36 @@
                     <StackPane styleClass="glass-panel" prefWidth="380">
                         <VBox styleClass="glass-panel-inner" spacing="10">
                             <Text text="⚡ Check-in / Check-out Rápido" styleClass="title-md" />
-                            <Label text="Ingrese ID de Visita o Documento" styleClass="subtitle" />
-                            <TextField fx:id="txtVisitaId" promptText="Ej: 1 o CC12345678" />
-                            <HBox spacing="10">
+                            <Label text="Ingrese ID de Visita" styleClass="subtitle" />
+                            <HBox spacing="8">
+                                <TextField fx:id="txtVisitaIdIn" promptText="Check-in ID" HBox.hgrow="ALWAYS" />
                                 <Button fx:id="btnCheckIn" text="✅ Check-in"
-                                        styleClass="btn, btn-success" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                        styleClass="btn, btn-success"
                                         onAction="#handleCheckIn" />
+                            </HBox>
+                            <Label fx:id="lblInMsg" styleClass="label-text" />
+                            <Separator opacity="0.2" />
+                            <HBox spacing="8">
+                                <TextField fx:id="txtVisitaIdOut" promptText="Check-out ID" HBox.hgrow="ALWAYS" />
                                 <Button fx:id="btnCheckOut" text="🚪 Check-out"
-                                        styleClass="btn, btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                                        styleClass="btn, btn-danger"
                                         onAction="#handleCheckOut" />
                             </HBox>
-                            <Label fx:id="lblAccionMsg" styleClass="label-text" wrapText="true" />
+                            <Label fx:id="lblOutMsg" styleClass="label-text" />
                         </VBox>
                     </StackPane>
 
-                    <!-- Tarjeta Solicitud de Acceso (No anunciado / Carnet olvidado) -->
+                    <!-- Tarjeta Solicitud de Acceso -->
                     <StackPane styleClass="glass-panel" HBox.hgrow="ALWAYS">
                         <VBox styleClass="glass-panel-inner" spacing="10">
-                            <Text text="📝 Nueva Solicitud (No anunciado / Carnet olvidado)" styleClass="title-md" />
+                            <Text text="📝 Nueva Solicitud de Acceso" styleClass="title-md" />
                             <HBox spacing="10">
                                 <VBox spacing="4" prefWidth="160">
                                     <Label text="Documento" styleClass="label-text" />
                                     <TextField fx:id="txtDocSolicitud" promptText="CC / Pasaporte" />
                                 </VBox>
                                 <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label text="Nombre Visitante / Trabajador" styleClass="label-text" />
+                                    <Label text="Nombre Visitante" styleClass="label-text" />
                                     <TextField fx:id="txtNombreSolicitud" promptText="Nombre completo" />
                                 </VBox>
                             </HBox>
@@ -120,12 +125,10 @@
                                     <TableView fx:id="tblActivas" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="colGId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colGPersona" text="Persona" prefWidth="180" />
-                                            <TableColumn fx:id="colGDocumento" text="Documento" prefWidth="110" />
-                                            <TableColumn fx:id="colGEmpresa" text="Empresa" prefWidth="150" />
-                                            <TableColumn fx:id="colGHora" text="Hora Entrada" prefWidth="130" />
-                                            <TableColumn fx:id="colGTipo" text="Tipo" prefWidth="110" />
-                                            <TableColumn fx:id="colGAccionOut" text="Acción" prefWidth="130" />
+                                            <TableColumn fx:id="colGPersona" text="Persona" prefWidth="200" />
+                                            <TableColumn fx:id="colGEmpresa" text="Empresa" prefWidth="180" />
+                                            <TableColumn fx:id="colGHora" text="Hora Entrada" prefWidth="150" />
+                                            <TableColumn fx:id="colGEstado" text="Estado" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>
@@ -136,16 +139,6 @@
                                 <VBox spacing="8">
                                     <padding><Insets top="10" /></padding>
                                     <TableView fx:id="tblAprobadas" VBox.vgrow="ALWAYS">
-                                        <columns>
-                                            <TableColumn fx:id="colAId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colAPersona" text="Persona" prefWidth="180" />
-                                            <TableColumn fx:id="colADocumento" text="Documento" prefWidth="110" />
-                                            <TableColumn fx:id="colAEmpresa" text="Empresa" prefWidth="150" />
-                                            <TableColumn fx:id="colAAnfitrion" text="Anfitrión" prefWidth="130" />
-                                            <TableColumn fx:id="colAFecha" text="Fecha Registro" prefWidth="130" />
-                                            <TableColumn fx:id="colATipo" text="Tipo" prefWidth="110" />
-                                            <TableColumn fx:id="colAAccionIn" text="Acción" prefWidth="130" />
-                                        </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
@@ -155,16 +148,6 @@
                                 <VBox spacing="8">
                                     <padding><Insets top="10" /></padding>
                                     <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
-                                        <columns>
-                                            <TableColumn fx:id="colPId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colPPersona" text="Persona" prefWidth="180" />
-                                            <TableColumn fx:id="colPDocumento" text="Documento" prefWidth="110" />
-                                            <TableColumn fx:id="colPEmpresa" text="Empresa" prefWidth="150" />
-                                            <TableColumn fx:id="colPAnfitrion" text="Anfitrión" prefWidth="130" />
-                                            <TableColumn fx:id="colPFecha" text="Fecha Registro" prefWidth="130" />
-                                            <TableColumn fx:id="colPTipo" text="Tipo" prefWidth="110" />
-                                            <TableColumn fx:id="colPEstado" text="Estado" prefWidth="130" />
-                                        </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
@@ -182,4 +165,3 @@
     </BorderPane>
 
 </StackPane>
-
