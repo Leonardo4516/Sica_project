@@ -12,15 +12,13 @@ import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
 import javafx.beans.property.SimpleStringProperty;
-    import javafx.collections.FXCollections;
-    import javafx.event.ActionEvent;
-    import javafx.fxml.FXML;
-    import javafx.fxml.Initializable;
-    import javafx.scene.control.*;
-    import javafx.scene.input.MouseEvent;
-    import javafx.scene.layout.StackPane;
-    import javafx.scene.text.Text;
-    import javafx.scene.layout.HBox;
+import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.*;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -42,12 +40,15 @@ public class GuardaController implements Initializable {
     @FXML private RadioButton rbCC;
     @FXML private RadioButton rbCE;
     @FXML private RadioButton rbPasaporte;
+    @FXML private RadioButton rbTrabajador;
+    @FXML private RadioButton rbInvitado;
     @FXML private TextField txtDocSolicitud;
     @FXML private TextField txtNombreSolicitud;
     @FXML private ComboBox<Empresa> cmbEmpresaSolicitud;
     @FXML private ComboBox<Usuario> cmbFuncionarioSolicitud;
     @FXML private CheckBox chkPaseTemporalSolicitud;
     @FXML private Button btnSolicitar;
+    @FXML private Button btnBuscar;
     @FXML private Label lblSolicitudMsg;
     @FXML private TableView<Visita> tblActivas;
     @FXML private TableColumn<Visita, String> colGId;
@@ -100,12 +101,16 @@ public class GuardaController implements Initializable {
             }
         });
 
-        // Configurar ToggleGroup para tipos de documento
         ToggleGroup tgDoc = new ToggleGroup();
         rbCC.setToggleGroup(tgDoc);
         rbCE.setToggleGroup(tgDoc);
         rbPasaporte.setToggleGroup(tgDoc);
-        rbCC.setSelected(true); // Por defecto CC seleccionado
+        rbCC.setSelected(true);
+
+        ToggleGroup tgPersona = new ToggleGroup();
+        rbTrabajador.setToggleGroup(tgPersona);
+        rbInvitado.setToggleGroup(tgPersona);
+        rbInvitado.setSelected(true);
 
         configurarColumnas(tblActivas, colGId, colGPersona, colGEmpresa, colGHora, colGEstado);
         configurarColumnasAprobadas();
@@ -200,6 +205,39 @@ public class GuardaController implements Initializable {
     }
 
     @FXML
+    private void handleBuscarPersona(ActionEvent event) {
+        try {
+            String tipoDocumento = "CC";
+            if (rbCE.isSelected()) tipoDocumento = "CE";
+            else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
+
+            String documento = txtDocSolicitud.getText().trim();
+            if (documento.isEmpty()) {
+                lblSolicitudMsg.setText("Ingrese número de documento para buscar");
+                return;
+            }
+
+            Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
+            if (personaOpt.isPresent()) {
+                Persona persona = personaOpt.get();
+                txtNombreSolicitud.setText(persona.getNombre());
+                if ("TRABAJADOR".equals(persona.getTipo())) {
+                    rbTrabajador.setSelected(true);
+                } else {
+                    rbInvitado.setSelected(true);
+                }
+                lblSolicitudMsg.setText("Persona encontrada: " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
+            } else {
+                txtNombreSolicitud.clear();
+                rbInvitado.setSelected(true);
+                lblSolicitudMsg.setText("Persona no encontrada. Complete los datos para registrar.");
+            }
+        } catch (Exception e) {
+            lblSolicitudMsg.setText("Error: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void handleSolicitarAcceso(ActionEvent event) {
         try {
             String nombre = txtNombreSolicitud.getText().trim();
@@ -213,6 +251,8 @@ public class GuardaController implements Initializable {
             if (rbCE.isSelected()) tipoDocumento = "CE";
             else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
 
+            String tipoPersona = rbTrabajador.isSelected() ? "TRABAJADOR" : "INVITADO";
+
             String documento = txtDocSolicitud.getText().trim();
             if (documento.isEmpty()) { lblSolicitudMsg.setText("Ingrese número de documento"); return; }
 
@@ -224,6 +264,7 @@ public class GuardaController implements Initializable {
                     persona.setNombre(nombre);
                 }
                 persona.setTipoDocumento(tipoDocumento);
+                persona.setTipo(tipoPersona);
                 personaService.guardar(persona);
                 txtNombreSolicitud.setText(persona.getNombre());
                 lblSolicitudMsg.setText("Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
@@ -233,7 +274,7 @@ public class GuardaController implements Initializable {
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);
                 persona.setTipoDocumento(tipoDocumento);
-                persona.setTipo("INVITADO");
+                persona.setTipo(tipoPersona);
                 persona = personaService.guardar(persona);
             }
 
@@ -246,8 +287,10 @@ public class GuardaController implements Initializable {
 
             lblSolicitudMsg.setText("Solicitud #" + v.getId() + " creada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
             txtDocSolicitud.clear();
+            txtNombreSolicitud.clear();
             chkPaseTemporalSolicitud.setSelected(false);
             rbCC.setSelected(true);
+            rbInvitado.setSelected(true);
             refreshTablas();
         } catch (Exception e) {
             lblSolicitudMsg.setText("Error: " + e.getMessage());
@@ -255,12 +298,12 @@ public class GuardaController implements Initializable {
     }
 
     @FXML
-    private void handleRefresh(MouseEvent event) {
+    private void handleRefresh(ActionEvent event) {
         refreshTablas();
     }
 
     @FXML
-    private void handleLogout(MouseEvent event) {
+    private void handleLogout(ActionEvent event) {
         SceneManager.logout();
     }
 

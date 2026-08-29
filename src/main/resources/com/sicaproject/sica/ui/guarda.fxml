@@ -26,11 +26,6 @@
                         </HBox>
                     </VBox>
                     <VBox styleClass="nav-item">
-                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleRefresh">
-                            <Label text="Refrescar" />
-                        </HBox>
-                    </VBox>
-                    <VBox styleClass="nav-item">
                         <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
                             <Label text="Cerrar Sesión" />
                         </HBox>
@@ -97,9 +92,21 @@
     </VBox>
     <VBox spacing="6" HBox.hgrow="ALWAYS">
         <Label text="Número de documento" styleClass="label-text" />
-        <TextField fx:id="txtDocSolicitud" promptText="1321321" />
+        <HBox spacing="8">
+            <TextField fx:id="txtDocSolicitud" promptText="1321321" HBox.hgrow="ALWAYS" />
+            <Button fx:id="btnBuscar" text="Buscar" styleClass="btn, btn-secondary" onAction="#handleBuscarPersona" />
+        </HBox>
     </VBox>
 </HBox>
+
+                            <HBox spacing="12">
+    <VBox spacing="6" prefWidth="200">
+        <Label text="Tipo de persona" styleClass="label-text" />
+        <HBox spacing="4">
+            <RadioButton fx:id="rbTrabajador" text="Trabajador" toggleGroup="$tgPersona" />
+            <RadioButton fx:id="rbInvitado" text="Invitado" toggleGroup="$tgPersona" selected="true" />
+        </HBox>
+    </VBox>
 
                             <HBox spacing="12">
                                 <VBox spacing="6" HBox.hgrow="ALWAYS">
@@ -126,6 +133,11 @@
                 <!-- Tablas -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
                     <VBox styleClass="glass-panel-inner" spacing="14">
+                        <HBox alignment="CENTER_LEFT">
+                            <Text text="Visitas" styleClass="title-md" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                        </HBox>
                         <TabPane fx:id="tabPaneVisitas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 
                             <Tab text="Activas (dentro)">
