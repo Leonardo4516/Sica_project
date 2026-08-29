@@ -196,6 +196,7 @@ public class FuncionarioController implements Initializable {
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);
                 persona.setTipoDocumento(tipoDocumento);
+                persona.setTipo("INVITADO");
                 persona = personaService.guardar(persona);
             }
 

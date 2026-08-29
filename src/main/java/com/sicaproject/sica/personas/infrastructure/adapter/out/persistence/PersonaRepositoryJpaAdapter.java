@@ -49,16 +49,21 @@ public class PersonaRepositoryJpaAdapter implements PersonaRepository {
                 if (entity == null) {
                     throw new IllegalArgumentException("Persona no encontrada: " + persona.getId());
                 }
+                PersonaMapper.copyToEntity(persona, entity);
+                if (persona.getEmpresaId() != null) {
+                    entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
+                } else {
+                    entity.setEmpresa(null);
+                }
+                entity = em.merge(entity);
             } else {
                 entity = new PersonaEntity();
+                PersonaMapper.copyToEntity(persona, entity);
+                if (persona.getEmpresaId() != null) {
+                    entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
+                }
+                em.persist(entity);
             }
-            PersonaMapper.copyToEntity(persona, entity);
-            if (persona.getEmpresaId() != null) {
-                entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
-            } else {
-                entity.setEmpresa(null);
-            }
-            em.persist(entity);
             em.getTransaction().commit();
             persona.setId(entity.getId());
             persona.setTotalVisitas(entity.getTotalVisitas());

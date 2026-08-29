@@ -10,8 +10,8 @@ public final class PersonaMapper {
         if (entity == null) return null;
         Persona persona = new Persona();
         persona.setId(entity.getId());
-        persona.setTipo(entity.getTipo());
-        persona.setTipoDocumento(entity.getTipoDocumento());
+        persona.setTipo(entity.getTipo() != null ? entity.getTipo() : "INVITADO");
+        persona.setTipoDocumento(entity.getTipoDocumento() != null ? entity.getTipoDocumento() : "CC");
         persona.setNombre(entity.getNombre());
         persona.setDocumento(entity.getDocumento());
         persona.setFotoUrl(entity.getFotoUrl());
@@ -22,9 +22,9 @@ public final class PersonaMapper {
         return persona;
     }
 
-public static void copyToEntity(Persona persona, PersonaEntity entity) {
-        entity.setTipo(persona.getTipo());
-        entity.setTipoDocumento(persona.getTipoDocumento());
+    public static void copyToEntity(Persona persona, PersonaEntity entity) {
+        entity.setTipo(persona.getTipo() != null ? persona.getTipo() : "INVITADO");
+        entity.setTipoDocumento(persona.getTipoDocumento() != null ? persona.getTipoDocumento() : "CC");
         entity.setNombre(persona.getNombre());
         entity.setDocumento(persona.getDocumento());
         entity.setFotoUrl(persona.getFotoUrl());

@@ -207,6 +207,7 @@ public class GuardaController implements Initializable {
             Usuario anfitrion = cmbFuncionarioSolicitud.getValue();
 
             if (empresa == null) { lblSolicitudMsg.setText("Seleccione empresa destino"); return; }
+            if (anfitrion == null) { lblSolicitudMsg.setText("Seleccione funcionario anfitrión"); return; }
 
             String tipoDocumento = "CC";
             if (rbCE.isSelected()) tipoDocumento = "CE";
@@ -232,6 +233,7 @@ public class GuardaController implements Initializable {
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);
                 persona.setTipoDocumento(tipoDocumento);
+                persona.setTipo("INVITADO");
                 persona = personaService.guardar(persona);
             }
 

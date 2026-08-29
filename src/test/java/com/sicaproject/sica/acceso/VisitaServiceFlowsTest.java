@@ -174,8 +174,10 @@ class VisitaServiceFlowsTest {
         assertThrows(PermisoDenegadoException.class, () -> visitaService.aprobarVisita(v.getId(), guarda));
         assertThrows(PermisoDenegadoException.class, () -> visitaService.rechazarVisita(v.getId(), guarda));
 
-        // 2. El Funcionario NO puede hacer check-in ni check-out
-        assertThrows(PermisoDenegadoException.class, () -> visitaService.checkIn(v.getId(), funcionario));
-        assertThrows(PermisoDenegadoException.class, () -> visitaService.checkOut(v.getId(), funcionario));
+        // 2. El Funcionario NO puede hacer check-out (no tiene permiso registrar_salida)
+        // Primero aprueba la visita para poder hacer check-out
+        Visita vAprobada = visitaService.aprobarVisita(v.getId(), funcionario);
+        Visita vDentro = visitaService.checkIn(vAprobada.getId(), guarda);
+        assertThrows(PermisoDenegadoException.class, () -> visitaService.checkOut(vDentro.getId(), funcionario));
     }
 }
