@@ -147,7 +147,7 @@ public class GuardaController implements Initializable {
         });
         TableColumn<Visita, String> colATipo = new TableColumn<>("Tipo");
         colATipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Temporal" : "Normal"));
+            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
         tblAprobadas.getColumns().addAll(colAId, colAPersona, colAEmpresa, colAHora, colATipo);
     }
 
@@ -166,7 +166,7 @@ public class GuardaController implements Initializable {
         });
         TableColumn<Visita, String> colPTipo = new TableColumn<>("Tipo");
         colPTipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Temporal" : "Normal"));
+            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
         tblPendientes.getColumns().addAll(colPId, colPPersona, colPEmpresa, colPHora, colPTipo);
     }
 
@@ -265,6 +265,9 @@ public class GuardaController implements Initializable {
                 }
                 persona.setTipoDocumento(tipoDocumento);
                 persona.setTipo(tipoPersona);
+                if ("TRABAJADOR".equals(tipoPersona) && persona.getEmpresaId() == null) {
+                    persona.setEmpresaId(empresa.getId());
+                }
                 personaService.guardar(persona);
                 txtNombreSolicitud.setText(persona.getNombre());
                 lblSolicitudMsg.setText("Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
@@ -275,6 +278,9 @@ public class GuardaController implements Initializable {
                 persona.setDocumento(documento);
                 persona.setTipoDocumento(tipoDocumento);
                 persona.setTipo(tipoPersona);
+                if ("TRABAJADOR".equals(tipoPersona)) {
+                    persona.setEmpresaId(empresa.getId());
+                }
                 persona = personaService.guardar(persona);
             }
 

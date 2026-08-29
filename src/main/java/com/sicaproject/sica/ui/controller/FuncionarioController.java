@@ -44,6 +44,8 @@ public class FuncionarioController implements Initializable {
     @FXML private RadioButton rbCC;
     @FXML private RadioButton rbCE;
     @FXML private RadioButton rbPasaporte;
+    @FXML private RadioButton rbTrabajador;
+    @FXML private RadioButton rbInvitado;
     @FXML private TextField txtDocumento;
     @FXML private ComboBox<Empresa> cmbEmpresa;
     @FXML private CheckBox chkPaseTemporal;
@@ -85,6 +87,12 @@ public class FuncionarioController implements Initializable {
         rbPasaporte.setToggleGroup(tgDoc);
         rbCC.setSelected(true);
 
+        // Configurar ToggleGroup para tipo de persona
+        ToggleGroup tgPersona = new ToggleGroup();
+        rbTrabajador.setToggleGroup(tgPersona);
+        rbInvitado.setToggleGroup(tgPersona);
+        rbInvitado.setSelected(true);
+
         configurarColumnas();
         refreshTabla();
     }
@@ -106,7 +114,7 @@ public class FuncionarioController implements Initializable {
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
         colTipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Pase Temporal" : "Normal"));
+            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
         colVisitas.setCellValueFactory(data ->
             new SimpleStringProperty(String.valueOf(data.getValue().getPersona().getTotalVisitas())));
 
@@ -177,14 +185,21 @@ public class FuncionarioController implements Initializable {
             if (rbCE.isSelected()) tipoDocumento = "CE";
             else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
 
+            String tipoPersona = rbTrabajador.isSelected() ? "TRABAJADOR" : "INVITADO";
+
             Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
             Persona persona;
             if (personaOpt.isPresent()) {
                 persona = personaOpt.get();
                 if (!nombre.isEmpty()) {
                     persona.setNombre(nombre);
-                    personaService.guardar(persona);
                 }
+                persona.setTipoDocumento(tipoDocumento);
+                persona.setTipo(tipoPersona);
+                if ("TRABAJADOR".equals(tipoPersona) && persona.getEmpresaId() == null) {
+                    persona.setEmpresaId(empresa.getId());
+                }
+                personaService.guardar(persona);
                 txtNombre.setText(persona.getNombre());
                 lblMsg.setText("✓ Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
             } else {
@@ -196,7 +211,10 @@ public class FuncionarioController implements Initializable {
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);
                 persona.setTipoDocumento(tipoDocumento);
-                persona.setTipo("INVITADO");
+                persona.setTipo(tipoPersona);
+                if ("TRABAJADOR".equals(tipoPersona)) {
+                    persona.setEmpresaId(empresa.getId());
+                }
                 persona = personaService.guardar(persona);
             }
 
@@ -211,6 +229,7 @@ public class FuncionarioController implements Initializable {
             lblMsg.setText("✓ Solicitud #" + v.getId() + " creada (" + persona.getTotalVisitas() + " visitas)");
             txtDocumento.clear();
             rbCC.setSelected(true);
+            rbInvitado.setSelected(true);
             refreshTabla();
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());

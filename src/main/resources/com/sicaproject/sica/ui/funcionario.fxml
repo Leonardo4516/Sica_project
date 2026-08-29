@@ -83,6 +83,13 @@
         <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
     </HBox>
 </VBox>
+<VBox spacing="6">
+    <Label text="Tipo de persona" styleClass="label-text" />
+    <HBox spacing="4">
+        <RadioButton fx:id="rbTrabajador" text="Trabajador" toggleGroup="$tgPersona" />
+        <RadioButton fx:id="rbInvitado" text="Invitado" toggleGroup="$tgPersona" selected="true" />
+    </HBox>
+</VBox>
 <VBox spacing="6" prefWidth="240">
     <Label text="Empresa Destino" styleClass="label-text" />
     <ComboBox fx:id="cmbEmpresa" prefWidth="240" />
