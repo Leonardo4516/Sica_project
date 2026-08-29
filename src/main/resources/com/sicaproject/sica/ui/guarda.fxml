@@ -81,16 +81,25 @@
                         <VBox styleClass="glass-panel-inner" spacing="14">
                             <Text text="Nueva Solicitud de Acceso" styleClass="title-md" />
 
+<VBox spacing="6" HBox.hgrow="ALWAYS">
+        <Label text="Nombre completo" styleClass="label-text" />
+        <TextField fx:id="txtNombreSolicitud" promptText="Nombre del visitante" />
+    </VBox>
+
                             <HBox spacing="12">
-                                <VBox spacing="6" prefWidth="160">
-                                    <Label text="Documento" styleClass="label-text" />
-                                    <TextField fx:id="txtDocSolicitud" promptText="CC / Pasaporte" />
-                                </VBox>
-                                <VBox spacing="6" HBox.hgrow="ALWAYS">
-                                    <Label text="Nombre completo" styleClass="label-text" />
-                                    <TextField fx:id="txtNombreSolicitud" promptText="Nombre del visitante" />
-                                </VBox>
-                            </HBox>
+    <VBox spacing="6" prefWidth="160">
+        <Label text="Tipo de documento" styleClass="label-text" />
+        <HBox spacing="4">
+            <RadioButton fx:id="rbCC" text="CC" toggleGroup="$tgDoc" selected="true" />
+            <RadioButton fx:id="rbCE" text="CE" toggleGroup="$tgDoc" />
+            <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
+        </HBox>
+    </VBox>
+    <VBox spacing="6" HBox.hgrow="ALWAYS">
+        <Label text="Número de documento" styleClass="label-text" />
+        <TextField fx:id="txtDocSolicitud" promptText="1321321" />
+    </VBox>
+</HBox>
 
                             <HBox spacing="12">
                                 <VBox spacing="6" HBox.hgrow="ALWAYS">
@@ -139,11 +148,11 @@
                                     <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblAprobadas" VBox.vgrow="ALWAYS">
                                         <columns>
-                                            <TableColumn text="ID" prefWidth="50" />
-                                            <TableColumn text="Visitante" prefWidth="200" />
-                                            <TableColumn text="Empresa" prefWidth="200" />
-                                            <TableColumn text="Hora registro" prefWidth="150" />
-                                            <TableColumn text="Tipo" prefWidth="120" />
+                                            <TableColumn fx:id="colAId" text="ID" prefWidth="50" />
+                                            <TableColumn fx:id="colAPersona" text="Visitante" prefWidth="200" />
+                                            <TableColumn fx:id="colAEmpresa" text="Empresa" prefWidth="200" />
+                                            <TableColumn fx:id="colAHora" text="Hora registro" prefWidth="150" />
+                                            <TableColumn fx:id="colATipo" text="Tipo" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>
@@ -154,11 +163,11 @@
                                     <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
                                         <columns>
-                                            <TableColumn text="ID" prefWidth="50" />
-                                            <TableColumn text="Visitante" prefWidth="200" />
-                                            <TableColumn text="Empresa" prefWidth="200" />
-                                            <TableColumn text="Hora registro" prefWidth="150" />
-                                            <TableColumn text="Tipo" prefWidth="120" />
+                                            <TableColumn fx:id="colPId" text="ID" prefWidth="50" />
+                                            <TableColumn fx:id="colPPersona" text="Visitante" prefWidth="200" />
+                                            <TableColumn fx:id="colPEmpresa" text="Empresa" prefWidth="200" />
+                                            <TableColumn fx:id="colPHora" text="Hora registro" prefWidth="150" />
+                                            <TableColumn fx:id="colPTipo" text="Tipo" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>

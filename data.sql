@@ -60,11 +60,11 @@ INSERT INTO empresa (id, nombre, nit) VALUES
 (3, 'Tecnología Avanzada Ltda', '900789123-3');
 
 -- ========== PERSONAS DE PRUEBA ==========
-INSERT INTO persona (id, tipo, nombre, documento, empresa_id, bloqueado) VALUES
-(1, 'TRABAJADOR', 'Carlos Pérez', 'CC12345678', 1, FALSE),
-(2, 'TRABAJADOR', 'María González', 'CC87654321', 2, FALSE),
-(3, 'INVITADO', 'Juan Rodríguez', 'CC11223344', NULL, FALSE),
-(4, 'INVITADO', 'Ana Martínez', 'CC55667788', NULL, FALSE);
+INSERT INTO persona (id, tipo, tipo_documento, nombre, documento, empresa_id, bloqueado) VALUES
+(1, 'TRABAJADOR', 'CC', 'Carlos Pérez', '12345678', 1, FALSE),
+(2, 'TRABAJADOR', 'CC', 'María González', '87654321', 2, FALSE),
+(3, 'INVITADO', 'CC', 'Juan Rodríguez', '11223344', NULL, FALSE),
+(4, 'INVITADO', 'PASAPORTE', 'Ana Martínez', '55667788', NULL, FALSE);
 
 -- Sincronizar secuencias para inserciones dinámicas de Hibernate
 SELECT setval(pg_get_serial_sequence('persona', 'id'), coalesce(max(id), 1)) FROM persona;

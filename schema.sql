@@ -27,6 +27,7 @@ CREATE TABLE empresa (
 CREATE TABLE persona (
     id BIGSERIAL PRIMARY KEY,
     tipo VARCHAR(20),
+    tipo_documento VARCHAR(10),
     nombre VARCHAR(200) NOT NULL,
     documento VARCHAR(100),
     foto_url VARCHAR(500),

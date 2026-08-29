@@ -11,6 +11,7 @@ public final class PersonaMapper {
         Persona persona = new Persona();
         persona.setId(entity.getId());
         persona.setTipo(entity.getTipo());
+        persona.setTipoDocumento(entity.getTipoDocumento());
         persona.setNombre(entity.getNombre());
         persona.setDocumento(entity.getDocumento());
         persona.setFotoUrl(entity.getFotoUrl());
@@ -20,13 +21,13 @@ public final class PersonaMapper {
         return persona;
     }
 
-    public static void copyToEntity(Persona persona, PersonaEntity entity) {
+public static void copyToEntity(Persona persona, PersonaEntity entity) {
         entity.setTipo(persona.getTipo());
+        entity.setTipoDocumento(persona.getTipoDocumento());
         entity.setNombre(persona.getNombre());
         entity.setDocumento(persona.getDocumento());
         entity.setFotoUrl(persona.getFotoUrl());
         entity.setBloqueado(persona.isBloqueado());
         entity.setMotivoBloqueo(persona.getMotivoBloqueo());
-        // La relación con EmpresaEntity se resuelve en el adaptador (necesita EntityManager.find)
     }
 }

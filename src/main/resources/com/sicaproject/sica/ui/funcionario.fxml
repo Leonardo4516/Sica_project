@@ -69,17 +69,29 @@
                         <Text text="Pre-registrar Visita Autorizada" styleClass="title-md" />
 
                         <HBox spacing="14" alignment="BOTTOM_LEFT">
-                            <VBox spacing="6" HBox.hgrow="ALWAYS">
-                                <Label text="Nombre Persona" styleClass="label-text" />
-                                <TextField fx:id="txtNombre" promptText="Nombre completo" />
-                            </VBox>
-                            <VBox spacing="6" prefWidth="240">
-                                <Label text="Empresa Destino" styleClass="label-text" />
-                                <ComboBox fx:id="cmbEmpresa" prefWidth="240" />
-                            </VBox>
-                            <VBox spacing="6" alignment="BOTTOM_LEFT">
-                                <CheckBox fx:id="chkPaseTemporal" text="Pase temporal" />
-                            </VBox>
+<VBox spacing="6" HBox.hgrow="ALWAYS">
+    <Label text="Nombre Persona" styleClass="label-text" />
+    <TextField fx:id="txtNombre" promptText="Nombre completo" />
+</VBox>
+<VBox spacing="6">
+    <Label text="Tipo de documento" styleClass="label-text" />
+    <HBox spacing="4">
+        <RadioButton fx:id="rbCC" text="CC" toggleGroup="$tgDoc" selected="true" />
+        <RadioButton fx:id="rbCE" text="CE" toggleGroup="$tgDoc" />
+        <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
+    </HBox>
+</VBox>
+<VBox spacing="6" prefWidth="240">
+    <Label text="Empresa Destino" styleClass="label-text" />
+    <ComboBox fx:id="cmbEmpresa" prefWidth="240" />
+</VBox>
+<VBox spacing="6" alignment="BOTTOM_LEFT">
+    <Label text="Número de documento" styleClass="label-text" />
+    <TextField fx:id="txtDocumento" promptText="1321321" />
+</VBox>
+<VBox spacing="6" alignment="BOTTOM_LEFT">
+    <CheckBox fx:id="chkPaseTemporal" text="Pase temporal" />
+</VBox>
                             <Button text="Pre-registrar" styleClass="btn, btn-primary" onAction="#handleRegistrar" />
                         </HBox>
 

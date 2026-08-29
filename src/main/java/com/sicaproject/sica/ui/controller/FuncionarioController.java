@@ -38,6 +38,10 @@ public class FuncionarioController implements Initializable {
     @FXML private TableColumn<Visita, String> colTipo;
     @FXML private TableColumn<Visita, Void> colAcciones;
     @FXML private TextField txtNombre;
+    @FXML private RadioButton rbCC;
+    @FXML private RadioButton rbCE;
+    @FXML private RadioButton rbPasaporte;
+    @FXML private TextField txtDocumento;
     @FXML private ComboBox<Empresa> cmbEmpresa;
     @FXML private CheckBox chkPaseTemporal;
     @FXML private Label lblMsg;
@@ -70,6 +74,13 @@ public class FuncionarioController implements Initializable {
                 setText(empty || e == null ? null : e.getNombre());
             }
         });
+
+        // Configurar ToggleGroup para tipos de documento
+        ToggleGroup tgDoc = new ToggleGroup();
+        rbCC.setToggleGroup(tgDoc);
+        rbCE.setToggleGroup(tgDoc);
+        rbPasaporte.setToggleGroup(tgDoc);
+        rbCC.setSelected(true);
 
         configurarColumnas();
         refreshTabla();
@@ -141,15 +152,30 @@ public class FuncionarioController implements Initializable {
         try {
             String nombre = txtNombre.getText().trim();
             Empresa empresa = cmbEmpresa.getValue();
-            if (nombre.isEmpty() || empresa == null) {
-                lblMsg.setText("Complete nombre y empresa");
+            String documento = txtDocumento.getText().trim();
+
+            if (nombre.isEmpty()) {
+                lblMsg.setText("✗ Ingrese el nombre del visitante");
+                return;
+            }
+            if (documento.isEmpty()) {
+                lblMsg.setText("✗ Ingrese el número de documento");
+                return;
+            }
+            if (empresa == null) {
+                lblMsg.setText("✗ Seleccione empresa destino");
                 return;
             }
 
+            String tipoDocumento = "CC";
+            if (rbCE.isSelected()) tipoDocumento = "CE";
+            else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
+
             Persona persona = new Persona();
             persona.setNombre(nombre);
-            persona.setDocumento("PENDIENTE-" + System.currentTimeMillis());
-            personaService.guardar(persona);
+            persona.setDocumento(documento);
+            persona.setTipoDocumento(tipoDocumento);
+            persona = personaService.guardar(persona);
 
             Visita v = visitaService.solicitarAcceso(
                 persona, empresa,
@@ -159,6 +185,8 @@ public class FuncionarioController implements Initializable {
             );
             lblMsg.setText("✓ Solicitud creada con ID " + v.getId());
             txtNombre.clear();
+            txtDocumento.clear();
+            rbCC.setSelected(true);
             refreshTabla();
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());

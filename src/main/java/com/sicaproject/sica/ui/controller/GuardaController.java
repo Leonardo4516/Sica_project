@@ -12,14 +12,15 @@ import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
-import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
+    import javafx.collections.FXCollections;
+    import javafx.event.ActionEvent;
+    import javafx.fxml.FXML;
+    import javafx.fxml.Initializable;
+    import javafx.scene.control.*;
+    import javafx.scene.input.MouseEvent;
+    import javafx.scene.layout.StackPane;
+    import javafx.scene.text.Text;
+    import javafx.scene.layout.HBox;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -38,6 +39,9 @@ public class GuardaController implements Initializable {
     @FXML private Button btnCheckOut;
     @FXML private Label lblInMsg;
     @FXML private Label lblOutMsg;
+    @FXML private RadioButton rbCC;
+    @FXML private RadioButton rbCE;
+    @FXML private RadioButton rbPasaporte;
     @FXML private TextField txtDocSolicitud;
     @FXML private TextField txtNombreSolicitud;
     @FXML private ComboBox<Empresa> cmbEmpresaSolicitud;
@@ -96,6 +100,13 @@ public class GuardaController implements Initializable {
             }
         });
 
+        // Configurar ToggleGroup para tipos de documento
+        ToggleGroup tgDoc = new ToggleGroup();
+        rbCC.setToggleGroup(tgDoc);
+        rbCE.setToggleGroup(tgDoc);
+        rbPasaporte.setToggleGroup(tgDoc);
+        rbCC.setSelected(true); // Por defecto CC seleccionado
+
         configurarColumnas(tblActivas, colGId, colGPersona, colGEmpresa, colGHora, colGEstado);
         configurarColumnasAprobadas();
         configurarColumnasPendientes();
@@ -117,23 +128,41 @@ public class GuardaController implements Initializable {
     }
 
     private void configurarColumnasAprobadas() {
+        tblAprobadas.getColumns().clear();
         TableColumn<Visita, String> colAId = new TableColumn<>("ID");
         colAId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         TableColumn<Visita, String> colAPersona = new TableColumn<>("Persona");
         colAPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
         TableColumn<Visita, String> colAEmpresa = new TableColumn<>("Empresa");
         colAEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
-        tblAprobadas.getColumns().addAll(colAId, colAPersona, colAEmpresa);
+        TableColumn<Visita, String> colAHora = new TableColumn<>("Hora registro");
+        colAHora.setCellValueFactory(data -> {
+            LocalDateTime f = data.getValue().getFechaHoraRegistro();
+            return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
+        });
+        TableColumn<Visita, String> colATipo = new TableColumn<>("Tipo");
+        colATipo.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Temporal" : "Normal"));
+        tblAprobadas.getColumns().addAll(colAId, colAPersona, colAEmpresa, colAHora, colATipo);
     }
 
     private void configurarColumnasPendientes() {
+        tblPendientes.getColumns().clear();
         TableColumn<Visita, String> colPId = new TableColumn<>("ID");
         colPId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         TableColumn<Visita, String> colPPersona = new TableColumn<>("Persona");
         colPPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
         TableColumn<Visita, String> colPEmpresa = new TableColumn<>("Empresa");
         colPEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
-        tblPendientes.getColumns().addAll(colPId, colPPersona, colPEmpresa);
+        TableColumn<Visita, String> colPHora = new TableColumn<>("Hora registro");
+        colPHora.setCellValueFactory(data -> {
+            LocalDateTime f = data.getValue().getFechaHoraRegistro();
+            return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
+        });
+        TableColumn<Visita, String> colPTipo = new TableColumn<>("Tipo");
+        colPTipo.setCellValueFactory(data ->
+            new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Temporal" : "Normal"));
+        tblPendientes.getColumns().addAll(colPId, colPPersona, colPEmpresa, colPHora, colPTipo);
     }
 
     @FXML
@@ -173,7 +202,6 @@ public class GuardaController implements Initializable {
     @FXML
     private void handleSolicitarAcceso(ActionEvent event) {
         try {
-            String documento = txtDocSolicitud.getText().trim();
             String nombre = txtNombreSolicitud.getText().trim();
             Empresa empresa = cmbEmpresaSolicitud.getValue();
             Usuario anfitrion = cmbFuncionarioSolicitud.getValue();
@@ -181,14 +209,25 @@ public class GuardaController implements Initializable {
             if (nombre.isEmpty()) { lblSolicitudMsg.setText("Ingrese nombre del visitante"); return; }
             if (empresa == null) { lblSolicitudMsg.setText("Seleccione empresa destino"); return; }
 
+            String tipoDocumento = "CC";
+            if (rbCE.isSelected()) tipoDocumento = "CE";
+            else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
+
+            String documento = txtDocSolicitud.getText().trim();
+
+            if (documento.isEmpty()) { lblSolicitudMsg.setText("Ingrese número de documento"); return; }
+
             Optional<Persona> personaOpt = personaService.porDocumento(documento);
             Persona persona;
             if (personaOpt.isPresent()) {
                 persona = personaOpt.get();
+                persona.setTipoDocumento(tipoDocumento);
+                personaService.guardar(persona);
             } else {
                 persona = new Persona();
                 persona.setNombre(nombre);
-                persona.setDocumento(documento.isEmpty() ? "PEND-" + System.currentTimeMillis() : documento);
+                persona.setDocumento(documento);
+                persona.setTipoDocumento(tipoDocumento);
                 persona = personaService.guardar(persona);
             }
 
@@ -201,6 +240,7 @@ public class GuardaController implements Initializable {
             txtDocSolicitud.clear();
             txtNombreSolicitud.clear();
             chkPaseTemporalSolicitud.setSelected(false);
+            rbCC.setSelected(true);
             refreshTablas();
         } catch (Exception e) {
             lblSolicitudMsg.setText("Error: " + e.getMessage());
