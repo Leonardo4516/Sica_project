@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/javafx/fxml"
            fx:controller="com.sicaproject.sica.ui.controller.GuardaController"
            fx:id="rootPane"
            stylesheets="@styles.css"
@@ -76,37 +76,36 @@
                         <VBox styleClass="glass-panel-inner" spacing="14">
                             <Text text="Nueva Solicitud de Acceso" styleClass="title-md" />
 
-<VBox spacing="6" HBox.hgrow="ALWAYS">
-        <Label text="Nombre completo" styleClass="label-text" />
-        <TextField fx:id="txtNombreSolicitud" promptText="Nombre del visitante" />
-    </VBox>
+                            <VBox spacing="6">
+                                <Label text="Nombre completo" styleClass="label-text" />
+                                <TextField fx:id="txtNombreSolicitud" promptText="Nombre del visitante" />
+                            </VBox>
 
                             <HBox spacing="12">
-    <VBox spacing="6" prefWidth="160">
-        <Label text="Tipo de documento" styleClass="label-text" />
-        <HBox spacing="4">
-            <RadioButton fx:id="rbCC" text="CC" toggleGroup="$tgDoc" selected="true" />
-            <RadioButton fx:id="rbCE" text="CE" toggleGroup="$tgDoc" />
-            <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
-        </HBox>
-    </VBox>
-    <VBox spacing="6" HBox.hgrow="ALWAYS">
-        <Label text="Número de documento" styleClass="label-text" />
-        <HBox spacing="8">
-            <TextField fx:id="txtDocSolicitud" promptText="1321321" HBox.hgrow="ALWAYS" />
-            <Button fx:id="btnBuscar" text="Buscar" styleClass="btn, btn-secondary" onAction="#handleBuscarPersona" />
-        </HBox>
-    </VBox>
-</HBox>
+                                <VBox spacing="6" prefWidth="160">
+                                    <Label text="Tipo de documento" styleClass="label-text" />
+                                    <HBox spacing="4">
+                                        <RadioButton fx:id="rbCC" text="CC" toggleGroup="$tgDoc" selected="true" />
+                                        <RadioButton fx:id="rbCE" text="CE" toggleGroup="$tgDoc" />
+                                        <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
+                                    </HBox>
+                                </VBox>
+                                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                    <Label text="Número de documento" styleClass="label-text" />
+                                    <HBox spacing="8">
+                                        <TextField fx:id="txtDocSolicitud" promptText="1321321" HBox.hgrow="ALWAYS" />
+                                        <Button fx:id="btnBuscar" text="Buscar" styleClass="btn, btn-secondary" onAction="#handleBuscarPersona" />
+                                    </HBox>
+                                </VBox>
+                            </HBox>
 
-                            <HBox spacing="12">
-    <VBox spacing="6" prefWidth="200">
-        <Label text="Tipo de persona" styleClass="label-text" />
-        <HBox spacing="4">
-            <RadioButton fx:id="rbTrabajador" text="Trabajador" toggleGroup="$tgPersona" />
-            <RadioButton fx:id="rbInvitado" text="Invitado" toggleGroup="$tgPersona" selected="true" />
-        </HBox>
-    </VBox>
+                            <VBox spacing="6">
+                                <Label text="Tipo de persona" styleClass="label-text" />
+                                <HBox spacing="4">
+                                    <RadioButton fx:id="rbTrabajador" text="Trabajador" toggleGroup="$tgPersona" />
+                                    <RadioButton fx:id="rbInvitado" text="Invitado" toggleGroup="$tgPersona" selected="true" />
+                                </HBox>
+                            </VBox>
 
                             <HBox spacing="12">
                                 <VBox spacing="6" HBox.hgrow="ALWAYS">
