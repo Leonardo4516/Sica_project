@@ -33,7 +33,8 @@ CREATE TABLE persona (
     foto_url VARCHAR(500),
     empresa_id BIGINT,
     bloqueado BOOLEAN NOT NULL DEFAULT FALSE,
-    motivo_bloqueo VARCHAR(500)
+    motivo_bloqueo VARCHAR(500),
+    total_visitas INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE usuario (

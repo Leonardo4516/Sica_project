@@ -18,6 +18,7 @@ public final class PersonaMapper {
         persona.setEmpresaId(entity.getEmpresa() != null ? entity.getEmpresa().getId() : null);
         persona.setBloqueado(entity.isBloqueado());
         persona.setMotivoBloqueo(entity.getMotivoBloqueo());
+        persona.setTotalVisitas(entity.getTotalVisitas());
         return persona;
     }
 

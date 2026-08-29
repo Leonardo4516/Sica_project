@@ -24,6 +24,7 @@ import javafx.scene.text.Text;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class FuncionarioController implements Initializable {
@@ -32,10 +33,12 @@ public class FuncionarioController implements Initializable {
     @FXML private Text txtUsuario;
     @FXML private TableView<Visita> tblPendientes;
     @FXML private TableColumn<Visita, String> colId;
+    @FXML private TableColumn<Visita, String> colDocumento;
     @FXML private TableColumn<Visita, String> colPersona;
     @FXML private TableColumn<Visita, String> colEmpresa;
     @FXML private TableColumn<Visita, String> colFecha;
     @FXML private TableColumn<Visita, String> colTipo;
+    @FXML private TableColumn<Visita, String> colVisitas;
     @FXML private TableColumn<Visita, Void> colAcciones;
     @FXML private TextField txtNombre;
     @FXML private RadioButton rbCC;
@@ -89,6 +92,11 @@ public class FuncionarioController implements Initializable {
     private void configurarColumnas() {
         colId.setCellValueFactory(data ->
             new SimpleStringProperty(String.valueOf(data.getValue().getId())));
+        colDocumento.setCellValueFactory(data -> {
+            String tipo = data.getValue().getPersona().getTipoDocumento();
+            String doc = data.getValue().getPersona().getDocumento();
+            return new SimpleStringProperty((tipo != null ? tipo : "") + " " + (doc != null ? doc : ""));
+        });
         colPersona.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().getPersona().getNombre()));
         colEmpresa.setCellValueFactory(data ->
@@ -99,6 +107,8 @@ public class FuncionarioController implements Initializable {
         });
         colTipo.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().isPaseTemporal() ? "Pase Temporal" : "Normal"));
+        colVisitas.setCellValueFactory(data ->
+            new SimpleStringProperty(String.valueOf(data.getValue().getPersona().getTotalVisitas())));
 
         colAcciones.setCellFactory(col -> new TableCell<>() {
             private final Button btnAprobar = new Button("Aprobar");
@@ -154,10 +164,6 @@ public class FuncionarioController implements Initializable {
             Empresa empresa = cmbEmpresa.getValue();
             String documento = txtDocumento.getText().trim();
 
-            if (nombre.isEmpty()) {
-                lblMsg.setText("✗ Ingrese el nombre del visitante");
-                return;
-            }
             if (documento.isEmpty()) {
                 lblMsg.setText("✗ Ingrese el número de documento");
                 return;
@@ -171,11 +177,29 @@ public class FuncionarioController implements Initializable {
             if (rbCE.isSelected()) tipoDocumento = "CE";
             else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
 
-            Persona persona = new Persona();
-            persona.setNombre(nombre);
-            persona.setDocumento(documento);
-            persona.setTipoDocumento(tipoDocumento);
-            persona = personaService.guardar(persona);
+            Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
+            Persona persona;
+            if (personaOpt.isPresent()) {
+                persona = personaOpt.get();
+                if (!nombre.isEmpty()) {
+                    persona.setNombre(nombre);
+                    personaService.guardar(persona);
+                }
+                txtNombre.setText(persona.getNombre());
+                lblMsg.setText("✓ Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
+            } else {
+                if (nombre.isEmpty()) {
+                    lblMsg.setText("✗ Ingrese el nombre del visitante (nueva persona)");
+                    return;
+                }
+                persona = new Persona();
+                persona.setNombre(nombre);
+                persona.setDocumento(documento);
+                persona.setTipoDocumento(tipoDocumento);
+                persona = personaService.guardar(persona);
+            }
+
+            personaService.incrementarVisitas(persona);
 
             Visita v = visitaService.solicitarAcceso(
                 persona, empresa,
@@ -183,8 +207,7 @@ public class FuncionarioController implements Initializable {
                 SceneManager.getCurrentUser(),
                 chkPaseTemporal.isSelected()
             );
-            lblMsg.setText("✓ Solicitud creada con ID " + v.getId());
-            txtNombre.clear();
+            lblMsg.setText("✓ Solicitud #" + v.getId() + " creada (" + persona.getTotalVisitas() + " visitas)");
             txtDocumento.clear();
             rbCC.setSelected(true);
             refreshTabla();

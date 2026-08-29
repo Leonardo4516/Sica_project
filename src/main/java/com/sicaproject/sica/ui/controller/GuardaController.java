@@ -206,7 +206,6 @@ public class GuardaController implements Initializable {
             Empresa empresa = cmbEmpresaSolicitud.getValue();
             Usuario anfitrion = cmbFuncionarioSolicitud.getValue();
 
-            if (nombre.isEmpty()) { lblSolicitudMsg.setText("Ingrese nombre del visitante"); return; }
             if (empresa == null) { lblSolicitudMsg.setText("Seleccione empresa destino"); return; }
 
             String tipoDocumento = "CC";
@@ -214,16 +213,21 @@ public class GuardaController implements Initializable {
             else if (rbPasaporte.isSelected()) tipoDocumento = "PASAPORTE";
 
             String documento = txtDocSolicitud.getText().trim();
-
             if (documento.isEmpty()) { lblSolicitudMsg.setText("Ingrese número de documento"); return; }
 
-            Optional<Persona> personaOpt = personaService.porDocumento(documento);
+            Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
             Persona persona;
             if (personaOpt.isPresent()) {
                 persona = personaOpt.get();
+                if (!nombre.isEmpty()) {
+                    persona.setNombre(nombre);
+                }
                 persona.setTipoDocumento(tipoDocumento);
                 personaService.guardar(persona);
+                txtNombreSolicitud.setText(persona.getNombre());
+                lblSolicitudMsg.setText("Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
             } else {
+                if (nombre.isEmpty()) { lblSolicitudMsg.setText("Ingrese nombre del visitante"); return; }
                 persona = new Persona();
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);
@@ -231,14 +235,15 @@ public class GuardaController implements Initializable {
                 persona = personaService.guardar(persona);
             }
 
+            personaService.incrementarVisitas(persona);
+
             boolean esTemporal = chkPaseTemporalSolicitud.isSelected();
             Visita v = visitaService.solicitarAcceso(
                 persona, empresa, anfitrion, SceneManager.getCurrentUser(), esTemporal
             );
 
-            lblSolicitudMsg.setText("Solicitud creada #" + v.getId() + " (" + v.getEstado() + ")");
+            lblSolicitudMsg.setText("Solicitud #" + v.getId() + " creada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
             txtDocSolicitud.clear();
-            txtNombreSolicitud.clear();
             chkPaseTemporalSolicitud.setSelected(false);
             rbCC.setSelected(true);
             refreshTablas();

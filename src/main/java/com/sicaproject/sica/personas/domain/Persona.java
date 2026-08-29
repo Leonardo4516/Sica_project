@@ -10,6 +10,7 @@ public class Persona {
     private Long empresaId;
     private boolean bloqueado;
     private String motivoBloqueo;
+    private int totalVisitas;
 
     public Persona() {}
 
@@ -39,4 +40,7 @@ public class Persona {
 
     public String getMotivoBloqueo() { return motivoBloqueo; }
     public void setMotivoBloqueo(String motivoBloqueo) { this.motivoBloqueo = motivoBloqueo; }
+
+    public int getTotalVisitas() { return totalVisitas; }
+    public void setTotalVisitas(int totalVisitas) { this.totalVisitas = totalVisitas; }
 }

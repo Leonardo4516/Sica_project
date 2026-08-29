@@ -36,6 +36,9 @@ public class PersonaEntity {
     @Column(name = "motivo_bloqueo", length = 255)
     private String motivoBloqueo;
 
+    @Column(name = "total_visitas", nullable = false)
+    private int totalVisitas = 0;
+
     public PersonaEntity() {}
 
     public Long getId() { return id; }
@@ -64,4 +67,7 @@ public class PersonaEntity {
 
     public String getMotivoBloqueo() { return motivoBloqueo; }
     public void setMotivoBloqueo(String motivoBloqueo) { this.motivoBloqueo = motivoBloqueo; }
+
+    public int getTotalVisitas() { return totalVisitas; }
+    public void setTotalVisitas(int totalVisitas) { this.totalVisitas = totalVisitas; }
 }

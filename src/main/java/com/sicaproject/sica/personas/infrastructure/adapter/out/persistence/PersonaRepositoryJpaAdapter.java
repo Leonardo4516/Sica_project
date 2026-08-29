@@ -25,18 +25,43 @@ public class PersonaRepositoryJpaAdapter implements PersonaRepository {
     }
 
     @Override
+    public Optional<Persona> buscarPorTipoYDocumento(String tipoDocumento, String documento) {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            TypedQuery<PersonaEntity> query = em.createQuery(
+                    "SELECT p FROM PersonaEntity p WHERE p.tipoDocumento = :tipo AND p.documento = :doc", PersonaEntity.class);
+            query.setParameter("tipo", tipoDocumento);
+            query.setParameter("doc", documento);
+            return query.getResultStream().findFirst().map(PersonaMapper::toDomain);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
     public Persona guardar(Persona persona) {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             em.getTransaction().begin();
-            PersonaEntity entity = new PersonaEntity();
+            PersonaEntity entity;
+            if (persona.getId() != 0) {
+                entity = em.find(PersonaEntity.class, persona.getId());
+                if (entity == null) {
+                    throw new IllegalArgumentException("Persona no encontrada: " + persona.getId());
+                }
+            } else {
+                entity = new PersonaEntity();
+            }
             PersonaMapper.copyToEntity(persona, entity);
             if (persona.getEmpresaId() != null) {
                 entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
+            } else {
+                entity.setEmpresa(null);
             }
             em.persist(entity);
             em.getTransaction().commit();
             persona.setId(entity.getId());
+            persona.setTotalVisitas(entity.getTotalVisitas());
             return persona;
         } catch (RuntimeException e) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();
