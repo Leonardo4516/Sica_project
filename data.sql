@@ -27,10 +27,10 @@ INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
 WHERE r.nombre = 'GUARDA' AND p.codigo IN ('registrar_visita', 'registrar_salida');
 
--- FUNCIONARIO: aprobar_visita, rechazar_visita
+-- FUNCIONARIO: aprobar_visita, rechazar_visita, registrar_visita
 INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
-WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita');
+WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita', 'registrar_visita');
 
 -- ADMIN: todos los permisos
 INSERT INTO rol_permiso (rol_id, permiso_id)
