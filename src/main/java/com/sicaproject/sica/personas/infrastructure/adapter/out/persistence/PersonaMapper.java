@@ -30,5 +30,6 @@ public final class PersonaMapper {
         entity.setFotoUrl(persona.getFotoUrl());
         entity.setBloqueado(persona.isBloqueado());
         entity.setMotivoBloqueo(persona.getMotivoBloqueo());
+        entity.setTotalVisitas(persona.getTotalVisitas());
     }
 }
