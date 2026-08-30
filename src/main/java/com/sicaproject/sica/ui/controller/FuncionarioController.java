@@ -5,6 +5,8 @@ import com.sicaproject.sica.acceso.domain.EstadoVisita;
 import com.sicaproject.sica.acceso.domain.Visita;
 import com.sicaproject.sica.empresas.application.service.EmpresaService;
 import com.sicaproject.sica.empresas.domain.Empresa;
+import com.sicaproject.sica.iam.application.port.out.UsuarioRepository;
+import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
@@ -24,6 +26,7 @@ import javafx.scene.text.Text;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -164,8 +167,7 @@ public class FuncionarioController implements Initializable {
             lblMsg.setText("✗ " + e.getMessage());
         }
     }
-
-    @FXML
+@FXML
     private void handleRegistrar(ActionEvent event) {
         try {
             String nombre = txtNombre.getText().trim();
@@ -220,13 +222,17 @@ public class FuncionarioController implements Initializable {
 
             personaService.incrementarVisitas(persona);
 
-            Visita v = visitaService.solicitarAcceso(
-                persona, empresa,
-                SceneManager.getCurrentUser(),
-                SceneManager.getCurrentUser(),
-                chkPaseTemporal.isSelected()
+            // Get a guard user (any available)
+            UsuarioRepository usuarioRepository = CompositionRoot.getInstance().usuarioRepository();
+            List<Usuario> guardas = usuarioRepository.findByRol("GUARDA");
+            Usuario guard = guardas != null && !guardas.isEmpty() ? guardas.get(0) : SceneManager.getCurrentUser();
+
+            // Create pre-approved visit directly (no need for guard approval)
+            Visita v = visitaService.registrarVisitaPreaprobada(
+                persona, empresa, SceneManager.getCurrentUser(), guard
             );
-            lblMsg.setText("✓ Solicitud #" + v.getId() + " creada (" + persona.getTotalVisitas() + " visitas)");
+
+            lblMsg.setText("✓ Visita #" + v.getId() + " pre-aprobada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
             txtDocumento.clear();
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);

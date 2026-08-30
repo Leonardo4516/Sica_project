@@ -136,6 +136,7 @@
                             <Text text="Visitas" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                            <Button text="Bloquear / Desbloquear" styleClass="btn, btn-warning" onAction="#handleToggleBloqueo" />
                         </HBox>
                         <TabPane fx:id="tabPaneVisitas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 
