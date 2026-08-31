@@ -68,7 +68,7 @@ CREATE TABLE bitacora_auditoria (
     usuario_id BIGINT,
     accion VARCHAR(100) NOT NULL,
     entidad_afectada VARCHAR(100) NOT NULL,
-    entidad_id BIGINT NOT NULL,
+    entidad_id BIGINT,
     detalle TEXT,
     resultado VARCHAR(20),
     fecha_hora TIMESTAMP NOT NULL

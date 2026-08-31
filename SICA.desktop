@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SICA Control de Acceso
+GenericName=Sistema de Control de Acceso
+Comment=Sistema Integrado de Control de Acceso - Zona Acme
+Exec=/home/Papi_Leo/VSCODE/JAVA/proyecto_sica/iniciar_sica.sh
+Icon=security-high
+Path=/home/Papi_Leo/VSCODE/JAVA/proyecto_sica
+Terminal=false
+StartupNotify=true
+Categories=Office;Security;System;
