@@ -8,6 +8,10 @@ INSERT INTO permiso (codigo, descripcion) VALUES
 ('aprobar_visita', 'Aprobar solicitudes de acceso'),
 ('rechazar_visita', 'Rechazar solicitudes de acceso'),
 ('registrar_salida', 'Registrar salida de visitantes'),
+-- Incidentes y Auditoría
+('reportar_incidente', 'Reportar incidente de seguridad'),
+('gestionar_incidentes', 'Gestionar y cerrar incidentes'),
+('generar_reporte', 'Generar reportes y métricas de seguridad'),
 -- Administración
 ('gestionar_usuarios', 'Crear/editar/eliminar usuarios'),
 ('gestionar_roles', 'Gestionar roles y permisos'),
@@ -23,15 +27,15 @@ INSERT INTO rol (id, nombre) VALUES
 (3, 'ADMIN');
 
 -- ========== ASIGNACIÓN DE PERMISOS A ROLES ==========
--- GUARDA: registrar_visita, registrar_salida
+-- GUARDA: registrar_visita, registrar_salida, reportar_incidente
 INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
-WHERE r.nombre = 'GUARDA' AND p.codigo IN ('registrar_visita', 'registrar_salida');
+WHERE r.nombre = 'GUARDA' AND p.codigo IN ('registrar_visita', 'registrar_salida', 'reportar_incidente');
 
--- FUNCIONARIO: aprobar_visita, rechazar_visita, registrar_visita, bloquear_persona
+-- FUNCIONARIO: aprobar_visita, rechazar_visita, registrar_visita, bloquear_persona, reportar_incidente
 INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
-WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita', 'registrar_visita', 'bloquear_persona');
+WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita', 'registrar_visita', 'bloquear_persona', 'reportar_incidente');
 
 -- ADMIN: todos los permisos
 INSERT INTO rol_permiso (rol_id, permiso_id)
@@ -86,3 +90,4 @@ SELECT setval(pg_get_serial_sequence('rol', 'id'), coalesce(max(id), 1)) FROM ro
 SELECT setval(pg_get_serial_sequence('permiso', 'id'), coalesce(max(id), 1)) FROM permiso;
 SELECT setval(pg_get_serial_sequence('visita', 'id'), coalesce(max(id), 1)) FROM visita;
 SELECT setval(pg_get_serial_sequence('bitacora_auditoria', 'id'), coalesce(max(id), 1)) FROM bitacora_auditoria;
+SELECT setval(pg_get_serial_sequence('incidente', 'id'), coalesce(max(id), 1)) FROM incidente;

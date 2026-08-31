@@ -11,6 +11,7 @@
         <class>com.sicaproject.sica.empresas.infrastructure.adapter.out.persistence.EmpresaEntity</class>
         <class>com.sicaproject.sica.acceso.infrastructure.adapter.out.persistence.VisitaEntity</class>
         <class>com.sicaproject.sica.auditoria.infrastructure.adapter.out.persistence.BitacoraAuditoriaEntity</class>
+        <class>com.sicaproject.sica.incidentes.infrastructure.adapter.out.persistence.IncidenteEntity</class>
 
         <properties>
             <!-- Se sobreescriben en runtime vía JpaConfig si hay variables de entorno -->

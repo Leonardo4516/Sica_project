@@ -75,6 +75,18 @@ CREATE TABLE bitacora_auditoria (
 );
 ALTER TABLE bitacora_auditoria ADD CONSTRAINT fk_bitacora_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(id);
 
+CREATE TABLE incidente (
+    id BIGSERIAL PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    descripcion TEXT NOT NULL,
+    severidad VARCHAR(20) NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'ABIERTO',
+    persona_id BIGINT REFERENCES persona(id),
+    empresa_id BIGINT REFERENCES empresa(id),
+    reportado_por_id BIGINT NOT NULL REFERENCES usuario(id),
+    fecha_hora TIMESTAMP NOT NULL
+);
+
 CREATE INDEX idx_visita_persona ON visita(persona_id);
 CREATE INDEX idx_visita_estado ON visita(estado);
 CREATE INDEX idx_visita_fechahora ON visita(fecha_hora_registro);
@@ -82,3 +94,5 @@ CREATE INDEX idx_bitacora_usuario ON bitacora_auditoria(usuario_id);
 CREATE INDEX idx_bitacora_fecha ON bitacora_auditoria(fecha_hora);
 CREATE INDEX idx_usuario_rol ON usuario(rol_id);
 CREATE INDEX idx_persona_empresa ON persona(empresa_id);
+CREATE INDEX idx_incidente_fecha ON incidente(fecha_hora);
+CREATE INDEX idx_incidente_severidad ON incidente(severidad);

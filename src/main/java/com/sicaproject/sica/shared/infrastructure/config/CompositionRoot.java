@@ -15,6 +15,9 @@ import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.application.service.RbacService;
 import com.sicaproject.sica.iam.infrastructure.adapter.out.persistence.RolRepositoryJpaAdapter;
 import com.sicaproject.sica.iam.infrastructure.adapter.out.persistence.UsuarioRepositoryJpaAdapter;
+import com.sicaproject.sica.incidentes.application.port.out.IncidenteRepository;
+import com.sicaproject.sica.incidentes.application.service.IncidenteService;
+import com.sicaproject.sica.incidentes.infrastructure.adapter.out.persistence.IncidenteRepositoryJpaAdapter;
 import com.sicaproject.sica.personas.application.port.out.PersonaRepository;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.infrastructure.adapter.out.persistence.PersonaRepositoryJpaAdapter;
@@ -35,6 +38,7 @@ public final class CompositionRoot {
     private final VisitaRepository visitaRepository = new VisitaRepositoryJpaAdapter();
     private final BitacoraAuditoriaRepository bitacoraRepository = new BitacoraAuditoriaRepositoryJpaAdapter();
     private final RolRepository rolRepository = new RolRepositoryJpaAdapter();
+    private final IncidenteRepository incidenteRepository = new IncidenteRepositoryJpaAdapter();
 
     private final AuditoriaService auditoriaService = new AuditoriaService(bitacoraRepository);
     private final RbacService rbacService = new RbacService();
@@ -42,6 +46,7 @@ public final class CompositionRoot {
     private final EmpresaService empresaService = new EmpresaService(empresaRepository, rbacService, auditoriaService);
     private final PersonaService personaService = new PersonaService(personaRepository, rbacService, auditoriaService);
     private final VisitaService visitaService = new VisitaService(visitaRepository, rbacService, auditoriaService);
+    private final IncidenteService incidenteService = new IncidenteService(incidenteRepository, rbacService, auditoriaService);
     private final com.sicaproject.sica.iam.application.service.UsuarioService usuarioService =
             new com.sicaproject.sica.iam.application.service.UsuarioService(usuarioRepository, rolRepository, rbacService, auditoriaService);
 
@@ -63,5 +68,7 @@ public final class CompositionRoot {
     public PersonaService personaService() { return personaService; }
     public VisitaService visitaService() { return visitaService; }
     public AuditoriaService auditoriaService() { return auditoriaService; }
+    public IncidenteRepository incidenteRepository() { return incidenteRepository; }
+    public IncidenteService incidenteService() { return incidenteService; }
     public com.sicaproject.sica.iam.application.service.UsuarioService usuarioService() { return usuarioService; }
 }
