@@ -1,13 +1,14 @@
 package com.sicaproject.sica.ui.controller;
 
 import com.sicaproject.sica.acceso.application.service.VisitaService;
-import com.sicaproject.sica.auditoria.application.AuditoriaService;
 import com.sicaproject.sica.acceso.domain.EstadoVisita;
 import com.sicaproject.sica.acceso.domain.Visita;
 import com.sicaproject.sica.empresas.application.service.EmpresaService;
 import com.sicaproject.sica.empresas.domain.Empresa;
 import com.sicaproject.sica.iam.application.port.out.UsuarioRepository;
 import com.sicaproject.sica.iam.domain.Usuario;
+import com.sicaproject.sica.incidentes.application.service.IncidenteService;
+import com.sicaproject.sica.incidentes.domain.SeveridadIncidente;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
@@ -19,6 +20,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
@@ -64,10 +67,12 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     private final VisitaService visitaService = CompositionRoot.getInstance().visitaService();
     private final EmpresaService empresaService = CompositionRoot.getInstance().empresaService();
     private final PersonaService personaService = CompositionRoot.getInstance().personaService();
+    private final IncidenteService incidenteService = CompositionRoot.getInstance().incidenteService();
     private final UsuarioRepository usuarioRepository = CompositionRoot.getInstance().usuarioRepository();
 
     private final DateTimeFormatter dateTimeFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (SceneManager.getCurrentUser() != null) {
             txtUsuario.setText("Bienvenido, " + SceneManager.getCurrentUser().getUsername());
@@ -116,10 +121,36 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         configurarColumnas(tblActivas, colGId, colGPersona, colGEmpresa, colGHora, colGEstado);
         configurarColumnasAprobadas();
         configurarColumnasPendientes();
+        configurarSeleccionFilas();
 
         refreshTablas();
 
         RefreshScheduler.getInstance().register(this);
+    }
+
+    private void configurarSeleccionFilas() {
+        tblAprobadas.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                txtVisitaIdIn.setText(String.valueOf(newV.getId()));
+                String foto = (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty())
+                        ? newV.getPersona().getFotoUrl() : "Sin foto registrada";
+                String anfitrion = newV.getFuncionarioAnfitrion() != null ? newV.getFuncionarioAnfitrion().getUsername() : "—";
+                String estadoBloqueo = newV.getPersona().isBloqueado()
+                        ? "⛔ BLOQUEADO (" + newV.getPersona().getMotivoBloqueo() + ")"
+                        : "✅ ACCESO AUTORIZADO";
+                lblInMsg.setText("Visitante: " + newV.getPersona().getNombre() + " (" + newV.getPersona().getDocumento() + ")\n" +
+                        "Empresa: " + newV.getEmpresaDestino().getNombre() + " | Anfitrión: " + anfitrion + "\n" +
+                        "Foto: " + foto + "\n" +
+                        "Estado: " + estadoBloqueo);
+            }
+        });
+
+        tblActivas.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                txtVisitaIdOut.setText(String.valueOf(newV.getId()));
+                lblOutMsg.setText("Visita #" + newV.getId() + ": " + newV.getPersona().getNombre() + " (" + newV.getEmpresaDestino().getNombre() + ")");
+            }
+        });
     }
 
     @Override
@@ -131,7 +162,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             TableColumn<Visita, String> colPersona, TableColumn<Visita, String> colEmpresa,
             TableColumn<Visita, String> colHora, TableColumn<Visita, String> colEstado) {
         colId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
-        colPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        colPersona.setCellValueFactory(data -> {
+            Persona p = data.getValue().getPersona();
+            String nombre = p != null ? p.getNombre() : "—";
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " ⛔ [BLOQUEADO]" : nombre);
+        });
         colEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
         colHora.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraEntrada();
@@ -144,8 +179,12 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         tblAprobadas.getColumns().clear();
         TableColumn<Visita, String> colAId = new TableColumn<>("ID");
         colAId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
-        TableColumn<Visita, String> colAPersona = new TableColumn<>("Persona");
-        colAPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        TableColumn<Visita, String> colAPersona = new TableColumn<>("Visitante");
+        colAPersona.setCellValueFactory(data -> {
+            Persona p = data.getValue().getPersona();
+            String nombre = p != null ? p.getNombre() : "—";
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " ⛔ [BLOQUEADO]" : nombre);
+        });
         TableColumn<Visita, String> colAEmpresa = new TableColumn<>("Empresa");
         colAEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
         TableColumn<Visita, String> colAHora = new TableColumn<>("Hora registro");
@@ -163,8 +202,12 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         tblPendientes.getColumns().clear();
         TableColumn<Visita, String> colPId = new TableColumn<>("ID");
         colPId.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getId())));
-        TableColumn<Visita, String> colPPersona = new TableColumn<>("Persona");
-        colPPersona.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPersona().getNombre()));
+        TableColumn<Visita, String> colPPersona = new TableColumn<>("Visitante");
+        colPPersona.setCellValueFactory(data -> {
+            Persona p = data.getValue().getPersona();
+            String nombre = p != null ? p.getNombre() : "—";
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " ⛔ [BLOQUEADO]" : nombre);
+        });
         TableColumn<Visita, String> colPEmpresa = new TableColumn<>("Empresa");
         colPEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
         TableColumn<Visita, String> colPHora = new TableColumn<>("Hora registro");
@@ -185,13 +228,13 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             if (txt.isEmpty()) { lblInMsg.setText("Ingrese un ID"); return; }
             long id = Long.parseLong(txt);
             Visita v = visitaService.checkIn(id, SceneManager.getCurrentUser());
-            lblInMsg.setText("Check-in OK. Estado: " + v.getEstado());
+            lblInMsg.setText("✓ Check-in exitoso. Estado: " + v.getEstado() + " (" + v.getPersona().getNombre() + ")");
             txtVisitaIdIn.clear();
             refreshTablas();
         } catch (NumberFormatException e) {
             lblInMsg.setText("ID inválido");
         } catch (Exception e) {
-            lblInMsg.setText("Error: " + e.getMessage());
+            lblInMsg.setText("⛔ Error: " + e.getMessage());
         }
     }
 
@@ -202,7 +245,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             if (txt.isEmpty()) { lblOutMsg.setText("Ingrese un ID"); return; }
             long id = Long.parseLong(txt);
             Visita v = visitaService.checkOut(id, SceneManager.getCurrentUser());
-            lblOutMsg.setText("Check-out OK. Estado: " + v.getEstado());
+            lblOutMsg.setText("✓ Check-out exitoso. Visita #" + v.getId() + " finalizada.");
             txtVisitaIdOut.clear();
             refreshTablas();
         } catch (NumberFormatException e) {
@@ -318,6 +361,48 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     }
 
     @FXML
+    private void handleReportarIncidente(ActionEvent event) {
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Reportar Incidente desde Portería");
+        dialog.setHeaderText("Registro de incidente de seguridad perimetral");
+
+        TextField txtTitulo = new TextField();
+        txtTitulo.setPromptText("Título del incidente");
+        TextArea txtDesc = new TextArea();
+        txtDesc.setPromptText("Descripción de lo ocurrido en portería");
+        txtDesc.setPrefRowCount(3);
+        ComboBox<SeveridadIncidente> cmbSev = new ComboBox<>(FXCollections.observableArrayList(SeveridadIncidente.values()));
+        cmbSev.setValue(SeveridadIncidente.MEDIA);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.add(new Label("Título:"), 0, 0);
+        grid.add(txtTitulo, 1, 0);
+        grid.add(new Label("Severidad:"), 0, 1);
+        grid.add(cmbSev, 1, 1);
+        grid.add(new Label("Descripción:"), 0, 2);
+        grid.add(txtDesc, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            String tit = txtTitulo.getText().trim();
+            String desc = txtDesc.getText().trim();
+            if (!tit.isEmpty() && !desc.isEmpty()) {
+                try {
+                    incidenteService.reportarIncidente(tit, desc, cmbSev.getValue(), null, null, SceneManager.getCurrentUser());
+                    new Alert(Alert.AlertType.INFORMATION, "Incidente registrado y auditado correctamente.").show();
+                } catch (Exception e) {
+                    new Alert(Alert.AlertType.ERROR, "Error al registrar incidente: " + e.getMessage()).show();
+                }
+            }
+        }
+    }
+
+    @FXML
     private void handleRefresh(ActionEvent event) {
         refreshTablas();
     }
@@ -327,7 +412,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         SceneManager.logout();
     }
 
-private void refreshTablas() {
+    private void refreshTablas() {
         var todas = visitaService.listarTodas();
 
         var activas = todas.stream()

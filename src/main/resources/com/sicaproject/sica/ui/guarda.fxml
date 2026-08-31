@@ -132,9 +132,10 @@
                 <!-- Tablas -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
                     <VBox styleClass="glass-panel-inner" spacing="14">
-                        <HBox alignment="CENTER_LEFT">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
                             <Text text="Visitas" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
+                            <Button text="⚠️ Reportar Incidente" styleClass="btn, btn-danger" onAction="#handleReportarIncidente" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TabPane fx:id="tabPaneVisitas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">

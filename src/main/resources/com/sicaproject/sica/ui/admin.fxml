@@ -88,6 +88,67 @@
                         </HBox>
                         <TabPane fx:id="tabPaneAdmin" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
 
+                            <Tab text="🚨 Evacuación de Emergencia">
+                                <VBox spacing="8">
+                                    <padding><Insets top="14" /></padding>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Label fx:id="lblEvacuacionConteo" text="Personal dentro para conteo: 0 personas" styleClass="label-text" style="-fx-font-weight: bold; -fx-text-fill: #10b981;" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                        <Button text="Refrescar Evacuación" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                                    </HBox>
+                                    <TableView fx:id="tblEvacuacion" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colEvacId" text="Visita #" prefWidth="60" />
+                                            <TableColumn fx:id="colEvacDoc" text="Documento" prefWidth="120" />
+                                            <TableColumn fx:id="colEvacPersona" text="Nombre Persona" prefWidth="200" />
+                                            <TableColumn fx:id="colEvacTipo" text="Tipo" prefWidth="100" />
+                                            <TableColumn fx:id="colEvacEmpresa" text="Empresa Destino" prefWidth="200" />
+                                            <TableColumn fx:id="colEvacHora" text="Hora Ingreso" prefWidth="150" />
+                                            <TableColumn fx:id="colEvacAnfitrion" text="Anfitrión" prefWidth="150" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </Tab>
+
+                            <Tab text="⚠️ Incidentes de Seguridad">
+                                <VBox spacing="8">
+                                    <padding><Insets top="14" /></padding>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Button text="+ Reportar Incidente" styleClass="btn, btn-danger" onAction="#handleNuevoIncidente" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                    </HBox>
+                                    <TableView fx:id="tblIncidentes" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colIncId" text="ID" prefWidth="50" />
+                                            <TableColumn fx:id="colIncTitulo" text="Título" prefWidth="220" />
+                                            <TableColumn fx:id="colIncSeveridad" text="Severidad" prefWidth="90" />
+                                            <TableColumn fx:id="colIncEstado" text="Estado" prefWidth="90" />
+                                            <TableColumn fx:id="colIncPersona" text="Persona Involucrada" prefWidth="160" />
+                                            <TableColumn fx:id="colIncReportadoPor" text="Reportado Por" prefWidth="130" />
+                                            <TableColumn fx:id="colIncFecha" text="Fecha / Hora" prefWidth="140" />
+                                            <TableColumn fx:id="colIncAccion" text="Acción" prefWidth="110" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </Tab>
+
+                            <Tab text="👤 Gestión de Personas">
+                                <VBox spacing="8">
+                                    <padding><Insets top="14" /></padding>
+                                    <TableView fx:id="tblPersonas" VBox.vgrow="ALWAYS">
+                                        <columns>
+                                            <TableColumn fx:id="colPerId" text="ID" prefWidth="50" />
+                                            <TableColumn fx:id="colPerDoc" text="Documento" prefWidth="130" />
+                                            <TableColumn fx:id="colPerNombre" text="Nombre Completo" prefWidth="200" />
+                                            <TableColumn fx:id="colPerTipo" text="Tipo" prefWidth="110" />
+                                            <TableColumn fx:id="colPerEstado" text="Restricción Acceso" prefWidth="140" />
+                                            <TableColumn fx:id="colPerVisitas" text="Total Visitas" prefWidth="90" />
+                                            <TableColumn fx:id="colPerAccion" text="Acción Bloqueo" prefWidth="130" />
+                                        </columns>
+                                    </TableView>
+                                </VBox>
+                            </Tab>
+
                             <Tab text="Usuarios">
                                 <VBox spacing="8">
                                     <padding><Insets top="14" /></padding>
