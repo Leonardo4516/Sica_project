@@ -1,0 +1,81 @@
+SICA
+(Sistema Integrado de Control de Acceso para Zona Acme)
+Introducción y Contexto del Problema
+
+El Complejo Empresarial "Zona Acme" se enorgullece de ser un centro de innovación que alberga a más de 30 empresas de alto perfil. Sin embargo, su imagen de modernidad se ve empañada por un sistema de control de acceso obsoleto y manual, basado en libros de registro en papel y comunicación por radio. Esta metodología no solo es ineficiente, sino que presenta graves brechas de seguridad y problemas operativos:
+
+Vulnerabilidad de Seguridad: No existe un registro fiable de quién está dentro del complejo en un momento dado. En caso de una emergencia, la evacuación y el recuento de personal serían caóticos e imprecisos.
+Experiencia Ineficiente: Los visitantes y trabajadores forman largas filas en horas pico. Los invitados no anunciados generan cuellos de botella mientras los guardas intentan contactar a sus anfitriones por radio.
+Falta de Trazabilidad: Investigar un incidente de seguridad es una tarea manual y tediosa que implica revisar páginas y páginas de un libro de registro con caligrafía a menudo ilegible.
+Gestión de Incidentes Reactiva: No hay forma de marcar a una persona con una restricción de acceso de manera inmediata y efectiva en todos los puntos de entrada.
+
+La administración de "Zona Acme" ha decidido que es momento de modernizar. Te han contratado para desarrollar el nuevo Sistema Integrado de Control de Acceso (SICA), una solución de software robusta que automatizará y asegurará todo el proceso de entrada y salida del complejo.
+
+Descripción Detallada del Flujo de Acceso
+
+Para que el sistema sea realista, debe manejar diferentes escenarios de manera fluida.
+
+1. El Invitado Pre-registrado (El Flujo Ideal):
+
+Un Funcionario de Empresa registra previamente a un invitado en el sistema, indicando sus datos y la fecha/hora de la visita. El estado de la visita queda como "Aprobado".
+Al llegar, el invitado presenta su documento. El Guarda de Seguridad lo busca en el sistema.
+La pantalla del guarda muestra instantáneamente la información del invitado, su foto (URL), a quién visita y que su acceso está autorizado. El guarda realiza el check-in.
+
+2. El Invitado No Anunciado (El Flujo en Tiempo Real):
+
+Un invitado llega sin registro. El guarda toma sus datos, los ingresa y la visita se crea con estado "Pendiente de Aprobación".
+Automáticamente, el sistema notifica a la interfaz del Funcionario de Empresa correspondiente.
+El funcionario ve la solicitud en su pantalla y la aprueba o rechaza.
+La pantalla del Guarda se actualiza en tiempo real (gracias a la concurrencia), permitiendo el ingreso si fue aprobada.
+
+3. El Trabajador con Carnet Olvidado (Pase Temporal):
+
+Un trabajador llega sin su documento. El Guarda lo busca en el sistema y marca un ingreso como "Pendiente de Aprobación por Olvido".
+El flujo es idéntico al del invitado no anunciado: el Funcionario de Empresa recibe la notificación y aprueba un ingreso puntual para ese día.
+
+4. La Salida Olvidada (Flujo de Regularización):
+
+Una persona (trabajador o invitado) sale sin registrar su salida. Su última visita queda con estado "Dentro".
+En su próximo intento de ingreso, el sistema lo detectará. No se le impedirá el ingreso, pero el sistema realizará dos acciones:
+La visita anterior, que estaba abierta, se marcará automáticamente con el estado "Cerrada por Sistema (Salida Olvidada)".
+Se creará un nuevo registro de visita para el ingreso actual.
+Esto garantiza que no se bloquee el acceso, pero que la inconsistencia quede registrada para auditoría.
+Módulos del Sistema
+
+1. Módulo de Gestión de Usuarios y Seguridad El corazón de la seguridad del SICA reside en un robusto sistema de Control de Acceso Basado en Roles (RBAC). El objetivo es que el sistema sea configurable y auditable, donde los permisos no están definidos en el código, sino en la base de datos.
+
+Roles y Permisos Granulares: El sistema no solo define Roles, sino también Permisos. Cada acción crítica en el sistema (ej. 'crear_usuario', 'registrar_visita', 'generar_reporte', 'bloquear_persona') está definida como un permiso individual. Los roles son simplemente agrupaciones de estos permisos.
+Lógica de Autorización: Antes de ejecutar cualquier operación, el sistema debe verificar si el rol del usuario que ha iniciado sesión tiene el permiso específico requerido para esa acción. Si no lo tiene, la operación debe ser denegada con un mensaje claro.
+
+2. Módulo de Auditoría y Trazabilidad (Bitácora) Para garantizar la máxima trazabilidad y seguridad, el sistema debe registrar cada acción relevante en una bitácora de auditoría inmutable.
+
+Requerimiento Funcional: El estudiante deberá implementar la lógica necesaria en la capa de servicio de Java para que, después de cada operación crítica exitosa, se inserte un registro detallado en la tabla bitacora_auditoria.
+Acciones a Registrar (Mínimo):
+Intentos de login (exitosos y fallidos).
+Creación, actualización o eliminación de cualquier entidad principal (Usuarios, Personas, Empresas).
+Cambios de estado de acceso de una persona.
+Registro de un incidente.
+Check-in y check-out de una visita.
+
+(Los módulos Gestión de Personas, Control de Acceso, Gestión de Incidentes y Reportes operan bajo las nuevas reglas de permisos y auditoría).
+
+Se espera que los estudiantes implementen la lógica de negocio que respete el nuevo sistema de permisos (RBAC) y que alimente la tabla bitacora_auditoria desde la capa de servicio de Java.
+Se espera que apliquen rigurosamente los principios SOLID, al menos 2 patrones de diseño, y donde sea apropiado, funciones lambda y la API Stream.
+Arquitectura Hexagonal aplicando vertical Slice+
+La gestión del repositorio debe seguir el flujo de trabajo Git Flow.
+Los mensajes de commit deben seguir la especificación de Conventional Commits.
+Entregables
+
+La entrega final es un enlace a un repositorio privado de GitHub, con el trainer como colaborador, que contenga:
+
+1. Código Fuente Completo: Estructurado en paquetes según la arquitectura hexagonal.
+
+2. Documentación en README.md:
+
+Descripción del Proyecto: Resumen del problema y la solución.
+Modelo de la Base de Datos: Incluyendo el diagrama Entidad-Relación.
+Decisiones de Diseño: Una sección explicando dónde y por qué se aplicaron los principios SOLID y los patrones de diseño.
+Instrucciones de Instalación y Ejecución: Guía clara para configurar y correr el proyecto.
+Guía de Uso: Incluyendo credenciales de ejemplo para cada rol.
+
+3. Scripts de Base de Datos: Archivos schema.sql (creación) y data.sql (poblado).

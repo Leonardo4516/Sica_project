@@ -309,21 +309,6 @@ public class GuardaController implements Initializable {
     }
 
     @FXML
-    private void handleToggleBloqueo(ActionEvent event) {
-        Visita visita = tblActivas.getSelectionModel().getSelectedItem();
-        if (visita == null) {
-            lblSolicitudMsg.setText("Seleccione una visita de la tabla Activas");
-            return;
-        }
-        Persona persona = visita.getPersona();
-        persona.setBloqueado(!persona.isBloqueado());
-        persona.setMotivoBloqueo(persona.isBloqueado() ? "Bloqueado por guarda" : null);
-        personaService.guardar(persona);
-        lblSolicitudMsg.setText((persona.isBloqueado() ? "Bloqueada" : "Desbloqueada") + ": " + persona.getNombre());
-        refreshTablas();
-    }
-
-    @FXML
     private void handleLogout(ActionEvent event) {
         SceneManager.logout();
     }

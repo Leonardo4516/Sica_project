@@ -20,6 +20,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
@@ -124,12 +125,14 @@ public class FuncionarioController implements Initializable {
         colAcciones.setCellFactory(col -> new TableCell<>() {
             private final Button btnAprobar = new Button("Aprobar");
             private final Button btnRechazar = new Button("Rechazar");
-            private final HBox contenedor = new HBox(8, btnAprobar, btnRechazar);
+            private final Button btnBloqueo = new Button();
+            private final HBox contenedor = new HBox(6, btnAprobar, btnRechazar, btnBloqueo);
 
             {
                 contenedor.setAlignment(Pos.CENTER);
                 btnAprobar.getStyleClass().add("btn-aprobar");
                 btnRechazar.getStyleClass().add("btn-rechazar");
+                btnBloqueo.getStyleClass().add("btn-bloqueo");
                 btnAprobar.setOnAction(e -> {
                     Visita v = getTableView().getItems().get(getIndex());
                     aprobar(v);
@@ -138,12 +141,33 @@ public class FuncionarioController implements Initializable {
                     Visita v = getTableView().getItems().get(getIndex());
                     rechazar(v);
                 });
+                btnBloqueo.setOnAction(e -> {
+                    Visita v = getTableView().getItems().get(getIndex());
+                    toggleBloqueo(v);
+                });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : contenedor);
+                if (empty) {
+                    setGraphic(null);
+                    return;
+                }
+                
+                Visita visita = getTableView().getItems().get(getIndex());
+                Persona persona = visita.getPersona();
+                
+                // Actualizar texto e icono del botón según estado de bloqueo
+                if (persona.isBloqueado()) {
+                    btnBloqueo.setText("Desbloquear");
+                    btnBloqueo.setTooltip(new Tooltip("Desbloquear persona"));
+                } else {
+                    btnBloqueo.setText("Bloquear");
+                    btnBloqueo.setTooltip(new Tooltip("Bloquear persona"));
+                }
+                
+                setGraphic(contenedor);
             }
         });
     }
@@ -162,6 +186,33 @@ public class FuncionarioController implements Initializable {
         try {
             visitaService.rechazarVisita(visita.getId(), SceneManager.getCurrentUser());
             lblMsg.setText("✓ Visita #" + visita.getId() + " rechazada.");
+            refreshTabla();
+        } catch (Exception e) {
+            lblMsg.setText("✗ " + e.getMessage());
+        }
+    }
+
+    private void toggleBloqueo(Visita visita) {
+        try {
+            Persona persona = visita.getPersona();
+            if (persona.isBloqueado()) {
+                personaService.desbloquearPersona(persona);
+                lblMsg.setText("✓ Persona desbloqueada: " + persona.getNombre());
+            } else {
+                TextInputDialog dialog = new TextInputDialog();
+                dialog.setTitle("Bloquear persona");
+                dialog.setHeaderText("Bloquear a: " + persona.getNombre());
+                dialog.setContentText("Motivo del bloqueo:");
+                
+                Optional<String> resultado = dialog.showAndWait();
+                if (resultado.isPresent() && !resultado.get().trim().isEmpty()) {
+                    String motivo = resultado.get().trim();
+                    personaService.bloquearPersona(persona, motivo);
+                    lblMsg.setText("✓ Persona bloqueada: " + persona.getNombre() + " (Motivo: " + motivo + ")");
+                } else {
+                    return;
+                }
+            }
             refreshTabla();
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());

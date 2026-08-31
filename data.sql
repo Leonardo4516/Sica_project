@@ -13,7 +13,8 @@ INSERT INTO permiso (codigo, descripcion) VALUES
 ('gestionar_roles', 'Gestionar roles y permisos'),
 ('gestionar_empresas', 'Gestionar empresas'),
 ('ver_bitacora', 'Ver bitácora de auditoría'),
-('ver_dashboard', 'Ver dashboard administrativo');
+('ver_dashboard', 'Ver dashboard administrativo'),
+('bloquear_persona', 'Bloquear/desbloquear personas');
 
 -- ========== ROLES ==========
 INSERT INTO rol (id, nombre) VALUES
@@ -27,10 +28,10 @@ INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
 WHERE r.nombre = 'GUARDA' AND p.codigo IN ('registrar_visita', 'registrar_salida');
 
--- FUNCIONARIO: aprobar_visita, rechazar_visita, registrar_visita
+-- FUNCIONARIO: aprobar_visita, rechazar_visita, registrar_visita, bloquear_persona
 INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
-WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita', 'registrar_visita');
+WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita', 'registrar_visita', 'bloquear_persona');
 
 -- ADMIN: todos los permisos
 INSERT INTO rol_permiso (rol_id, permiso_id)

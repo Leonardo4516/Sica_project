@@ -46,4 +46,10 @@ public class PersonaService {
         persona.setMotivoBloqueo(motivo);
         personaRepository.actualizar(persona);
     }
+
+    public void desbloquearPersona(Persona persona) {
+        persona.setBloqueado(false);
+        persona.setMotivoBloqueo(null);
+        personaRepository.actualizar(persona);
+    }
 }

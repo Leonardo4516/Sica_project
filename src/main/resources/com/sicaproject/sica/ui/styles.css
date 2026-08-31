@@ -280,6 +280,20 @@
     -fx-background-color: #dc2626;
 }
 
+.btn-bloqueo {
+    -fx-background-color: #f59e0b;
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: 600;
+    -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+    -fx-cursor: hand;
+}
+
+.btn-bloqueo:hover {
+    -fx-background-color: #d97706;
+}
+
 /* ========== TABLE ========== */
 .table-view {
     -fx-background-color: #131826;
