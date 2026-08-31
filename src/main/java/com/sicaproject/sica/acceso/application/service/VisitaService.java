@@ -49,6 +49,14 @@ public class VisitaService {
         Visita visita = visitaRepository.porId(visitaId)
                 .orElseThrow(() -> new IllegalArgumentException("Visita no encontrada: " + visitaId));
 
+        if (visita.getPersona() != null && visita.getPersona().isBloqueado()) {
+            auditoriaService.registrar(guarda.getId(), "ACCESO_DENEGADO_BLOQUEO", "PERSONA", visita.getPersona().getId(),
+                    "Intento de check-in denegado: La persona '" + visita.getPersona().getNombre() + "' se encuentra bloqueada (" +
+                            (visita.getPersona().getMotivoBloqueo() != null ? visita.getPersona().getMotivoBloqueo() : "Sin motivo especificado") + ")", "DENEGADO");
+            throw new IllegalStateException("Acceso denegado: la persona '" + visita.getPersona().getNombre() + "' se encuentra bloqueada por seguridad (" +
+                    (visita.getPersona().getMotivoBloqueo() != null ? visita.getPersona().getMotivoBloqueo() : "Restricción de acceso activa") + ")");
+        }
+
         // Flujo 4: si la persona tiene otra visita abierta (DENTRO) sin check-out, se regulariza primero
         regularizarSiCorresponde(visita.getPersona().getId(), guarda);
 
@@ -68,6 +76,12 @@ public class VisitaService {
     public Visita registrarVisitaPreaprobada(Persona persona, Empresa empresaDestino,
                                               Usuario funcionario, Usuario guardaAsignado) {
         rbacService.verificarPermiso(funcionario, "aprobar_visita");
+
+        if (persona != null && persona.isBloqueado()) {
+            auditoriaService.registrar(funcionario.getId(), "PREAPROBACION_BLOQUEADA", "PERSONA", persona.getId(),
+                    "Intento de pre-aprobación para persona bloqueada: " + persona.getNombre(), "DENEGADO");
+            throw new IllegalStateException("No se puede pre-aprobar visita: la persona '" + persona.getNombre() + "' se encuentra bloqueada en el sistema.");
+        }
 
         Visita visita = new Visita();
         visita.setPersona(persona);
@@ -90,6 +104,12 @@ public class VisitaService {
     public Visita solicitarAcceso(Persona persona, Empresa empresaDestino,
                                    Usuario funcionarioAnfitrion, Usuario guarda, boolean paseTemporal) {
         rbacService.verificarPermiso(guarda, "registrar_visita");
+
+        if (persona != null && persona.isBloqueado()) {
+            auditoriaService.registrar(guarda.getId(), "SOLICITUD_ACCESO_BLOQUEADO", "PERSONA", persona.getId(),
+                    "Intento de solicitud de acceso para persona bloqueada: " + persona.getNombre(), "DENEGADO");
+            throw new IllegalStateException("No se puede solicitar acceso: la persona '" + persona.getNombre() + "' se encuentra bloqueada en el sistema.");
+        }
 
         regularizarSiCorresponde(persona.getId(), guarda);
 

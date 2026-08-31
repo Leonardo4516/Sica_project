@@ -38,10 +38,12 @@ public final class CompositionRoot {
 
     private final AuditoriaService auditoriaService = new AuditoriaService(bitacoraRepository);
     private final RbacService rbacService = new RbacService();
-    private final AuthService authService = new AuthService(usuarioRepository);
-    private final EmpresaService empresaService = new EmpresaService(empresaRepository);
-    private final PersonaService personaService = new PersonaService(personaRepository);
+    private final AuthService authService = new AuthService(usuarioRepository, auditoriaService);
+    private final EmpresaService empresaService = new EmpresaService(empresaRepository, rbacService, auditoriaService);
+    private final PersonaService personaService = new PersonaService(personaRepository, rbacService, auditoriaService);
     private final VisitaService visitaService = new VisitaService(visitaRepository, rbacService, auditoriaService);
+    private final com.sicaproject.sica.iam.application.service.UsuarioService usuarioService =
+            new com.sicaproject.sica.iam.application.service.UsuarioService(usuarioRepository, rolRepository, rbacService, auditoriaService);
 
     private CompositionRoot() {}
 
@@ -61,4 +63,5 @@ public final class CompositionRoot {
     public PersonaService personaService() { return personaService; }
     public VisitaService visitaService() { return visitaService; }
     public AuditoriaService auditoriaService() { return auditoriaService; }
+    public com.sicaproject.sica.iam.application.service.UsuarioService usuarioService() { return usuarioService; }
 }

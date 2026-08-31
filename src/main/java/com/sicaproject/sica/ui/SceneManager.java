@@ -84,6 +84,10 @@ public class SceneManager {
     }
 
     public static void logout() {
+        try {
+            RefreshScheduler.getInstance().clear();
+        } catch (Exception ignored) {
+        }
         currentUser = null;
         loadScene("/com/sicaproject/sica/ui/login.fxml", "SICA — Login");
     }

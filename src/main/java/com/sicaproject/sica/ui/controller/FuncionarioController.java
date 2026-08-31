@@ -179,7 +179,6 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             visitaService.aprobarVisita(visita.getId(), SceneManager.getCurrentUser());
             lblMsg.setText("✓ Visita #" + visita.getId() + " aprobada. El guarda ya puede hacer el check-in.");
             refreshTabla();
-        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -190,7 +189,6 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             visitaService.rechazarVisita(visita.getId(), SceneManager.getCurrentUser());
             lblMsg.setText("✓ Visita #" + visita.getId() + " rechazada.");
             refreshTabla();
-        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -200,7 +198,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
         try {
             Persona persona = visita.getPersona();
             if (persona.isBloqueado()) {
-                personaService.desbloquearPersona(persona);
+                personaService.desbloquearPersona(persona, SceneManager.getCurrentUser());
                 lblMsg.setText("✓ Persona desbloqueada: " + persona.getNombre());
             } else {
                 TextInputDialog dialog = new TextInputDialog();
@@ -211,19 +209,19 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                 Optional<String> resultado = dialog.showAndWait();
                 if (resultado.isPresent() && !resultado.get().trim().isEmpty()) {
                     String motivo = resultado.get().trim();
-                    personaService.bloquearPersona(persona, motivo);
+                    personaService.bloquearPersona(persona, motivo, SceneManager.getCurrentUser());
                     lblMsg.setText("✓ Persona bloqueada: " + persona.getNombre() + " (Motivo: " + motivo + ")");
                 } else {
                     return;
                 }
             }
             refreshTabla();
-        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
     }
-@FXML
+
+    @FXML
     private void handleRegistrar(ActionEvent event) {
         try {
             String nombre = txtNombre.getText().trim();
@@ -257,7 +255,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                 if ("TRABAJADOR".equals(tipoPersona) && persona.getEmpresaId() == null) {
                     persona.setEmpresaId(empresa.getId());
                 }
-                personaService.guardar(persona);
+                personaService.guardar(persona, SceneManager.getCurrentUser());
                 txtNombre.setText(persona.getNombre());
                 lblMsg.setText("✓ Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
             } else {
@@ -273,7 +271,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                 if ("TRABAJADOR".equals(tipoPersona)) {
                     persona.setEmpresaId(empresa.getId());
                 }
-                persona = personaService.guardar(persona);
+                persona = personaService.guardar(persona, SceneManager.getCurrentUser());
             }
 
             personaService.incrementarVisitas(persona);
@@ -293,7 +291,6 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);
             refreshTabla();
-        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -302,7 +299,6 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
     @FXML
     private void handleRefresh(ActionEvent event) {
         refreshTabla();
-        RefreshScheduler.getInstance().register(this);
     }
 
     @FXML

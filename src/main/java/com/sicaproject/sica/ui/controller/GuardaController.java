@@ -234,7 +234,13 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 } else {
                     rbInvitado.setSelected(true);
                 }
-                lblSolicitudMsg.setText("Persona encontrada: " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
+                if (persona.isBloqueado()) {
+                    lblSolicitudMsg.setText("⛔ ALERTA: Persona BLOQUEADA. Motivo: " +
+                            (persona.getMotivoBloqueo() != null ? persona.getMotivoBloqueo() : "Restricción de acceso") +
+                            " (" + persona.getTotalVisitas() + " visitas previas)");
+                } else {
+                    lblSolicitudMsg.setText("Persona encontrada: " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
+                }
             } else {
                 txtNombreSolicitud.clear();
                 rbInvitado.setSelected(true);
@@ -276,7 +282,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 if ("TRABAJADOR".equals(tipoPersona) && persona.getEmpresaId() == null) {
                     persona.setEmpresaId(empresa.getId());
                 }
-                personaService.guardar(persona);
+                personaService.guardar(persona, SceneManager.getCurrentUser());
                 txtNombreSolicitud.setText(persona.getNombre());
                 lblSolicitudMsg.setText("Persona existente: " + persona.getNombre() + " (Visitas: " + persona.getTotalVisitas() + ")");
             } else {
@@ -289,7 +295,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 if ("TRABAJADOR".equals(tipoPersona)) {
                     persona.setEmpresaId(empresa.getId());
                 }
-                persona = personaService.guardar(persona);
+                persona = personaService.guardar(persona, SceneManager.getCurrentUser());
             }
 
             personaService.incrementarVisitas(persona);
