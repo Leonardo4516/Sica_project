@@ -20,11 +20,11 @@ import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
@@ -131,12 +131,12 @@ public class AdminController implements Initializable {
     }
 
     @FXML
-    private void handleBitacora(MouseEvent event) {
+    public void handleBitacora(Event event) {
         SceneManager.loadScene("/com/sicaproject/sica/ui/bitacora.fxml", "SICA — Bitácora");
     }
 
     @FXML
-    private void handleLogout(MouseEvent event) {
+    public void handleLogout(Event event) {
         SceneManager.logout();
     }
 
@@ -174,7 +174,7 @@ public class AdminController implements Initializable {
                 .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
                 .toList();
         tblEvacuacion.setItems(FXCollections.observableArrayList(activas));
-        lblEvacuacionConteo.setText("🚨 Personal actualmente dentro para conteo de evacuación: " + activas.size() + " personas");
+        lblEvacuacionConteo.setText("Personal dentro para conteo de evacuacion: " + activas.size() + " personas");
     }
 
     private void configurarColumnasIncidentes() {
@@ -212,7 +212,7 @@ public class AdminController implements Initializable {
         });
 
         colIncAccion.setCellFactory(col -> new TableCell<>() {
-            private final Button btnResolver = new Button("Cerrar");
+            private final Button btnResolver = new Button("Resolver");
             private final HBox box = new HBox(btnResolver);
             {
                 box.setAlignment(Pos.CENTER);
@@ -221,7 +221,6 @@ public class AdminController implements Initializable {
                     try {
                         incidenteService.cambiarEstado(inc.getId(), "RESUELTO", SceneManager.getCurrentUser());
                         refreshIncidentes();
-                        DialogHelper.mostrarExito("Incidente Actualizado", "El incidente #" + inc.getId() + " ha sido marcado como RESUELTO.");
                     } catch (Exception ex) {
                         DialogHelper.mostrarError("Error", ex.getMessage());
                     }
@@ -237,7 +236,7 @@ public class AdminController implements Initializable {
                     Incidente inc = getTableView().getItems().get(getIndex());
                     if ("RESUELTO".equals(inc.getEstado()) || "CERRADO".equals(inc.getEstado())) {
                         btnResolver.setDisable(true);
-                        btnResolver.setText("✓ Cerrado");
+                        btnResolver.setText("Cerrado");
                         btnResolver.setStyle("-fx-background-color: rgba(148,163,184,0.2); -fx-text-fill: #94a3b8;");
                     } else {
                         btnResolver.setDisable(false);
@@ -256,13 +255,12 @@ public class AdminController implements Initializable {
 
     @FXML
     private void handleNuevoIncidente(ActionEvent event) {
-        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Panel de Administración");
+        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Panel de Administracion");
         if (res.isPresent()) {
             DialogHelper.IncidenteDialogData data = res.get();
             try {
                 incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, null, null, SceneManager.getCurrentUser());
                 refreshIncidentes();
-                DialogHelper.mostrarExito("Incidente Registrado", "El incidente ha sido registrado y auditado exitosamente.");
             } catch (Exception e) {
                 DialogHelper.mostrarError("Error al registrar incidente", e.getMessage());
             }
@@ -277,7 +275,7 @@ public class AdminController implements Initializable {
         colPerNombre.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNombre()));
         colPerTipo.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTipo()));
         colPerEstado.setCellValueFactory(data -> new SimpleStringProperty(
-                data.getValue().isBloqueado() ? "⛔ BLOQUEADO (" + data.getValue().getMotivoBloqueo() + ")" : "✅ AUTORIZADO"));
+                data.getValue().isBloqueado() ? "[BLOQUEADO] (" + data.getValue().getMotivoBloqueo() + ")" : "[AUTORIZADO]"));
         colPerVisitas.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getTotalVisitas())));
 
         colPerEstado.setCellFactory(col -> new TableCell<>() {
@@ -334,19 +332,16 @@ public class AdminController implements Initializable {
             if (persona.isBloqueado()) {
                 personaService.desbloquearPersona(persona, SceneManager.getCurrentUser());
                 refreshPersonas();
-                DialogHelper.mostrarExito("Persona Desbloqueada", "Se ha levantado la restricción de acceso para " + persona.getNombre());
             } else {
                 Optional<String> motivo = DialogHelper.pedirTexto(
                         "Bloquear Persona",
-                        "Restricción de Acceso Inmediata",
-                        "Ingrese el motivo de seguridad para bloquear a " + persona.getNombre() + ":",
-                        "Ej. Incumplimiento de normas de seguridad perimetral"
+                        "Restriccion de Acceso Inmediata",
+                        "Ingrese el motivo para bloquear a " + persona.getNombre() + ":",
+                        "Ej. Incumplimiento de normas de seguridad"
                 );
                 if (motivo.isPresent() && !motivo.get().trim().isEmpty()) {
                     personaService.bloquearPersona(persona, motivo.get().trim(), SceneManager.getCurrentUser());
                     refreshPersonas();
-                    DialogHelper.mostrarAdvertencia("Persona Bloqueada", "Restricción Activa",
-                            "La persona " + persona.getNombre() + " ha sido bloqueada en portería y auditada en la bitácora.");
                 }
             }
         } catch (Exception e) {

@@ -8,10 +8,10 @@ import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 
 import java.net.URL;
@@ -109,12 +109,12 @@ public class BitacoraController implements Initializable {
     }
 
     @FXML
-    private void handleAdmin(MouseEvent event) {
+    public void handleAdmin(Event event) {
         SceneManager.loadScene("/com/sicaproject/sica/ui/admin.fxml", "SICA — Administración");
     }
 
     @FXML
-    private void handleLogout(MouseEvent event) {
+    public void handleLogout(Event event) {
         SceneManager.logout();
     }
 
@@ -136,7 +136,7 @@ public class BitacoraController implements Initializable {
             }
             java.nio.file.Path out = java.nio.file.Paths.get(System.getProperty("user.home"), "sica_bitacora.csv");
             java.nio.file.Files.writeString(out, sb.toString());
-            DialogHelper.mostrarExito("Exportación Exitosa", "Bitácora exportada correctamente a:\n" + out.toAbsolutePath());
+            DialogHelper.mostrarExito("Exportacion Exitosa", "Bitacora exportada correctamente a:\n" + out.toAbsolutePath());
         } catch (Exception e) {
             DialogHelper.mostrarError("Error al exportar", e.getMessage());
         }

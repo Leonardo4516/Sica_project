@@ -17,6 +17,7 @@ import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -134,10 +135,10 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                         ? newV.getPersona().getFotoUrl() : "Sin foto registrada";
                 String anfitrion = newV.getFuncionarioAnfitrion() != null ? newV.getFuncionarioAnfitrion().getUsername() : "—";
                 String estadoBloqueo = newV.getPersona().isBloqueado()
-                        ? "⛔ BLOQUEADO (" + newV.getPersona().getMotivoBloqueo() + ")"
-                        : "✅ AUTORIZADO PARA INGRESO";
+                        ? "[BLOQUEADO] (" + newV.getPersona().getMotivoBloqueo() + ")"
+                        : "[AUTORIZADO PARA INGRESO]";
                 lblInMsg.setText("Visitante: " + newV.getPersona().getNombre() + " (" + newV.getPersona().getDocumento() + ")\n" +
-                        "Empresa: " + newV.getEmpresaDestino().getNombre() + " | Anfitrión: " + anfitrion + "\n" +
+                        "Empresa: " + newV.getEmpresaDestino().getNombre() + " | Anfitrion: " + anfitrion + "\n" +
                         "Foto: " + foto + "\n" +
                         "Estado: " + estadoBloqueo);
                 if (newV.getPersona().isBloqueado()) {
@@ -169,7 +170,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         colPersona.setCellValueFactory(data -> {
             Persona p = data.getValue().getPersona();
             String nombre = p != null ? p.getNombre() : "—";
-            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " ⛔ [BLOQUEADO]" : nombre);
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " [BLOQUEADO]" : nombre);
         });
         colEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
         colHora.setCellValueFactory(data -> {
@@ -205,11 +206,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         colAPersona.setCellValueFactory(data -> {
             Persona p = data.getValue().getPersona();
             String nombre = p != null ? p.getNombre() : "—";
-            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " ⛔ [BLOQUEADO]" : nombre);
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " [BLOQUEADO]" : nombre);
         });
         TableColumn<Visita, String> colAEmpresa = new TableColumn<>("Empresa");
         colAEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
-        TableColumn<Visita, String> colAHora = new TableColumn<>("Hora registro");
+        TableColumn<Visita, String> colAHora = new TableColumn<>("Hora Registro");
         colAHora.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraRegistro();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
@@ -228,11 +229,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         colPPersona.setCellValueFactory(data -> {
             Persona p = data.getValue().getPersona();
             String nombre = p != null ? p.getNombre() : "—";
-            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " ⛔ [BLOQUEADO]" : nombre);
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " [BLOQUEADO]" : nombre);
         });
         TableColumn<Visita, String> colPEmpresa = new TableColumn<>("Empresa");
         colPEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
-        TableColumn<Visita, String> colPHora = new TableColumn<>("Hora registro");
+        TableColumn<Visita, String> colPHora = new TableColumn<>("Hora Registro");
         colPHora.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraRegistro();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
@@ -248,22 +249,21 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         try {
             String txt = txtVisitaIdIn.getText().trim();
             if (txt.isEmpty()) {
-                lblInMsg.setText("⚠️ Ingrese un ID de visita");
+                lblInMsg.setText("Ingrese un ID de visita");
                 lblInMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
             long id = Long.parseLong(txt);
             Visita v = visitaService.checkIn(id, SceneManager.getCurrentUser());
-            lblInMsg.setText("✓ Check-in exitoso. Estado: " + v.getEstado() + " (" + v.getPersona().getNombre() + ")");
+            lblInMsg.setText("Check-in exitoso. Estado: " + v.getEstado() + " (" + v.getPersona().getNombre() + ")");
             lblInMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             txtVisitaIdIn.clear();
             refreshTablas();
-            DialogHelper.mostrarExito("Ingreso Autorizado", "Check-in realizado para: " + v.getPersona().getNombre());
         } catch (NumberFormatException e) {
-            lblInMsg.setText("ID inválido");
+            lblInMsg.setText("ID invalido");
             lblInMsg.setStyle("-fx-text-fill: #ef4444;");
         } catch (Exception e) {
-            lblInMsg.setText("⛔ " + e.getMessage());
+            lblInMsg.setText("Error: " + e.getMessage());
             lblInMsg.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
             DialogHelper.mostrarError("Acceso Denegado", e.getMessage());
         }
@@ -274,22 +274,21 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         try {
             String txt = txtVisitaIdOut.getText().trim();
             if (txt.isEmpty()) {
-                lblOutMsg.setText("⚠️ Ingrese un ID de visita");
+                lblOutMsg.setText("Ingrese un ID de visita");
                 lblOutMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
             long id = Long.parseLong(txt);
             Visita v = visitaService.checkOut(id, SceneManager.getCurrentUser());
-            lblOutMsg.setText("✓ Check-out exitoso. Visita #" + v.getId() + " finalizada.");
+            lblOutMsg.setText("Check-out exitoso. Visita #" + v.getId() + " finalizada.");
             lblOutMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             txtVisitaIdOut.clear();
             refreshTablas();
-            DialogHelper.mostrarExito("Salida Registrada", "Check-out realizado para la visita #" + v.getId());
         } catch (NumberFormatException e) {
-            lblOutMsg.setText("ID inválido");
+            lblOutMsg.setText("ID invalido");
             lblOutMsg.setStyle("-fx-text-fill: #ef4444;");
         } catch (Exception e) {
-            lblOutMsg.setText("⛔ " + e.getMessage());
+            lblOutMsg.setText("Error: " + e.getMessage());
             lblOutMsg.setStyle("-fx-text-fill: #ef4444;");
             DialogHelper.mostrarError("Error en Check-out", e.getMessage());
         }
@@ -304,7 +303,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
 
             String documento = txtDocSolicitud.getText().trim();
             if (documento.isEmpty()) {
-                lblSolicitudMsg.setText("⚠️ Ingrese número de documento para buscar");
+                lblSolicitudMsg.setText("Ingrese numero de documento para buscar");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
@@ -319,20 +318,20 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                     rbInvitado.setSelected(true);
                 }
                 if (persona.isBloqueado()) {
-                    lblSolicitudMsg.setText("⛔ ALERTA: Persona BLOQUEADA. Motivo: " +
-                            (persona.getMotivoBloqueo() != null ? persona.getMotivoBloqueo() : "Restricción de acceso") +
+                    lblSolicitudMsg.setText("[ALERTA] Persona BLOQUEADA. Motivo: " +
+                            (persona.getMotivoBloqueo() != null ? persona.getMotivoBloqueo() : "Restriccion de acceso") +
                             " (" + persona.getTotalVisitas() + " visitas previas)");
                     lblSolicitudMsg.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-                    DialogHelper.mostrarAdvertencia("Persona con Restricción", "Acceso Bloqueado",
+                    DialogHelper.mostrarAdvertencia("Persona con Restriccion", "Acceso Bloqueado",
                             "Esta persona figura como BLOQUEADA en el sistema.\nMotivo: " + persona.getMotivoBloqueo());
                 } else {
-                    lblSolicitudMsg.setText("✓ Persona encontrada: " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
+                    lblSolicitudMsg.setText("Persona encontrada: " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
                     lblSolicitudMsg.setStyle("-fx-text-fill: #10b981;");
                 }
             } else {
                 txtNombreSolicitud.clear();
                 rbInvitado.setSelected(true);
-                lblSolicitudMsg.setText("ℹ️ Persona no encontrada en el padrón. Complete los datos para registrarla.");
+                lblSolicitudMsg.setText("Persona no encontrada en el padron. Complete los datos para registrarla.");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #38bdf8;");
             }
         } catch (Exception e) {
@@ -349,12 +348,12 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             Usuario anfitrion = cmbFuncionarioSolicitud.getValue();
 
             if (empresa == null) {
-                lblSolicitudMsg.setText("⚠️ Seleccione empresa destino");
+                lblSolicitudMsg.setText("Seleccione empresa destino");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
             if (anfitrion == null) {
-                lblSolicitudMsg.setText("⚠️ Seleccione funcionario anfitrión");
+                lblSolicitudMsg.setText("Seleccione funcionario anfitrion");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
@@ -367,7 +366,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
 
             String documento = txtDocSolicitud.getText().trim();
             if (documento.isEmpty()) {
-                lblSolicitudMsg.setText("⚠️ Ingrese número de documento");
+                lblSolicitudMsg.setText("Ingrese numero de documento");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
@@ -388,7 +387,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 txtNombreSolicitud.setText(persona.getNombre());
             } else {
                 if (nombre.isEmpty()) {
-                    lblSolicitudMsg.setText("⚠️ Ingrese nombre del visitante");
+                    lblSolicitudMsg.setText("Ingrese nombre del visitante");
                     lblSolicitudMsg.setStyle("-fx-text-fill: #f59e0b;");
                     return;
                 }
@@ -410,7 +409,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 persona, empresa, anfitrion, SceneManager.getCurrentUser(), esTemporal
             );
 
-            lblSolicitudMsg.setText("✓ Solicitud #" + v.getId() + " enviada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
+            lblSolicitudMsg.setText("Solicitud #" + v.getId() + " enviada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
             lblSolicitudMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             txtDocSolicitud.clear();
             txtNombreSolicitud.clear();
@@ -418,10 +417,8 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);
             refreshTablas();
-
-            DialogHelper.mostrarExito("Solicitud Enviada", "Se generó la solicitud de acceso #" + v.getId() + " y se notificó al anfitrión.");
         } catch (Exception e) {
-            lblSolicitudMsg.setText("⛔ Error: " + e.getMessage());
+            lblSolicitudMsg.setText("Error: " + e.getMessage());
             lblSolicitudMsg.setStyle("-fx-text-fill: #ef4444;");
             DialogHelper.mostrarError("Error en Solicitud", e.getMessage());
         }
@@ -429,12 +426,12 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
 
     @FXML
     private void handleReportarIncidente(ActionEvent event) {
-        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Portería Principal");
+        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Porteria Principal");
         if (res.isPresent()) {
             DialogHelper.IncidenteDialogData data = res.get();
             try {
                 incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, null, null, SceneManager.getCurrentUser());
-                DialogHelper.mostrarExito("Incidente Reportado", "El incidente perimetral ha sido registrado en la bitácora central.");
+                DialogHelper.mostrarExito("Incidente Reportado", "El incidente ha sido registrado en la bitacora central.");
             } catch (Exception e) {
                 DialogHelper.mostrarError("Error al registrar", e.getMessage());
             }
@@ -447,7 +444,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     }
 
     @FXML
-    private void handleLogout(ActionEvent event) {
+    public void handleLogout(Event event) {
         SceneManager.logout();
     }
 

@@ -6,7 +6,7 @@ import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.application.service.RbacService;
 import com.sicaproject.sica.empresas.application.service.EmpresaService;
 import com.sicaproject.sica.personas.application.service.PersonaService;
-import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.util.Duration;
 
 import java.util.ArrayList;
@@ -40,7 +40,11 @@ public class RefreshScheduler {
         this.rbacService = rbacService;
         this.authService = authService;
         this.auditoriaService = auditoriaService;
-        this.scheduler = Executors.newSingleThreadScheduledExecutor();
+        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "sica-refresh-scheduler");
+            t.setDaemon(true);
+            return t;
+        });
     }
 
     public static RefreshScheduler getInstance() {
@@ -61,28 +65,37 @@ public class RefreshScheduler {
         }
     }
 
-    public void register(Refreshable listener) {
-        listeners.add(listener);
+    public synchronized void register(Refreshable listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
     }
 
-    public void unregister(Refreshable listener) {
+    public synchronized void unregister(Refreshable listener) {
         listeners.remove(listener);
     }
 
-    public void clear() {
+    public synchronized void clear() {
         listeners.clear();
     }
 
     public void startRefresh(Duration interval) {
-        scheduler.scheduleAtFixedRate(() -> {
-            for (Refreshable listener : listeners) {
-                try {
-                    listener.refreshData();
-                } catch (Exception e) {
-                    System.err.println("Error refrescando datos: " + e.getMessage());
-                }
+        scheduler.scheduleWithFixedDelay(() -> {
+            List<Refreshable> copy;
+            synchronized (this) {
+                if (listeners.isEmpty()) return;
+                copy = new ArrayList<>(listeners);
             }
-        }, 0, (long) interval.toSeconds(), TimeUnit.SECONDS);
+            Platform.runLater(() -> {
+                for (Refreshable listener : copy) {
+                    try {
+                        listener.refreshData();
+                    } catch (Exception e) {
+                        // ignore background refresh errors
+                    }
+                }
+            });
+        }, (long) interval.toSeconds(), (long) interval.toSeconds(), TimeUnit.SECONDS);
     }
 
     public void stop() {

@@ -19,15 +19,15 @@
                 <Text text="SICA" styleClass="title-md" />
                 <Text text="PANEL FUNCIONARIO" styleClass="subtitle" />
 
-                <VBox spacing="4" prefWidth="1">
+                <VBox spacing="6">
                     <VBox styleClass="nav-item, active">
                         <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label text="Visitas Pendientes" />
                         </HBox>
                     </VBox>
-                    <VBox styleClass="nav-item">
-                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
-                            <Label text="Cerrar Sesión" />
+                    <VBox styleClass="nav-item" onMouseClicked="#handleLogout">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Cerrar Sesion" />
                         </HBox>
                     </VBox>
                 </VBox>
@@ -35,8 +35,8 @@
         </left>
 
         <center>
-            <VBox spacing="24">
-                <padding><Insets top="28" right="32" bottom="28" left="32" /></padding>
+            <VBox spacing="20">
+                <padding><Insets top="24" right="28" bottom="24" left="28" /></padding>
 
                 <Text fx:id="txtUsuario" text="Bienvenido" styleClass="title-lg" />
 
@@ -44,67 +44,64 @@
 
                 <!-- Tabla de pendientes -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
-                    <VBox styleClass="glass-panel-inner" spacing="14">
+                    <VBox styleClass="glass-panel-inner" spacing="12">
                         <HBox alignment="CENTER_LEFT">
-                            <Text text="Solicitudes Pendientes de Aprobación" styleClass="title-md" />
+                            <Text text="Solicitudes Pendientes de Aprobacion" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="colId" text="ID" prefWidth="50" />
-                                <TableColumn fx:id="colDocumento" text="Documento" prefWidth="120" />
-                                <TableColumn fx:id="colPersona" text="Persona" prefWidth="150" />
-                                <TableColumn fx:id="colEmpresa" text="Empresa" prefWidth="140" />
-                                <TableColumn fx:id="colFecha" text="Fecha" prefWidth="130" />
-                                <TableColumn fx:id="colTipo" text="Tipo" prefWidth="90" />
-                                <TableColumn fx:id="colVisitas" text="# Visitas" prefWidth="80" />
-                                <TableColumn fx:id="colAcciones" text="Acciones" prefWidth="140" />
+                                <TableColumn fx:id="colDocumento" text="Documento" prefWidth="130" />
+                                <TableColumn fx:id="colPersona" text="Persona" prefWidth="200" />
+                                <TableColumn fx:id="colEmpresa" text="Empresa" prefWidth="180" />
+                                <TableColumn fx:id="colFecha" text="Fecha Registro" prefWidth="150" />
+                                <TableColumn fx:id="colTipo" text="Tipo" prefWidth="100" />
+                                <TableColumn fx:id="colVisitas" text="Visitas" prefWidth="70" />
+                                <TableColumn fx:id="colAcciones" text="Acciones de Autorizacion" prefWidth="240" />
                             </columns>
                         </TableView>
                     </VBox>
                 </StackPane>
 
                 <!-- Formulario de pre-registro -->
-                <StackPane styleClass="glass-panel" prefHeight="200">
-                    <VBox styleClass="glass-panel-inner" spacing="14">
+                <StackPane styleClass="glass-panel" prefHeight="190">
+                    <VBox styleClass="glass-panel-inner" spacing="12">
                         <Text text="Pre-registrar Visita Autorizada" styleClass="title-md" />
 
                         <HBox spacing="14" alignment="BOTTOM_LEFT">
-<VBox spacing="6" HBox.hgrow="ALWAYS">
-    <Label text="Nombre Persona" styleClass="label-text" />
-    <TextField fx:id="txtNombre" promptText="Nombre completo" />
-</VBox>
-<VBox spacing="6">
-    <Label text="Tipo de documento" styleClass="label-text" />
-    <HBox spacing="4">
-        <RadioButton fx:id="rbCC" text="CC" toggleGroup="$tgDoc" selected="true" />
-        <RadioButton fx:id="rbCE" text="CE" toggleGroup="$tgDoc" />
-        <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
-    </HBox>
-</VBox>
-<VBox spacing="6">
-    <Label text="Tipo de persona" styleClass="label-text" />
-    <HBox spacing="4">
-        <RadioButton fx:id="rbTrabajador" text="Trabajador" toggleGroup="$tgPersona" />
-        <RadioButton fx:id="rbInvitado" text="Invitado" toggleGroup="$tgPersona" selected="true" />
-    </HBox>
-</VBox>
-<VBox spacing="6" prefWidth="240">
-    <Label text="Empresa Destino" styleClass="label-text" />
-    <ComboBox fx:id="cmbEmpresa" prefWidth="240" />
-</VBox>
-<VBox spacing="6" alignment="BOTTOM_LEFT">
-    <Label text="Número de documento" styleClass="label-text" />
-    <TextField fx:id="txtDocumento" promptText="1321321" />
-</VBox>
-<VBox spacing="6" alignment="BOTTOM_LEFT">
-    <CheckBox fx:id="chkPaseTemporal" text="Pase temporal" />
-</VBox>
+                            <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                <Label text="Nombre Persona" styleClass="label-text" />
+                                <TextField fx:id="txtNombre" promptText="Nombre completo del invitado o trabajador" />
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Tipo de documento" styleClass="label-text" />
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <RadioButton fx:id="rbCC" text="CC" />
+                                    <RadioButton fx:id="rbCE" text="CE" />
+                                    <RadioButton fx:id="rbPasaporte" text="Pasaporte" />
+                                </HBox>
+                            </VBox>
+                            <VBox spacing="6">
+                                <Label text="Tipo de persona" styleClass="label-text" />
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <RadioButton fx:id="rbTrabajador" text="Trabajador" />
+                                    <RadioButton fx:id="rbInvitado" text="Invitado" />
+                                </HBox>
+                            </VBox>
+                            <VBox spacing="6" prefWidth="240">
+                                <Label text="Empresa Destino" styleClass="label-text" />
+                                <ComboBox fx:id="cmbEmpresa" maxWidth="Infinity" />
+                            </VBox>
+                            <VBox spacing="6" alignment="BOTTOM_LEFT" prefWidth="180">
+                                <Label text="Numero de documento" styleClass="label-text" />
+                                <TextField fx:id="txtDocumento" promptText="Documento" />
+                            </VBox>
                             <Button text="Pre-registrar" styleClass="btn, btn-primary" onAction="#handleRegistrar" />
                         </HBox>
 
-                        <Label fx:id="lblMsg" styleClass="label-text" wrapText="true" />
+                        <Label fx:id="lblMsg" styleClass="label-text" />
                     </VBox>
                 </StackPane>
             </VBox>
@@ -112,7 +109,7 @@
 
         <bottom>
             <HBox styleClass="status-bar">
-                <Text text="SICA — Panel de Funcionario" />
+                <Text text="SICA — Panel de Funcionario Anfitrion" />
             </HBox>
         </bottom>
     </BorderPane>

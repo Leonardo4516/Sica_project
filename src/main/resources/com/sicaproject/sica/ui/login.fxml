@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -10,6 +11,9 @@
            fx:id="rootPane"
            stylesheets="@styles.css"
            prefWidth="1280" prefHeight="720">
+
+    <!-- Canvas de particulas en segundo plano exclusivo de login -->
+    <Canvas fx:id="canvasParticles" mouseTransparent="true" />
 
     <VBox alignment="CENTER" spacing="24">
         <StackPane styleClass="glass-panel" maxWidth="440" maxHeight="560">
@@ -26,12 +30,12 @@
                 <VBox spacing="16" alignment="CENTER_LEFT" maxWidth="360" prefWidth="360">
                     <VBox spacing="6">
                         <Label text="Usuario" styleClass="label-text" />
-                        <TextField fx:id="txtUsuario" promptText="admin1, guarda1 o funcionario1" />
+                        <TextField fx:id="txtUsuario" promptText="Usuario" />
                     </VBox>
 
                     <VBox spacing="6">
                         <Label text="Contraseña" styleClass="label-text" />
-                        <PasswordField fx:id="txtPassword" promptText="••••••••" />
+                        <PasswordField fx:id="txtPassword" promptText="Contraseña" />
                     </VBox>
 
                     <HBox alignment="CENTER_LEFT">
@@ -47,7 +51,7 @@
             </VBox>
         </StackPane>
 
-        <Text text="© 2026 SICA — Seguridad Perimetral y Gestión de Accesos" styleClass="subtitle" StackPane.alignment="BOTTOM_CENTER" />
+        <Text text="SICA — Seguridad Perimetral y Gestión de Accesos" styleClass="subtitle" StackPane.alignment="BOTTOM_CENTER" />
     </VBox>
 
 </StackPane>

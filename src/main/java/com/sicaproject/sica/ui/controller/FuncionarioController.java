@@ -16,11 +16,11 @@ import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
@@ -86,14 +86,12 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             }
         });
 
-        // Configurar ToggleGroup para tipos de documento
         ToggleGroup tgDoc = new ToggleGroup();
         rbCC.setToggleGroup(tgDoc);
         rbCE.setToggleGroup(tgDoc);
         rbPasaporte.setToggleGroup(tgDoc);
         rbCC.setSelected(true);
 
-        // Configurar ToggleGroup para tipo de persona
         ToggleGroup tgPersona = new ToggleGroup();
         rbTrabajador.setToggleGroup(tgPersona);
         rbInvitado.setToggleGroup(tgPersona);
@@ -115,7 +113,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
         colPersona.setCellValueFactory(data -> {
             Persona p = data.getValue().getPersona();
             String nom = p != null ? p.getNombre() : "—";
-            return new SimpleStringProperty(p != null && p.isBloqueado() ? nom + " ⛔ [BLOQUEADO]" : nom);
+            return new SimpleStringProperty(p != null && p.isBloqueado() ? nom + " [BLOQUEADO]" : nom);
         });
         colEmpresa.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
@@ -181,28 +179,24 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
     private void aprobar(Visita visita) {
         try {
             visitaService.aprobarVisita(visita.getId(), SceneManager.getCurrentUser());
-            lblMsg.setText("✓ Visita #" + visita.getId() + " aprobada. El guarda ya puede hacer el check-in.");
+            lblMsg.setText("Visita #" + visita.getId() + " aprobada. El guarda ya puede hacer el check-in.");
             lblMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             refreshTabla();
-            DialogHelper.mostrarExito("Visita Aprobada", "Se ha autorizado el ingreso para " + visita.getPersona().getNombre());
         } catch (Exception e) {
-            lblMsg.setText("✗ " + e.getMessage());
+            lblMsg.setText("Error: " + e.getMessage());
             lblMsg.setStyle("-fx-text-fill: #ef4444;");
-            DialogHelper.mostrarError("Error al Aprobar", e.getMessage());
         }
     }
 
     private void rechazar(Visita visita) {
         try {
             visitaService.rechazarVisita(visita.getId(), SceneManager.getCurrentUser());
-            lblMsg.setText("✓ Visita #" + visita.getId() + " rechazada.");
+            lblMsg.setText("Visita #" + visita.getId() + " rechazada.");
             lblMsg.setStyle("-fx-text-fill: #f59e0b;");
             refreshTabla();
-            DialogHelper.mostrarAdvertencia("Visita Rechazada", "Ingreso Denegado", "Se denegó la solicitud de ingreso de " + visita.getPersona().getNombre());
         } catch (Exception e) {
-            lblMsg.setText("✗ " + e.getMessage());
+            lblMsg.setText("Error: " + e.getMessage());
             lblMsg.setStyle("-fx-text-fill: #ef4444;");
-            DialogHelper.mostrarError("Error al Rechazar", e.getMessage());
         }
     }
 
@@ -211,32 +205,28 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             Persona persona = visita.getPersona();
             if (persona.isBloqueado()) {
                 personaService.desbloquearPersona(persona, SceneManager.getCurrentUser());
-                lblMsg.setText("✓ Persona desbloqueada: " + persona.getNombre());
+                lblMsg.setText("Persona desbloqueada: " + persona.getNombre());
                 lblMsg.setStyle("-fx-text-fill: #10b981;");
-                DialogHelper.mostrarExito("Persona Desbloqueada", "Se restableció el acceso para " + persona.getNombre());
             } else {
                 Optional<String> motivo = DialogHelper.pedirTexto(
                         "Bloquear Persona",
-                        "Restricción de Acceso Inmediata",
-                        "Motivo de seguridad para restringir a " + persona.getNombre() + ":",
-                        "Ej. Incumplimiento de políticas internas"
+                        "Restriccion de Acceso",
+                        "Motivo de seguridad para bloquear a " + persona.getNombre() + ":",
+                        "Ej. Incumplimiento de normas perimetrales"
                 );
                 if (motivo.isPresent() && !motivo.get().trim().isEmpty()) {
                     String motivoTxt = motivo.get().trim();
                     personaService.bloquearPersona(persona, motivoTxt, SceneManager.getCurrentUser());
-                    lblMsg.setText("✓ Persona bloqueada: " + persona.getNombre() + " (Motivo: " + motivoTxt + ")");
+                    lblMsg.setText("Persona bloqueada: " + persona.getNombre() + " (Motivo: " + motivoTxt + ")");
                     lblMsg.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
-                    DialogHelper.mostrarAdvertencia("Acceso Bloqueado", "Persona Restringida",
-                            "La persona " + persona.getNombre() + " no podrá ingresar por ninguna portería.");
                 } else {
                     return;
                 }
             }
             refreshTabla();
         } catch (Exception e) {
-            lblMsg.setText("✗ " + e.getMessage());
+            lblMsg.setText("Error: " + e.getMessage());
             lblMsg.setStyle("-fx-text-fill: #ef4444;");
-            DialogHelper.mostrarError("Error de Bloqueo", e.getMessage());
         }
     }
 
@@ -248,12 +238,12 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             String documento = txtDocumento.getText().trim();
 
             if (documento.isEmpty()) {
-                lblMsg.setText("✗ Ingrese el número de documento");
+                lblMsg.setText("Ingrese el numero de documento");
                 lblMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
             if (empresa == null) {
-                lblMsg.setText("✗ Seleccione empresa destino");
+                lblMsg.setText("Seleccione empresa destino");
                 lblMsg.setStyle("-fx-text-fill: #f59e0b;");
                 return;
             }
@@ -280,7 +270,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                 txtNombre.setText(persona.getNombre());
             } else {
                 if (nombre.isEmpty()) {
-                    lblMsg.setText("✗ Ingrese el nombre del visitante (nueva persona)");
+                    lblMsg.setText("Ingrese el nombre del visitante");
                     lblMsg.setStyle("-fx-text-fill: #f59e0b;");
                     return;
                 }
@@ -305,19 +295,16 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                 persona, empresa, SceneManager.getCurrentUser(), guard
             );
 
-            lblMsg.setText("✓ Visita #" + v.getId() + " pre-aprobada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
+            lblMsg.setText("Visita #" + v.getId() + " pre-aprobada para " + persona.getNombre() + " (" + persona.getTotalVisitas() + " visitas)");
             lblMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             txtDocumento.clear();
             txtNombre.clear();
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);
             refreshTabla();
-
-            DialogHelper.mostrarExito("Visita Pre-registrada", "Visita #" + v.getId() + " autorizada. El guarda podrá darle ingreso directo.");
         } catch (Exception e) {
-            lblMsg.setText("✗ " + e.getMessage());
+            lblMsg.setText("Error: " + e.getMessage());
             lblMsg.setStyle("-fx-text-fill: #ef4444;");
-            DialogHelper.mostrarError("Error en Pre-registro", e.getMessage());
         }
     }
 
@@ -327,7 +314,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
     }
 
     @FXML
-    private void handleLogout(MouseEvent event) {
+    public void handleLogout(Event event) {
         SceneManager.logout();
     }
 

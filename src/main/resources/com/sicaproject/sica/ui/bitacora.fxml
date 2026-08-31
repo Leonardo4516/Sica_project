@@ -17,17 +17,17 @@
                 <padding><Insets top="24" right="14" bottom="24" left="14" /></padding>
 
                 <Text text="SICA" styleClass="title-md" />
-                <Text text="BITÁCORA" styleClass="subtitle" />
+                <Text text="BITACORA" styleClass="subtitle" />
 
-                <VBox spacing="4" prefWidth="1">
-                    <VBox styleClass="nav-item">
-                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleAdmin">
+                <VBox spacing="6">
+                    <VBox styleClass="nav-item" onMouseClicked="#handleAdmin">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
                             <Label text="Volver a Admin" />
                         </HBox>
                     </VBox>
-                    <VBox styleClass="nav-item">
-                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
-                            <Label text="Cerrar Sesión" />
+                    <VBox styleClass="nav-item" onMouseClicked="#handleLogout">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Cerrar Sesion" />
                         </HBox>
                     </VBox>
                 </VBox>
@@ -35,10 +35,10 @@
         </left>
 
         <center>
-            <VBox spacing="24">
-                <padding><Insets top="28" right="32" bottom="28" left="32" /></padding>
+            <VBox spacing="20">
+                <padding><Insets top="24" right="28" bottom="24" left="28" /></padding>
 
-                <Text text="Bitácora de Auditoría" styleClass="title-lg" />
+                <Text text="Bitacora de Auditoria" styleClass="title-lg" />
 
                 <Separator opacity="0.15" />
 
@@ -54,22 +54,22 @@
                     </VBox>
                     <Region HBox.hgrow="ALWAYS" />
                     <Button text="Filtrar" styleClass="btn, btn-primary" onAction="#handleFiltrar" />
-                    <Button text="Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                    <Button text="Mostrar Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                     <Button text="Exportar CSV" styleClass="btn, btn-secondary" onAction="#handleExportarCsv" />
                 </HBox>
 
                 <!-- Tabla -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
                     <VBox styleClass="glass-panel-inner" spacing="12">
-                        <Text text="Eventos Registrados" styleClass="title-md" />
+                        <Text text="Eventos y Trazabilidad de Seguridad" styleClass="title-md" />
                         <TableView fx:id="tblBitacora" VBox.vgrow="ALWAYS">
                             <columns>
                                 <TableColumn fx:id="colBFecha" text="Fecha / Hora" prefWidth="160" />
-                                <TableColumn fx:id="colBUsuario" text="Usuario" prefWidth="80" />
-                                <TableColumn fx:id="colBAccion" text="Acción" prefWidth="160" />
-                                <TableColumn fx:id="colBRecurso" text="Recurso" prefWidth="100" />
-                                <TableColumn fx:id="colBDetalle" text="Detalle" prefWidth="360" />
-                                <TableColumn fx:id="colBResultado" text="Resultado" prefWidth="100" />
+                                <TableColumn fx:id="colBUsuario" text="Usuario" prefWidth="90" />
+                                <TableColumn fx:id="colBAccion" text="Accion Realizada" prefWidth="200" />
+                                <TableColumn fx:id="colBRecurso" text="Recurso" prefWidth="120" />
+                                <TableColumn fx:id="colBDetalle" text="Detalle de la Operacion" prefWidth="420" />
+                                <TableColumn fx:id="colBResultado" text="Resultado" prefWidth="110" />
                             </columns>
                         </TableView>
                     </VBox>
@@ -79,7 +79,7 @@
 
         <bottom>
             <HBox styleClass="status-bar">
-                <Text text="SICA — Bitácora de Auditoría" />
+                <Text text="SICA — Bitacora Central de Auditoria" />
             </HBox>
         </bottom>
     </BorderPane>

@@ -5,18 +5,9 @@ import com.sicaproject.sica.ui.SceneManager;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.scene.text.Text;
-import javafx.stage.Modality;
-import javafx.stage.StageStyle;
 
 import java.util.Optional;
 
@@ -34,7 +25,6 @@ public final class DialogHelper {
         }
         pane.getStyleClass().add("custom-dialog-pane");
 
-        // Estilizar botones del dialog pane
         for (ButtonType bt : pane.getButtonTypes()) {
             Button btn = (Button) pane.lookupButton(bt);
             if (btn != null) {
@@ -62,7 +52,7 @@ public final class DialogHelper {
     public static void mostrarExito(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titulo);
-        alert.setHeaderText("✓ " + titulo);
+        alert.setHeaderText(titulo);
         alert.setContentText(mensaje);
         aplicarEstilo(alert);
         alert.showAndWait();
@@ -71,7 +61,7 @@ public final class DialogHelper {
     public static void mostrarError(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(titulo);
-        alert.setHeaderText("⛔ Error en la Operación");
+        alert.setHeaderText("Error en la Operacion");
         alert.setContentText(mensaje);
         aplicarEstilo(alert);
         alert.showAndWait();
@@ -80,7 +70,7 @@ public final class DialogHelper {
     public static void mostrarAdvertencia(String titulo, String encabezado, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle(titulo);
-        alert.setHeaderText("⚠️ " + encabezado);
+        alert.setHeaderText(encabezado);
         alert.setContentText(mensaje);
         aplicarEstilo(alert);
         alert.showAndWait();
@@ -95,7 +85,7 @@ public final class DialogHelper {
         content.setPadding(new Insets(14));
         Label lbl = new Label(labelTexto);
         lbl.getStyleClass().add("label-text");
-        lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #cbd0dd;");
+        lbl.setStyle("-fx-font-weight: bold; -fx-text-fill: #cbd5e1;");
 
         TextField txtInput = new TextField();
         txtInput.setPromptText(prompt);
@@ -125,18 +115,18 @@ public final class DialogHelper {
 
     public static Optional<IncidenteDialogData> mostrarDialogoReporteIncidente(String origen) {
         Dialog<IncidenteDialogData> dialog = new Dialog<>();
-        dialog.setTitle("Reportar Incidente de Seguridad");
-        dialog.setHeaderText("⚠️ Registro de Incidente — " + origen);
+        dialog.setTitle("Reportar Incidente");
+        dialog.setHeaderText("Registro de Incidente - " + origen);
 
         GridPane grid = new GridPane();
         grid.setHgap(12);
         grid.setVgap(14);
         grid.setPadding(new Insets(16, 20, 16, 20));
 
-        Label lblTit = new Label("Título del incidente:");
+        Label lblTit = new Label("Titulo del incidente:");
         lblTit.getStyleClass().add("label-text");
         TextField txtTitulo = new TextField();
-        txtTitulo.setPromptText("Ej. Intento de acceso sin credencial / Objeto sospechoso");
+        txtTitulo.setPromptText("Ej. Intento de acceso no autorizado");
         txtTitulo.setPrefWidth(380);
 
         Label lblSev = new Label("Nivel de severidad:");
@@ -145,10 +135,10 @@ public final class DialogHelper {
         cmbSev.setValue(SeveridadIncidente.MEDIA);
         cmbSev.setPrefWidth(380);
 
-        Label lblDesc = new Label("Descripción detallada:");
+        Label lblDesc = new Label("Descripcion detallada:");
         lblDesc.getStyleClass().add("label-text");
         TextArea txtDesc = new TextArea();
-        txtDesc.setPromptText("Detalles de la anomalía, lugar exacto, personas o placas involucradas...");
+        txtDesc.setPromptText("Detalles de lo ocurrido, lugar exacto, personas o vehiculos involucrados...");
         txtDesc.setPrefRowCount(4);
         txtDesc.setPrefWidth(380);
         txtDesc.setWrapText(true);
