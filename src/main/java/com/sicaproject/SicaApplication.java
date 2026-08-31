@@ -5,6 +5,7 @@ import com.sicaproject.sica.ui.RefreshScheduler;
 import com.sicaproject.sica.ui.SceneManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -38,6 +39,7 @@ public class SicaApplication extends Application {
         );
 
         primaryStage.setTitle("SICA — Sistema Integrado de Control de Acceso");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/com/sicaproject/sica/ui/sica_logo.png")));
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(1024);
         primaryStage.setMinHeight(600);
