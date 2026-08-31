@@ -1,6 +1,7 @@
 package com.sicaproject.sica.ui.controller;
 
 import com.sicaproject.sica.acceso.application.service.VisitaService;
+import com.sicaproject.sica.auditoria.application.AuditoriaService;
 import com.sicaproject.sica.acceso.domain.EstadoVisita;
 import com.sicaproject.sica.acceso.domain.Visita;
 import com.sicaproject.sica.empresas.application.service.EmpresaService;
@@ -10,6 +11,7 @@ import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
+import com.sicaproject.sica.ui.RefreshScheduler;
 import com.sicaproject.sica.ui.SceneManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -27,7 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class GuardaController implements Initializable {
+public class GuardaController implements Initializable, RefreshScheduler.Refreshable {
 
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
@@ -66,7 +68,6 @@ public class GuardaController implements Initializable {
 
     private final DateTimeFormatter dateTimeFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    @Override
     public void initialize(URL location, ResourceBundle resources) {
         if (SceneManager.getCurrentUser() != null) {
             txtUsuario.setText("Bienvenido, " + SceneManager.getCurrentUser().getUsername());
@@ -116,6 +117,13 @@ public class GuardaController implements Initializable {
         configurarColumnasAprobadas();
         configurarColumnasPendientes();
 
+        refreshTablas();
+
+        RefreshScheduler.getInstance().register(this);
+    }
+
+    @Override
+    public void refreshData() {
         refreshTablas();
     }
 
@@ -313,22 +321,22 @@ public class GuardaController implements Initializable {
         SceneManager.logout();
     }
 
-    private void refreshTablas() {
+private void refreshTablas() {
         var todas = visitaService.listarTodas();
 
         var activas = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
             .toList();
-        tblActivas.setItems(FXCollections.observableArrayList(activas));
+        tblActivas.getItems().setAll(activas);
 
         var aprobadas = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.APROBADA)
             .toList();
-        tblAprobadas.setItems(FXCollections.observableArrayList(aprobadas));
+        tblAprobadas.getItems().setAll(aprobadas);
 
         var pendientes = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
             .toList();
-        tblPendientes.setItems(FXCollections.observableArrayList(pendientes));
+        tblPendientes.getItems().setAll(pendientes);
     }
 }

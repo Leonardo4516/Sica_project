@@ -10,6 +10,7 @@ import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
+import com.sicaproject.sica.ui.RefreshScheduler;
 import com.sicaproject.sica.ui.SceneManager;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class FuncionarioController implements Initializable {
+public class FuncionarioController implements Initializable, RefreshScheduler.Refreshable {
 
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
@@ -99,6 +100,7 @@ public class FuncionarioController implements Initializable {
 
         configurarColumnas();
         refreshTabla();
+        RefreshScheduler.getInstance().register(this);
     }
 
     private void configurarColumnas() {
@@ -177,6 +179,7 @@ public class FuncionarioController implements Initializable {
             visitaService.aprobarVisita(visita.getId(), SceneManager.getCurrentUser());
             lblMsg.setText("✓ Visita #" + visita.getId() + " aprobada. El guarda ya puede hacer el check-in.");
             refreshTabla();
+        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -187,6 +190,7 @@ public class FuncionarioController implements Initializable {
             visitaService.rechazarVisita(visita.getId(), SceneManager.getCurrentUser());
             lblMsg.setText("✓ Visita #" + visita.getId() + " rechazada.");
             refreshTabla();
+        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -214,6 +218,7 @@ public class FuncionarioController implements Initializable {
                 }
             }
             refreshTabla();
+        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -288,6 +293,7 @@ public class FuncionarioController implements Initializable {
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);
             refreshTabla();
+        RefreshScheduler.getInstance().register(this);
         } catch (Exception e) {
             lblMsg.setText("✗ " + e.getMessage());
         }
@@ -296,6 +302,7 @@ public class FuncionarioController implements Initializable {
     @FXML
     private void handleRefresh(ActionEvent event) {
         refreshTabla();
+        RefreshScheduler.getInstance().register(this);
     }
 
     @FXML
@@ -303,10 +310,15 @@ public class FuncionarioController implements Initializable {
         SceneManager.logout();
     }
 
+    @Override
+    public void refreshData() {
+        refreshTabla();
+    }
+
     private void refreshTabla() {
         var pendientes = visitaService.listarTodas().stream()
             .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
             .toList();
-        tblPendientes.setItems(FXCollections.observableArrayList(pendientes));
+        tblPendientes.getItems().setAll(pendientes);
     }
 }
