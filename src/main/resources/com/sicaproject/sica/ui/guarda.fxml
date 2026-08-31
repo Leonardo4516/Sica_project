@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/javafx/fxml"
            fx:controller="com.sicaproject.sica.ui.controller.GuardaController"
            fx:id="rootPane"
            stylesheets="@styles.css"
@@ -13,161 +13,177 @@
 
     <BorderPane>
         <left>
-            <VBox styleClass="sidebar" prefWidth="220" spacing="6">
-                <padding>
-                    <Insets top="20" right="12" bottom="20" left="12" />
-                </padding>
+            <VBox styleClass="sidebar" prefWidth="220">
+                <padding><Insets top="24" right="14" bottom="24" left="14" /></padding>
 
-                <Text text="SICA" styleClass="title-md, brand-accent" />
-                <VBox spacing="0">
-                    <padding><Insets bottom="24" /></padding>
-                    <Text text="Panel Guardía" styleClass="subtitle" />
+                <Text text="SICA" styleClass="title-md" />
+                <Text text="CONTROL DE ACCESO" styleClass="subtitle" />
+
+                <VBox spacing="4">
+                    <VBox styleClass="nav-item, active">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Inicio" />
+                        </HBox>
+                    </VBox>
+                    <VBox styleClass="nav-item">
+                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
+                            <Label text="Cerrar Sesión" />
+                        </HBox>
+                    </VBox>
                 </VBox>
-
-                <HBox styleClass="nav-item, active" alignment="CENTER_LEFT" spacing="10">
-                    <Label text="🏠 Control de Acceso" />
-                </HBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleRefresh">
-                    <Label text="🔄 Refrescar Datos" />
-                </HBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
-                    <Label text="🚪 Cerrar Sesión" />
-                </HBox>
             </VBox>
         </left>
 
         <center>
-            <VBox spacing="16">
-                <padding>
-                    <Insets top="20" right="24" bottom="20" left="24" />
-                </padding>
+            <VBox spacing="24">
+                <padding><Insets top="28" right="32" bottom="28" left="32" /></padding>
 
-                <HBox alignment="CENTER_LEFT" spacing="20">
-                    <VBox>
-                        <Text text="Bienvenido, " styleClass="subtitle" />
-                        <Text fx:id="txtUsuario" text="Guarda" styleClass="title-lg" />
-                    </VBox>
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="lblHora" text="00:00:00" styleClass="title-md, brand-accent" />
-                </HBox>
+                <Text fx:id="txtUsuario" text="Bienvenido" styleClass="title-lg" />
 
-                <Separator opacity="0.2" />
+                <Separator opacity="0.15" />
 
-                <!-- Formularios superiores: Check-in/out rápido + Nueva Solicitud -->
-                <HBox spacing="16">
-                    <!-- Tarjeta Check-in / Check-out rápido -->
-                    <StackPane styleClass="glass-panel" prefWidth="380">
-                        <VBox styleClass="glass-panel-inner" spacing="10">
-                            <Text text="⚡ Check-in / Check-out Rápido" styleClass="title-md" />
-                            <Label text="Ingrese ID de Visita o Documento" styleClass="subtitle" />
-                            <TextField fx:id="txtVisitaId" promptText="Ej: 1 o CC12345678" />
-                            <HBox spacing="10">
-                                <Button fx:id="btnCheckIn" text="✅ Check-in"
-                                        styleClass="btn, btn-success" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                                        onAction="#handleCheckIn" />
-                                <Button fx:id="btnCheckOut" text="🚪 Check-out"
-                                        styleClass="btn, btn-danger" HBox.hgrow="ALWAYS" maxWidth="Infinity"
-                                        onAction="#handleCheckOut" />
-                            </HBox>
-                            <Label fx:id="lblAccionMsg" styleClass="label-text" wrapText="true" />
+                <!-- Formularios -->
+                <HBox spacing="20" alignment="TOP_LEFT">
+                    <!-- Check-in / Check-out -->
+                    <VBox styleClass="glass-panel" prefWidth="360">
+                        <VBox styleClass="glass-panel-inner" spacing="14">
+                            <Text text="Registro de Acceso" styleClass="title-md" />
+
+                            <VBox spacing="6">
+                                <Label text="Check-in (ingreso)" styleClass="label-text" />
+                                <HBox spacing="8">
+                                    <TextField fx:id="txtVisitaIdIn" promptText="ID de visita" HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="btnCheckIn" text="Ingresar" styleClass="btn, btn-success" onAction="#handleCheckIn" />
+                                </HBox>
+                                <Label fx:id="lblInMsg" styleClass="label-text" wrapText="true" />
+                            </VBox>
+
+                            <Separator opacity="0.15" />
+
+                            <VBox spacing="6">
+                                <Label text="Check-out (salida)" styleClass="label-text" />
+                                <HBox spacing="8">
+                                    <TextField fx:id="txtVisitaIdOut" promptText="ID de visita" HBox.hgrow="ALWAYS" />
+                                    <Button fx:id="btnCheckOut" text="Salir" styleClass="btn, btn-danger" onAction="#handleCheckOut" />
+                                </HBox>
+                                <Label fx:id="lblOutMsg" styleClass="label-text" wrapText="true" />
+                            </VBox>
                         </VBox>
-                    </StackPane>
+                    </VBox>
 
-                    <!-- Tarjeta Solicitud de Acceso (No anunciado / Carnet olvidado) -->
-                    <StackPane styleClass="glass-panel" HBox.hgrow="ALWAYS">
-                        <VBox styleClass="glass-panel-inner" spacing="10">
-                            <Text text="📝 Nueva Solicitud (No anunciado / Carnet olvidado)" styleClass="title-md" />
-                            <HBox spacing="10">
-                                <VBox spacing="4" prefWidth="160">
-                                    <Label text="Documento" styleClass="label-text" />
-                                    <TextField fx:id="txtDocSolicitud" promptText="CC / Pasaporte" />
+                    <!-- Nueva Solicitud -->
+                    <VBox styleClass="glass-panel" HBox.hgrow="ALWAYS">
+                        <VBox styleClass="glass-panel-inner" spacing="14">
+                            <Text text="Nueva Solicitud de Acceso" styleClass="title-md" />
+
+                            <VBox spacing="6">
+                                <Label text="Nombre completo" styleClass="label-text" />
+                                <TextField fx:id="txtNombreSolicitud" promptText="Nombre del visitante" />
+                            </VBox>
+
+                            <HBox spacing="12">
+                                <VBox spacing="6" prefWidth="160">
+                                    <Label text="Tipo de documento" styleClass="label-text" />
+                                    <HBox spacing="4">
+                                        <RadioButton fx:id="rbCC" text="CC" toggleGroup="$tgDoc" selected="true" />
+                                        <RadioButton fx:id="rbCE" text="CE" toggleGroup="$tgDoc" />
+                                        <RadioButton fx:id="rbPasaporte" text="Pasaporte" toggleGroup="$tgDoc" />
+                                    </HBox>
                                 </VBox>
-                                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label text="Nombre Visitante / Trabajador" styleClass="label-text" />
-                                    <TextField fx:id="txtNombreSolicitud" promptText="Nombre completo" />
+                                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                    <Label text="Número de documento" styleClass="label-text" />
+                                    <HBox spacing="8">
+                                        <TextField fx:id="txtDocSolicitud" promptText="1321321" HBox.hgrow="ALWAYS" />
+                                        <Button fx:id="btnBuscar" text="Buscar" styleClass="btn, btn-secondary" onAction="#handleBuscarPersona" />
+                                    </HBox>
                                 </VBox>
                             </HBox>
-                            <HBox spacing="10">
-                                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label text="Empresa Destino" styleClass="label-text" />
+
+                            <VBox spacing="6">
+                                <Label text="Tipo de persona" styleClass="label-text" />
+                                <HBox spacing="4">
+                                    <RadioButton fx:id="rbTrabajador" text="Trabajador" toggleGroup="$tgPersona" />
+                                    <RadioButton fx:id="rbInvitado" text="Invitado" toggleGroup="$tgPersona" selected="true" />
+                                </HBox>
+                            </VBox>
+
+                            <HBox spacing="12">
+                                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                    <Label text="Empresa destino" styleClass="label-text" />
                                     <ComboBox fx:id="cmbEmpresaSolicitud" maxWidth="Infinity" />
                                 </VBox>
-                                <VBox spacing="4" HBox.hgrow="ALWAYS">
-                                    <Label text="Funcionario Anfitrión" styleClass="label-text" />
+                                <VBox spacing="6" HBox.hgrow="ALWAYS">
+                                    <Label text="Funcionario anfitrión" styleClass="label-text" />
                                     <ComboBox fx:id="cmbFuncionarioSolicitud" maxWidth="Infinity" />
                                 </VBox>
                             </HBox>
+
                             <HBox spacing="14" alignment="CENTER_LEFT">
-                                <CheckBox fx:id="chkPaseTemporalSolicitud" text="Carnet olvidado (Pase temporal)" />
+                                <CheckBox fx:id="chkPaseTemporalSolicitud" text="Pase temporal (carnet olvidado)" />
                                 <Region HBox.hgrow="ALWAYS" />
-                                <Button fx:id="btnSolicitar" text="Solicitar Acceso"
-                                        styleClass="btn, btn-primary"
-                                        onAction="#handleSolicitarAcceso" />
+                                <Button fx:id="btnSolicitar" text="Solicitar" styleClass="btn, btn-primary" onAction="#handleSolicitarAcceso" />
                             </HBox>
+
                             <Label fx:id="lblSolicitudMsg" styleClass="label-text" wrapText="true" />
                         </VBox>
-                    </StackPane>
+                    </VBox>
                 </HBox>
 
-                <!-- Pestañas de Tablas -->
+                <!-- Tablas -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
-                    <VBox styleClass="glass-panel-inner" spacing="8">
+                    <VBox styleClass="glass-panel-inner" spacing="14">
+                        <HBox alignment="CENTER_LEFT">
+                            <Text text="Visitas" styleClass="title-md" />
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                        </HBox>
                         <TabPane fx:id="tabPaneVisitas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
-                            <!-- Tab 1: DENTRO -->
-                            <Tab text="🟢 Visitas Activas (DENTRO)">
+
+                            <Tab text="Activas (dentro)">
                                 <VBox spacing="8">
-                                    <padding><Insets top="10" /></padding>
+                                    <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblActivas" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="colGId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colGPersona" text="Persona" prefWidth="180" />
-                                            <TableColumn fx:id="colGDocumento" text="Documento" prefWidth="110" />
-                                            <TableColumn fx:id="colGEmpresa" text="Empresa" prefWidth="150" />
-                                            <TableColumn fx:id="colGHora" text="Hora Entrada" prefWidth="130" />
-                                            <TableColumn fx:id="colGTipo" text="Tipo" prefWidth="110" />
-                                            <TableColumn fx:id="colGAccionOut" text="Acción" prefWidth="130" />
+                                            <TableColumn fx:id="colGPersona" text="Visitante" prefWidth="200" />
+                                            <TableColumn fx:id="colGEmpresa" text="Empresa" prefWidth="200" />
+                                            <TableColumn fx:id="colGHora" text="Hora entrada" prefWidth="150" />
+                                            <TableColumn fx:id="colGEstado" text="Estado" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
 
-                            <!-- Tab 2: APROBADAS (Listas para check-in) -->
-                            <Tab text="📋 Visitas Aprobadas (Listas para ingreso)">
+                            <Tab text="Aprobadas (para ingreso)">
                                 <VBox spacing="8">
-                                    <padding><Insets top="10" /></padding>
+                                    <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblAprobadas" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="colAId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colAPersona" text="Persona" prefWidth="180" />
-                                            <TableColumn fx:id="colADocumento" text="Documento" prefWidth="110" />
-                                            <TableColumn fx:id="colAEmpresa" text="Empresa" prefWidth="150" />
-                                            <TableColumn fx:id="colAAnfitrion" text="Anfitrión" prefWidth="130" />
-                                            <TableColumn fx:id="colAFecha" text="Fecha Registro" prefWidth="130" />
-                                            <TableColumn fx:id="colATipo" text="Tipo" prefWidth="110" />
-                                            <TableColumn fx:id="colAAccionIn" text="Acción" prefWidth="130" />
+                                            <TableColumn fx:id="colAPersona" text="Visitante" prefWidth="200" />
+                                            <TableColumn fx:id="colAEmpresa" text="Empresa" prefWidth="200" />
+                                            <TableColumn fx:id="colAHora" text="Hora registro" prefWidth="150" />
+                                            <TableColumn fx:id="colATipo" text="Tipo" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
 
-                            <!-- Tab 3: PENDIENTES -->
-                            <Tab text="⏳ Solicitudes Pendientes">
+                            <Tab text="Pendientes (por aprobar)">
                                 <VBox spacing="8">
-                                    <padding><Insets top="10" /></padding>
+                                    <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="colPId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colPPersona" text="Persona" prefWidth="180" />
-                                            <TableColumn fx:id="colPDocumento" text="Documento" prefWidth="110" />
-                                            <TableColumn fx:id="colPEmpresa" text="Empresa" prefWidth="150" />
-                                            <TableColumn fx:id="colPAnfitrion" text="Anfitrión" prefWidth="130" />
-                                            <TableColumn fx:id="colPFecha" text="Fecha Registro" prefWidth="130" />
-                                            <TableColumn fx:id="colPTipo" text="Tipo" prefWidth="110" />
-                                            <TableColumn fx:id="colPEstado" text="Estado" prefWidth="130" />
+                                            <TableColumn fx:id="colPPersona" text="Visitante" prefWidth="200" />
+                                            <TableColumn fx:id="colPEmpresa" text="Empresa" prefWidth="200" />
+                                            <TableColumn fx:id="colPHora" text="Hora registro" prefWidth="150" />
+                                            <TableColumn fx:id="colPTipo" text="Tipo" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
+
                         </TabPane>
                     </VBox>
                 </StackPane>
@@ -175,11 +191,10 @@
         </center>
 
         <bottom>
-            <HBox styleClass="status-bar" alignment="CENTER_LEFT">
-                <Text text="SICA © 2025 — Sesión iniciada como GUARDA" />
+            <HBox styleClass="status-bar">
+                <Text text="SICA — Panel de Control de Acceso" />
             </HBox>
         </bottom>
     </BorderPane>
 
 </StackPane>
-

@@ -6,6 +6,7 @@ import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.persistence.JpaConfig;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
+import java.util.List;
 import java.util.Optional;
 
 public class PersonaRepositoryJpaAdapter implements PersonaRepository {
@@ -15,37 +16,23 @@ public class PersonaRepositoryJpaAdapter implements PersonaRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<PersonaEntity> query = em.createQuery(
-                    "SELECT p FROM PersonaEntity p LEFT JOIN FETCH p.empresa WHERE p.documento = :documento",
-                    PersonaEntity.class);
+                    "SELECT p FROM PersonaEntity p WHERE p.documento = :documento", PersonaEntity.class);
             query.setParameter("documento", documento);
-            return query.getResultList().stream().findFirst().map(PersonaMapper::toDomain);
+            return query.getResultStream().findFirst().map(PersonaMapper::toDomain);
         } finally {
             em.close();
         }
     }
 
     @Override
-    public Optional<Persona> porId(Long id) {
+    public Optional<Persona> buscarPorTipoYDocumento(String tipoDocumento, String documento) {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             TypedQuery<PersonaEntity> query = em.createQuery(
-                    "SELECT p FROM PersonaEntity p LEFT JOIN FETCH p.empresa WHERE p.id = :id",
-                    PersonaEntity.class);
-            query.setParameter("id", id);
-            return query.getResultList().stream().findFirst().map(PersonaMapper::toDomain);
-        } finally {
-            em.close();
-        }
-    }
-
-    @Override
-    public java.util.List<Persona> listarTodas() {
-        EntityManager em = JpaConfig.newEntityManager();
-        try {
-            TypedQuery<PersonaEntity> query = em.createQuery(
-                    "SELECT p FROM PersonaEntity p LEFT JOIN FETCH p.empresa ORDER BY p.nombre",
-                    PersonaEntity.class);
-            return query.getResultList().stream().map(PersonaMapper::toDomain).toList();
+                    "SELECT p FROM PersonaEntity p WHERE p.tipoDocumento = :tipo AND p.documento = :doc", PersonaEntity.class);
+            query.setParameter("tipo", tipoDocumento);
+            query.setParameter("doc", documento);
+            return query.getResultStream().findFirst().map(PersonaMapper::toDomain);
         } finally {
             em.close();
         }
@@ -56,18 +43,56 @@ public class PersonaRepositoryJpaAdapter implements PersonaRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             em.getTransaction().begin();
-            PersonaEntity entity = new PersonaEntity();
-            PersonaMapper.copyToEntity(persona, entity);
-            if (persona.getEmpresaId() != null) {
-                entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
+            PersonaEntity entity;
+            if (persona.getId() != 0) {
+                entity = em.find(PersonaEntity.class, persona.getId());
+                if (entity == null) {
+                    throw new IllegalArgumentException("Persona no encontrada: " + persona.getId());
+                }
+                PersonaMapper.copyToEntity(persona, entity);
+                if (persona.getEmpresaId() != null) {
+                    entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
+                } else {
+                    entity.setEmpresa(null);
+                }
+                entity = em.merge(entity);
+            } else {
+                entity = new PersonaEntity();
+                PersonaMapper.copyToEntity(persona, entity);
+                if (persona.getEmpresaId() != null) {
+                    entity.setEmpresa(em.getReference(EmpresaEntity.class, persona.getEmpresaId()));
+                }
+                em.persist(entity);
             }
-            em.persist(entity);
             em.getTransaction().commit();
             persona.setId(entity.getId());
+            persona.setTotalVisitas(entity.getTotalVisitas());
             return persona;
         } catch (RuntimeException e) {
             if (em.getTransaction().isActive()) em.getTransaction().rollback();
             throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public Optional<Persona> porId(Long id) {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            PersonaEntity entity = em.find(PersonaEntity.class, id);
+            return Optional.ofNullable(entity).map(PersonaMapper::toDomain);
+        } finally {
+            em.close();
+        }
+    }
+
+    @Override
+    public List<Persona> listarTodas() {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            TypedQuery<PersonaEntity> query = em.createQuery("SELECT p FROM PersonaEntity p", PersonaEntity.class);
+            return query.getResultStream().map(PersonaMapper::toDomain).toList();
         } finally {
             em.close();
         }

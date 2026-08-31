@@ -187,4 +187,8 @@ public class VisitaService {
     public List<Visita> listarTodas() {
         return visitaRepository.listarTodas();
     }
+
+    public List<Visita> listarUltimasVisitasPorPersona(long personaId, int limite) {
+        return visitaRepository.listarUltimasPorPersona(personaId, limite);
+    }
 }

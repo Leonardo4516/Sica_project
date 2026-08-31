@@ -11,13 +11,16 @@ public class PersonaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String tipo; // TRABAJADOR / INVITADO
+
+    @Column(name = "tipo_documento", length = 10) // CC, PASAPORTE, CE
+    private String tipoDocumento;
 
     @Column(nullable = false, length = 150)
     private String nombre;
 
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(nullable = false, length = 30)
     private String documento;
 
     @Column(name = "foto_url", length = 500)
@@ -33,6 +36,9 @@ public class PersonaEntity {
     @Column(name = "motivo_bloqueo", length = 255)
     private String motivoBloqueo;
 
+    @Column(name = "total_visitas", nullable = false)
+    private int totalVisitas = 0;
+
     public PersonaEntity() {}
 
     public Long getId() { return id; }
@@ -40,6 +46,9 @@ public class PersonaEntity {
 
     public String getTipo() { return tipo; }
     public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public String getTipoDocumento() { return tipoDocumento; }
+    public void setTipoDocumento(String tipoDocumento) { this.tipoDocumento = tipoDocumento; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -58,4 +67,7 @@ public class PersonaEntity {
 
     public String getMotivoBloqueo() { return motivoBloqueo; }
     public void setMotivoBloqueo(String motivoBloqueo) { this.motivoBloqueo = motivoBloqueo; }
+
+    public int getTotalVisitas() { return totalVisitas; }
+    public void setTotalVisitas(int totalVisitas) { this.totalVisitas = totalVisitas; }
 }

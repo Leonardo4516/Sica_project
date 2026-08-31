@@ -13,7 +13,8 @@ INSERT INTO permiso (codigo, descripcion) VALUES
 ('gestionar_roles', 'Gestionar roles y permisos'),
 ('gestionar_empresas', 'Gestionar empresas'),
 ('ver_bitacora', 'Ver bitácora de auditoría'),
-('ver_dashboard', 'Ver dashboard administrativo');
+('ver_dashboard', 'Ver dashboard administrativo'),
+('bloquear_persona', 'Bloquear/desbloquear personas');
 
 -- ========== ROLES ==========
 INSERT INTO rol (id, nombre) VALUES
@@ -27,10 +28,10 @@ INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
 WHERE r.nombre = 'GUARDA' AND p.codigo IN ('registrar_visita', 'registrar_salida');
 
--- FUNCIONARIO: aprobar_visita, rechazar_visita
+-- FUNCIONARIO: aprobar_visita, rechazar_visita, registrar_visita, bloquear_persona
 INSERT INTO rol_permiso (rol_id, permiso_id)
 SELECT r.id, p.id FROM rol r, permiso p
-WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita');
+WHERE r.nombre = 'FUNCIONARIO' AND p.codigo IN ('aprobar_visita', 'rechazar_visita', 'registrar_visita', 'bloquear_persona');
 
 -- ADMIN: todos los permisos
 INSERT INTO rol_permiso (rol_id, permiso_id)
@@ -60,11 +61,22 @@ INSERT INTO empresa (id, nombre, nit) VALUES
 (3, 'Tecnología Avanzada Ltda', '900789123-3');
 
 -- ========== PERSONAS DE PRUEBA ==========
-INSERT INTO persona (id, tipo, nombre, documento, empresa_id, bloqueado) VALUES
-(1, 'TRABAJADOR', 'Carlos Pérez', 'CC12345678', 1, FALSE),
-(2, 'TRABAJADOR', 'María González', 'CC87654321', 2, FALSE),
-(3, 'INVITADO', 'Juan Rodríguez', 'CC11223344', NULL, FALSE),
-(4, 'INVITADO', 'Ana Martínez', 'CC55667788', NULL, FALSE);
+INSERT INTO persona (tipo, tipo_documento, nombre, documento, empresa_id, bloqueado, total_visitas) VALUES
+('TRABAJADOR', 'CC', 'Carlos Pérez', '12345678', 1, FALSE, 5),
+('TRABAJADOR', 'CC', 'María González', '87654321', 2, FALSE, 3),
+('TRABAJADOR', 'CC', 'Andrés López', '10234567', 1, FALSE, 8),
+('TRABAJADOR', 'CC', 'Laura Torres', '54321098', 3, FALSE, 2),
+('TRABAJADOR', 'CC', 'Roberto Díaz', '98765432', 2, FALSE, 6),
+('TRABAJADOR', 'CE', 'José Alejandro Restrepo', '2345678', 1, FALSE, 1),
+('INVITADO', 'CC', 'Juan Rodríguez', '11223344', NULL, FALSE, 2),
+('INVITADO', 'CC', 'Ana Martínez', '55667788', NULL, FALSE, 1),
+('INVITADO', 'PASAPORTE', 'Emily Watson', 'AB123456', NULL, FALSE, 0),
+('INVITADO', 'CC', 'Pedro Hernández', '33445566', NULL, FALSE, 4),
+('INVITADO', 'CC', 'Sofía Vargas', '77889900', NULL, FALSE, 1),
+('INVITADO', 'CE', 'Marco Rossi', '45678901', NULL, FALSE, 0),
+('INVITADO', 'CC', 'Diego Morales', '44556677', NULL, FALSE, 3),
+('INVITADO', 'PASAPORTE', 'Isabella Moreau', 'CD789012', NULL, FALSE, 0),
+('INVITADO', 'CC', 'Claudia Ríos', '99887766', NULL, FALSE, 2);
 
 -- Sincronizar secuencias para inserciones dinámicas de Hibernate
 SELECT setval(pg_get_serial_sequence('persona', 'id'), coalesce(max(id), 1)) FROM persona;

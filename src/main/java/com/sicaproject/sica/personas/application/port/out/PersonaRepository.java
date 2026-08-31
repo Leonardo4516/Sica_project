@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface PersonaRepository {
     Optional<Persona> buscarPorDocumento(String documento);
+    Optional<Persona> buscarPorTipoYDocumento(String tipoDocumento, String documento);
     Optional<Persona> porId(Long id);
     List<Persona> listarTodas();
     Persona guardar(Persona persona);

@@ -4,7 +4,6 @@ import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
-import com.sicaproject.sica.ui.component.ParticleBackground;
 import javafx.animation.FadeTransition;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -30,13 +29,15 @@ public class LoginController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ParticleBackground.attachTo(rootPane);
+        // Sin partículas: JavaFX obliga a que todo dibujo en Canvas corra en el hilo de UI,
+        // así que animarlas no se beneficia de hilos y consumía recursos sin necesidad real.
     }
 
     @FXML
     private void handleLogin(ActionEvent event) {
         String usuario = txtUsuario.getText().trim();
         String password = txtPassword.getText();
+        System.out.println("[LoginController] Intento login: " + usuario);
 
         if (usuario.isEmpty() || password.isEmpty()) {
             showError("Por favor ingrese usuario y contraseña");
@@ -47,18 +48,17 @@ public class LoginController implements Initializable {
         try {
             Optional<Usuario> result = authService.login(usuario, password);
             if (result.isPresent()) {
-                SceneManager.navigateAfterLogin(result.get());
+                Usuario u = result.get();
+                System.out.println("[LoginController] Login OK: " + u.getUsername() + " / " + u.getRol().getNombre());
+                SceneManager.navigateAfterLogin(u);
             } else {
+                System.out.println("[LoginController] Login FAIL: credenciales inválidas para " + usuario);
                 showError("Credenciales inválidas");
             }
         } catch (Exception e) {
+            System.err.println("[LoginController] Login EXCEPTION: " + e.getClass().getName() + ": " + e.getMessage());
             e.printStackTrace();
-            Throwable cause = e;
-            while (cause.getCause() != null && cause.getCause() != cause) {
-                cause = cause.getCause();
-            }
-            showError("No se pudo abrir el panel: " + cause.getClass().getSimpleName()
-                    + " - " + cause.getMessage());
+            showError("Error de autenticación: " + e.getMessage());
         } finally {
             btnLogin.setDisable(false);
         }

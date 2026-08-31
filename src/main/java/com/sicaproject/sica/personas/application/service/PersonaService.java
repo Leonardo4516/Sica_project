@@ -24,6 +24,15 @@ public class PersonaService {
         return personaRepository.buscarPorDocumento(documento);
     }
 
+    public Optional<Persona> porTipoYDocumento(String tipoDocumento, String documento) {
+        return personaRepository.buscarPorTipoYDocumento(tipoDocumento, documento);
+    }
+
+    public Persona incrementarVisitas(Persona persona) {
+        persona.setTotalVisitas(persona.getTotalVisitas() + 1);
+        return personaRepository.guardar(persona);
+    }
+
     public Optional<Persona> porId(Long id) {
         return personaRepository.porId(id);
     }
@@ -35,6 +44,12 @@ public class PersonaService {
     public void bloquearPersona(Persona persona, String motivo) {
         persona.setBloqueado(true);
         persona.setMotivoBloqueo(motivo);
+        personaRepository.actualizar(persona);
+    }
+
+    public void desbloquearPersona(Persona persona) {
+        persona.setBloqueado(false);
+        persona.setMotivoBloqueo(null);
         personaRepository.actualizar(persona);
     }
 }

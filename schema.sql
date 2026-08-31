@@ -27,12 +27,14 @@ CREATE TABLE empresa (
 CREATE TABLE persona (
     id BIGSERIAL PRIMARY KEY,
     tipo VARCHAR(20),
+    tipo_documento VARCHAR(10),
     nombre VARCHAR(200) NOT NULL,
     documento VARCHAR(100),
     foto_url VARCHAR(500),
     empresa_id BIGINT,
     bloqueado BOOLEAN NOT NULL DEFAULT FALSE,
-    motivo_bloqueo VARCHAR(500)
+    motivo_bloqueo VARCHAR(500),
+    total_visitas INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE usuario (

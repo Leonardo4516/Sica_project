@@ -13,67 +13,63 @@
 
     <BorderPane>
         <left>
-            <VBox styleClass="sidebar" prefWidth="220" spacing="6">
-                <padding>
-                    <Insets top="20" right="12" bottom="20" left="12" />
-                </padding>
-                <Text text="SICA" styleClass="title-md, brand-accent" />
-                <VBox spacing="0">
-                    <padding><Insets bottom="24" /></padding>
-                    <Text text="Bitácora" styleClass="subtitle" />
+            <VBox styleClass="sidebar" prefWidth="220">
+                <padding><Insets top="24" right="14" bottom="24" left="14" /></padding>
+
+                <Text text="SICA" styleClass="title-md" />
+                <Text text="BITÁCORA" styleClass="subtitle" />
+
+                <VBox spacing="4" prefWidth="1">
+                    <VBox styleClass="nav-item">
+                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleAdmin">
+                            <Label text="Volver a Admin" />
+                        </HBox>
+                    </VBox>
+                    <VBox styleClass="nav-item">
+                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
+                            <Label text="Cerrar Sesión" />
+                        </HBox>
+                    </VBox>
                 </VBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleAdmin">
-                    <Label text="🔐 Volver a Admin" />
-                </HBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
-                    <Label text="🚪 Cerrar Sesión" />
-                </HBox>
             </VBox>
         </left>
 
         <center>
-            <VBox spacing="20">
-                <padding>
-                    <Insets top="28" right="32" bottom="28" left="32" />
-                </padding>
+            <VBox spacing="24">
+                <padding><Insets top="28" right="32" bottom="28" left="32" /></padding>
 
-                <HBox alignment="CENTER_LEFT" spacing="20">
-                    <VBox>
-                        <Text text="Bitácora de, " styleClass="subtitle" />
-                        <Text text="Auditoría" styleClass="title-lg" />
+                <Text text="Bitácora de Auditoría" styleClass="title-lg" />
+
+                <Separator opacity="0.15" />
+
+                <!-- Filtros -->
+                <HBox spacing="14" alignment="CENTER_LEFT">
+                    <VBox spacing="4">
+                        <Label text="Desde" styleClass="label-text" />
+                        <DatePicker fx:id="dpDesde" prefWidth="140" />
+                    </VBox>
+                    <VBox spacing="4">
+                        <Label text="Hasta" styleClass="label-text" />
+                        <DatePicker fx:id="dpHasta" prefWidth="140" />
                     </VBox>
                     <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="lblHora" text="00:00:00" styleClass="title-md, brand-accent" />
+                    <Button text="Filtrar" styleClass="btn, btn-primary" onAction="#handleFiltrar" />
+                    <Button text="Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                    <Button text="Exportar CSV" styleClass="btn, btn-secondary" onAction="#handleExportarCsv" />
                 </HBox>
 
-                <Separator opacity="0.2" />
-
-                <StackPane styleClass="glass-panel" prefHeight="80">
-                    <HBox styleClass="glass-panel-inner" alignment="CENTER_LEFT" spacing="12">
-                        <Label text="Desde:" styleClass="label-text" />
-                        <DatePicker fx:id="dpDesde" prefWidth="130" />
-                        <Label text="Hasta:" styleClass="label-text" />
-                        <DatePicker fx:id="dpHasta" prefWidth="130" />
-                        <TextField fx:id="txtFiltro" promptText="Buscar término..." prefWidth="200" />
-                        <Button text="🔍 Filtrar" styleClass="btn, btn-primary" onAction="#handleFiltrar" />
-                        <Button text="🔄 Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
-                        <Button text="📥 Exportar CSV" styleClass="btn, btn-secondary" onAction="#handleExportarCsv" />
-                        <Region HBox.hgrow="ALWAYS" />
-                        <Label fx:id="lblMsg" styleClass="label-text" />
-                    </HBox>
-                </StackPane>
-
+                <!-- Tabla -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
                     <VBox styleClass="glass-panel-inner" spacing="12">
-                        <Text text="Eventos registrados" styleClass="title-md" />
+                        <Text text="Eventos Registrados" styleClass="title-md" />
                         <TableView fx:id="tblBitacora" VBox.vgrow="ALWAYS">
                             <columns>
-                                <TableColumn fx:id="colBFecha" text="Fecha/Hora" prefWidth="170" />
-                                <TableColumn fx:id="colBUsuario" text="Usuario ID" prefWidth="90" />
-                                <TableColumn fx:id="colBAccion" text="Acción" prefWidth="180" />
-                                <TableColumn fx:id="colBRecurso" text="Recurso" prefWidth="110" />
-                                <TableColumn fx:id="colBDetalle" text="Detalle" prefWidth="380" />
-                                <TableColumn fx:id="colBResultado" text="Resultado" prefWidth="120" />
+                                <TableColumn fx:id="colBFecha" text="Fecha / Hora" prefWidth="160" />
+                                <TableColumn fx:id="colBUsuario" text="Usuario" prefWidth="80" />
+                                <TableColumn fx:id="colBAccion" text="Acción" prefWidth="160" />
+                                <TableColumn fx:id="colBRecurso" text="Recurso" prefWidth="100" />
+                                <TableColumn fx:id="colBDetalle" text="Detalle" prefWidth="360" />
+                                <TableColumn fx:id="colBResultado" text="Resultado" prefWidth="100" />
                             </columns>
                         </TableView>
                     </VBox>
@@ -82,8 +78,8 @@
         </center>
 
         <bottom>
-            <HBox styleClass="status-bar" alignment="CENTER_LEFT">
-                <Text text="SICA © 2025 — Bitácora de auditoría" />
+            <HBox styleClass="status-bar">
+                <Text text="SICA — Bitácora de Auditoría" />
             </HBox>
         </bottom>
     </BorderPane>

@@ -56,6 +56,7 @@ public final class CompositionRoot {
     public UsuarioRepository usuarioRepository() { return usuarioRepository; }
     public RolRepository rolRepository() { return rolRepository; }
     public RbacService rbacService() { return rbacService; }
+    public EmpresaRepository empresaRepository() { return empresaRepository; }
     public EmpresaService empresaService() { return empresaService; }
     public PersonaService personaService() { return personaService; }
     public VisitaService visitaService() { return visitaService; }

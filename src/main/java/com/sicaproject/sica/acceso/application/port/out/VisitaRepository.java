@@ -11,4 +11,5 @@ public interface VisitaRepository {
     List<Visita> porPersonaYEstado(long personaId, EstadoVisita estado);
     List<Visita> listarPendientesPorFuncionario(long funcionarioId);
     List<Visita> listarTodas();
+    List<Visita> listarUltimasPorPersona(long personaId, int limite);
 }

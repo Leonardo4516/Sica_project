@@ -13,119 +13,111 @@
 
     <BorderPane>
         <left>
-            <VBox styleClass="sidebar" prefWidth="220" spacing="6">
-                <padding>
-                    <Insets top="20" right="12" bottom="20" left="12" />
-                </padding>
-                <Text text="SICA" styleClass="title-md, brand-accent" />
-                <VBox spacing="0">
-                    <padding><Insets bottom="24" /></padding>
-                    <Text text="Administración" styleClass="subtitle" />
+            <VBox styleClass="sidebar" prefWidth="220">
+                <padding><Insets top="24" right="14" bottom="24" left="14" /></padding>
+
+                <Text text="SICA" styleClass="title-md" />
+                <Text text="ADMINISTRACIÓN" styleClass="subtitle" />
+
+                <VBox spacing="4" prefWidth="1">
+                    <VBox styleClass="nav-item, active">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="Resumen" />
+                        </HBox>
+                    </VBox>
+                    <VBox styleClass="nav-item">
+                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleBitacora">
+                            <Label text="Bitácora" />
+                        </HBox>
+                    </VBox>
+                    <VBox styleClass="nav-item">
+                        <HBox alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
+                            <Label text="Cerrar Sesión" />
+                        </HBox>
+                    </VBox>
                 </VBox>
-                <HBox styleClass="nav-item, active" alignment="CENTER_LEFT" spacing="10">
-                    <Label text="📊 Resumen" />
-                </HBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10">
-                    <Label text="🔐 Roles y Permisos" />
-                </HBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleBitacora">
-                    <Label text="📋 Bitácora" />
-                </HBox>
-                <HBox styleClass="nav-item" alignment="CENTER_LEFT" spacing="10" onMouseClicked="#handleLogout">
-                    <Label text="🚪 Cerrar Sesión" />
-                </HBox>
             </VBox>
         </left>
 
         <center>
-            <VBox spacing="20">
-                <padding>
-                    <Insets top="28" right="32" bottom="28" left="32" />
-                </padding>
+            <VBox spacing="24">
+                <padding><Insets top="28" right="32" bottom="28" left="32" /></padding>
 
-                <HBox alignment="CENTER_LEFT" spacing="20">
-                    <VBox>
-                        <Text text="Panel de, " styleClass="subtitle" />
-                        <Text fx:id="txtUsuario" text="Administrador" styleClass="title-lg" />
-                    </VBox>
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="lblHora" text="00:00:00" styleClass="title-md, brand-accent" />
-                </HBox>
+                <Text fx:id="txtUsuario" text="Bienvenido" styleClass="title-lg" />
 
-                <Separator opacity="0.2" />
+                <Separator opacity="0.15" />
 
+                <!-- Stats Cards -->
                 <HBox spacing="20">
-                    <StackPane styleClass="glass-panel" prefWidth="280" prefHeight="160">
-                        <VBox styleClass="glass-panel-inner" alignment="CENTER" spacing="6">
-                            <Text text="Total Visitas" styleClass="subtitle" />
-                            <Label fx:id="lblTotalVisitas" text="0" styleClass="title-xl, brand-accent" />
+                    <VBox styleClass="stat-card" prefWidth="220">
+                        <VBox alignment="CENTER" spacing="6">
+                            <Text text="TOTAL VISITAS" styleClass="stat-card-label" />
+                            <Label fx:id="lblTotalVisitas" text="0" styleClass="stat-card-value accent" />
                         </VBox>
-                    </StackPane>
+                    </VBox>
 
-                    <StackPane styleClass="glass-panel" prefWidth="280" prefHeight="160">
-                        <VBox styleClass="glass-panel-inner" alignment="CENTER" spacing="6">
-                            <Text text="Visitas DENTRO" styleClass="subtitle" />
-                            <Label fx:id="lblVisitasDentro" text="0" styleClass="title-xl" style="-fx-text-fill: #4ade80;" />
+                    <VBox styleClass="stat-card" prefWidth="220">
+                        <VBox alignment="CENTER" spacing="6">
+                            <Text text="DENTRO" styleClass="stat-card-label" />
+                            <Label fx:id="lblVisitasDentro" text="0" styleClass="stat-card-value success" />
                         </VBox>
-                    </StackPane>
+                    </VBox>
 
-                    <StackPane styleClass="glass-panel" prefWidth="280" prefHeight="160">
-                        <VBox styleClass="glass-panel-inner" alignment="CENTER" spacing="6">
-                            <Text text="Pendientes" styleClass="subtitle" />
-                            <Label fx:id="lblPendientes" text="0" styleClass="title-xl" style="-fx-text-fill: #fbbf24;" />
+                    <VBox styleClass="stat-card" prefWidth="220">
+                        <VBox alignment="CENTER" spacing="6">
+                            <Text text="PENDIENTES" styleClass="stat-card-label" />
+                            <Label fx:id="lblPendientes" text="0" styleClass="stat-card-value warning" />
                         </VBox>
-                    </StackPane>
+                    </VBox>
 
-                    <StackPane styleClass="glass-panel" prefWidth="280" prefHeight="160">
-                        <VBox styleClass="glass-panel-inner" alignment="CENTER" spacing="6">
-                            <Text text="Cerradas hoy" styleClass="subtitle" />
-                            <Label fx:id="lblCerradasHoy" text="0" styleClass="title-xl" style="-fx-text-fill: #6b8afd;" />
+                    <VBox styleClass="stat-card" prefWidth="220">
+                        <VBox alignment="CENTER" spacing="6">
+                            <Text text="CERRADAS HOY" styleClass="stat-card-label" />
+                            <Label fx:id="lblCerradasHoy" text="0" styleClass="stat-card-value info" />
                         </VBox>
-                    </StackPane>
+                    </VBox>
                 </HBox>
 
+                <!-- Tabs -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
-                    <VBox styleClass="glass-panel-inner" spacing="10">
+                    <VBox styleClass="glass-panel-inner" spacing="16">
                         <HBox alignment="CENTER_LEFT">
-                            <Text text="⚙️ Panel de Administración" styleClass="title-md" />
+                            <Text text="Gestión del Sistema" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Button text="🔄 Refrescar Todo" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
+                            <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TabPane fx:id="tabPaneAdmin" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
-                            <!-- Tab 1: Usuarios -->
-                            <Tab text="👥 Usuarios del Sistema">
+
+                            <Tab text="Usuarios">
                                 <VBox spacing="8">
-                                    <padding><Insets top="10" /></padding>
+                                    <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblUsuarios" VBox.vgrow="ALWAYS">
                                         <columns>
-                                            <TableColumn fx:id="colUId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colUUsername" text="Usuario" prefWidth="150" />
+                                            <TableColumn fx:id="colUId" text="ID" prefWidth="60" />
+                                            <TableColumn fx:id="colUUsername" text="Usuario" prefWidth="160" />
                                             <TableColumn fx:id="colURol" text="Rol" prefWidth="130" />
-                                            <TableColumn fx:id="colUPersona" text="Persona Asignada" prefWidth="220" />
+                                            <TableColumn fx:id="colUPersona" text="Persona Asignada" prefWidth="200" />
                                             <TableColumn fx:id="colUEstado" text="Estado" prefWidth="100" />
-                                            <TableColumn fx:id="colUAccion" text="Acción" prefWidth="150" />
                                         </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
 
-                            <!-- Tab 2: Roles y Permisos -->
-                            <Tab text="🔐 Roles y Permisos (RBAC)">
+                            <Tab text="Roles y Permisos">
                                 <VBox spacing="8">
-                                    <padding><Insets top="10" /></padding>
+                                    <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblRoles" VBox.vgrow="ALWAYS">
                                         <columns>
-                                            <TableColumn fx:id="colRolNombre" text="Rol" prefWidth="150" />
-                                            <TableColumn fx:id="colRolPermisos" text="Permisos asignados" prefWidth="650" />
+                                            <TableColumn fx:id="colRolNombre" text="Rol" prefWidth="160" />
+                                            <TableColumn fx:id="colRolPermisos" text="Permisos asignados" prefWidth="600" />
                                         </columns>
                                     </TableView>
                                 </VBox>
                             </Tab>
 
-                            <!-- Tab 3: Empresas -->
-                            <Tab text="🏢 Empresas">
+                            <Tab text="Empresas">
                                 <VBox spacing="8">
-                                    <padding><Insets top="10" /></padding>
+                                    <padding><Insets top="14" /></padding>
                                     <TableView fx:id="tblEmpresas" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="colEId" text="ID" prefWidth="60" />
@@ -135,6 +127,7 @@
                                     </TableView>
                                 </VBox>
                             </Tab>
+
                         </TabPane>
                     </VBox>
                 </StackPane>
@@ -142,8 +135,8 @@
         </center>
 
         <bottom>
-            <HBox styleClass="status-bar" alignment="CENTER_LEFT">
-                <Text text="SICA © 2025 — Sesión iniciada como ADMIN" />
+            <HBox styleClass="status-bar">
+                <Text text="SICA — Panel de Administración" />
             </HBox>
         </bottom>
     </BorderPane>

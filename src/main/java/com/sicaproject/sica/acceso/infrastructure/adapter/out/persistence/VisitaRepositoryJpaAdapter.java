@@ -116,4 +116,19 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
             em.close();
         }
     }
+
+    @Override
+    public List<Visita> listarUltimasPorPersona(long personaId, int limite) {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            TypedQuery<VisitaEntity> query = em.createQuery(
+                    FETCH_GRAPH + "WHERE v.persona.id = :personaId "
+                            + "ORDER BY v.fechaHoraRegistro DESC", VisitaEntity.class);
+            query.setParameter("personaId", personaId);
+            query.setMaxResults(limite);
+            return query.getResultList().stream().map(VisitaMapper::toDomain).toList();
+        } finally {
+            em.close();
+        }
+    }
 }
