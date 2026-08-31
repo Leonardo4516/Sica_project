@@ -4,6 +4,7 @@ import com.sicaproject.sica.auditoria.application.AuditoriaService;
 import com.sicaproject.sica.auditoria.domain.BitacoraAuditoria;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
+import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -54,6 +55,46 @@ public class BitacoraController implements Initializable {
         colBDetalle.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDetalle()));
         colBResultado.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getResultado()));
 
+        colBAccion.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    if (item.contains("BLOQUEO") || item.contains("FALLIDO") || item.contains("INCIDENTE")) {
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                    } else if (item.contains("SOLICITUD") || item.contains("SALIDA_OLVIDADA")) {
+                        setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #818cf8; -fx-font-weight: 500;");
+                    }
+                }
+            }
+        });
+
+        colBResultado.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    if ("EXITOSO".equalsIgnoreCase(item)) {
+                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+                    } else if ("DENEGADO".equalsIgnoreCase(item) || "FALLIDO".equalsIgnoreCase(item)) {
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #cbd5e1;");
+                    }
+                }
+            }
+        });
+
         refreshTabla();
     }
 
@@ -95,9 +136,9 @@ public class BitacoraController implements Initializable {
             }
             java.nio.file.Path out = java.nio.file.Paths.get(System.getProperty("user.home"), "sica_bitacora.csv");
             java.nio.file.Files.writeString(out, sb.toString());
-            new Alert(Alert.AlertType.INFORMATION, "Exportado a " + out).show();
+            DialogHelper.mostrarExito("Exportación Exitosa", "Bitácora exportada correctamente a:\n" + out.toAbsolutePath());
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, "Error al exportar: " + e.getMessage()).show();
+            DialogHelper.mostrarError("Error al exportar", e.getMessage());
         }
     }
 

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
@@ -10,41 +11,43 @@
            stylesheets="@styles.css"
            prefWidth="1280" prefHeight="720">
 
-    <VBox alignment="CENTER" spacing="0">
-        <StackPane styleClass="glass-panel" maxWidth="400" maxHeight="500">
-            <VBox styleClass="glass-panel-inner" alignment="CENTER" spacing="0">
-                <VBox spacing="0" alignment="CENTER">
+    <VBox alignment="CENTER" spacing="24">
+        <StackPane styleClass="glass-panel" maxWidth="440" maxHeight="560">
+            <VBox styleClass="glass-panel-inner" alignment="CENTER" spacing="16">
+                <padding><Insets top="28" right="32" bottom="28" left="32" /></padding>
+                <VBox spacing="4" alignment="CENTER">
                     <Text text="SICA" styleClass="title-xl" />
                     <Text text="Sistema Integrado de Control de Acceso" styleClass="subtitle" />
+                    <Text text="Complejo Empresarial Zona Acme" styleClass="subtitle" style="-fx-fill: #818cf8; -fx-font-weight: bold;" />
                 </VBox>
 
                 <Separator opacity="0.15" />
 
-                <VBox spacing="20" alignment="CENTER" maxWidth="320" prefWidth="320">
-                    <VBox spacing="8">
+                <VBox spacing="16" alignment="CENTER_LEFT" maxWidth="360" prefWidth="360">
+                    <VBox spacing="6">
                         <Label text="Usuario" styleClass="label-text" />
-                        <TextField fx:id="txtUsuario" promptText="Ingrese su usuario" />
+                        <TextField fx:id="txtUsuario" promptText="admin1, guarda1 o funcionario1" />
                     </VBox>
 
-                    <VBox spacing="8">
+                    <VBox spacing="6">
                         <Label text="Contraseña" styleClass="label-text" />
-                        <PasswordField fx:id="txtPassword" promptText="Contraseña" />
+                        <PasswordField fx:id="txtPassword" promptText="••••••••" />
                     </VBox>
 
-                    <HBox alignment="CENTER">
-                        <CheckBox fx:id="chkRecordar" text="Recordar sesión" />
+                    <HBox alignment="CENTER_LEFT">
+                        <CheckBox fx:id="chkRecordar" text="Recordar sesión en este equipo" />
                     </HBox>
 
-                    <Label fx:id="lblError" styleClass="label-text" opacity="0" wrapText="true" maxWidth="320" />
+                    <Label fx:id="lblError" styleClass="label-text" opacity="0" wrapText="true" maxWidth="360" style="-fx-text-fill: #ef4444; -fx-font-weight: bold;" />
                 </VBox>
 
                 <Separator opacity="0.15" />
 
-                <Button fx:id="btnLogin" text="Iniciar Sesión" styleClass="btn, btn-primary" prefWidth="320" onAction="#handleLogin" />
+                <Button fx:id="btnLogin" text="Iniciar Sesión" styleClass="btn, btn-primary" prefWidth="360" onAction="#handleLogin" />
             </VBox>
         </StackPane>
 
-        <Text text="© 2026 SICA — Sistema Integrado de Control de Acceso" styleClass="subtitle" StackPane.alignment="BOTTOM_CENTER" />
+        <Text text="© 2026 SICA — Seguridad Perimetral y Gestión de Accesos" styleClass="subtitle" StackPane.alignment="BOTTOM_CENTER" />
     </VBox>
 
 </StackPane>

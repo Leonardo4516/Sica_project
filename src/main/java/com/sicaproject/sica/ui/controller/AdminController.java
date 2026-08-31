@@ -12,11 +12,11 @@ import com.sicaproject.sica.iam.domain.Rol;
 import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.incidentes.application.service.IncidenteService;
 import com.sicaproject.sica.incidentes.domain.Incidente;
-import com.sicaproject.sica.incidentes.domain.SeveridadIncidente;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
 import com.sicaproject.sica.ui.SceneManager;
+import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -191,19 +191,39 @@ public class AdminController implements Initializable {
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
 
+        colIncSeveridad.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    if ("CRITICA".equals(item) || "ALTA".equals(item)) {
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                    } else if ("MEDIA".equals(item)) {
+                        setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #38bdf8; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
+
         colIncAccion.setCellFactory(col -> new TableCell<>() {
             private final Button btnResolver = new Button("Cerrar");
             private final HBox box = new HBox(btnResolver);
             {
                 box.setAlignment(Pos.CENTER);
-                btnResolver.getStyleClass().add("btn-secondary");
                 btnResolver.setOnAction(e -> {
                     Incidente inc = getTableView().getItems().get(getIndex());
                     try {
                         incidenteService.cambiarEstado(inc.getId(), "RESUELTO", SceneManager.getCurrentUser());
                         refreshIncidentes();
+                        DialogHelper.mostrarExito("Incidente Actualizado", "El incidente #" + inc.getId() + " ha sido marcado como RESUELTO.");
                     } catch (Exception ex) {
-                        new Alert(Alert.AlertType.ERROR, "Error: " + ex.getMessage()).show();
+                        DialogHelper.mostrarError("Error", ex.getMessage());
                     }
                 });
             }
@@ -217,10 +237,12 @@ public class AdminController implements Initializable {
                     Incidente inc = getTableView().getItems().get(getIndex());
                     if ("RESUELTO".equals(inc.getEstado()) || "CERRADO".equals(inc.getEstado())) {
                         btnResolver.setDisable(true);
-                        btnResolver.setText("Cerrado");
+                        btnResolver.setText("✓ Cerrado");
+                        btnResolver.setStyle("-fx-background-color: rgba(148,163,184,0.2); -fx-text-fill: #94a3b8;");
                     } else {
                         btnResolver.setDisable(false);
                         btnResolver.setText("Resolver");
+                        btnResolver.setStyle("-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold;");
                     }
                     setGraphic(box);
                 }
@@ -234,43 +256,15 @@ public class AdminController implements Initializable {
 
     @FXML
     private void handleNuevoIncidente(ActionEvent event) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Reportar Incidente de Seguridad");
-        dialog.setHeaderText("Registrar nuevo incidente de seguridad");
-
-        TextField txtTitulo = new TextField();
-        txtTitulo.setPromptText("Título del incidente");
-        TextArea txtDesc = new TextArea();
-        txtDesc.setPromptText("Descripción detallada");
-        txtDesc.setPrefRowCount(3);
-        ComboBox<SeveridadIncidente> cmbSev = new ComboBox<>(FXCollections.observableArrayList(SeveridadIncidente.values()));
-        cmbSev.setValue(SeveridadIncidente.MEDIA);
-
-        javafx.scene.layout.GridPane grid = new javafx.scene.layout.GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.add(new Label("Título:"), 0, 0);
-        grid.add(txtTitulo, 1, 0);
-        grid.add(new Label("Severidad:"), 0, 1);
-        grid.add(cmbSev, 1, 1);
-        grid.add(new Label("Descripción:"), 0, 2);
-        grid.add(txtDesc, 1, 2);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        Optional<ButtonType> result = dialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            String tit = txtTitulo.getText().trim();
-            String desc = txtDesc.getText().trim();
-            if (!tit.isEmpty() && !desc.isEmpty()) {
-                try {
-                    incidenteService.reportarIncidente(tit, desc, cmbSev.getValue(), null, null, SceneManager.getCurrentUser());
-                    refreshIncidentes();
-                    new Alert(Alert.AlertType.INFORMATION, "Incidente registrado exitosamente").show();
-                } catch (Exception e) {
-                    new Alert(Alert.AlertType.ERROR, "Error al registrar: " + e.getMessage()).show();
-                }
+        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Panel de Administración");
+        if (res.isPresent()) {
+            DialogHelper.IncidenteDialogData data = res.get();
+            try {
+                incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, null, null, SceneManager.getCurrentUser());
+                refreshIncidentes();
+                DialogHelper.mostrarExito("Incidente Registrado", "El incidente ha sido registrado y auditado exitosamente.");
+            } catch (Exception e) {
+                DialogHelper.mostrarError("Error al registrar incidente", e.getMessage());
             }
         }
     }
@@ -283,8 +277,26 @@ public class AdminController implements Initializable {
         colPerNombre.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNombre()));
         colPerTipo.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTipo()));
         colPerEstado.setCellValueFactory(data -> new SimpleStringProperty(
-                data.getValue().isBloqueado() ? "⛔ BLOQUEADO (" + data.getValue().getMotivoBloqueo() + ")" : "✅ PERMITIDO"));
+                data.getValue().isBloqueado() ? "⛔ BLOQUEADO (" + data.getValue().getMotivoBloqueo() + ")" : "✅ AUTORIZADO"));
         colPerVisitas.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getTotalVisitas())));
+
+        colPerEstado.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    if (item.contains("BLOQUEADO")) {
+                        setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
+                    }
+                }
+            }
+        });
 
         colPerAccion.setCellFactory(col -> new TableCell<>() {
             private final Button btnBloqueo = new Button();
@@ -306,10 +318,10 @@ public class AdminController implements Initializable {
                     Persona p = getTableView().getItems().get(getIndex());
                     if (p.isBloqueado()) {
                         btnBloqueo.setText("Desbloquear");
-                        btnBloqueo.setStyle("-fx-background-color: #10b981; -fx-text-fill: white;");
+                        btnBloqueo.setStyle("-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold;");
                     } else {
                         btnBloqueo.setText("Bloquear");
-                        btnBloqueo.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
+                        btnBloqueo.setStyle("-fx-background-color: linear-gradient(to right, #ef4444, #dc2626); -fx-text-fill: white; -fx-font-weight: bold;");
                     }
                     setGraphic(box);
                 }
@@ -321,23 +333,24 @@ public class AdminController implements Initializable {
         try {
             if (persona.isBloqueado()) {
                 personaService.desbloquearPersona(persona, SceneManager.getCurrentUser());
-                new Alert(Alert.AlertType.INFORMATION, "Persona " + persona.getNombre() + " desbloqueada.").show();
+                refreshPersonas();
+                DialogHelper.mostrarExito("Persona Desbloqueada", "Se ha levantado la restricción de acceso para " + persona.getNombre());
             } else {
-                TextInputDialog dialog = new TextInputDialog();
-                dialog.setTitle("Bloquear Persona");
-                dialog.setHeaderText("Restricción de acceso para: " + persona.getNombre());
-                dialog.setContentText("Motivo del bloqueo:");
-                Optional<String> res = dialog.showAndWait();
-                if (res.isPresent() && !res.get().trim().isEmpty()) {
-                    personaService.bloquearPersona(persona, res.get().trim(), SceneManager.getCurrentUser());
-                    new Alert(Alert.AlertType.WARNING, "Persona " + persona.getNombre() + " bloqueada.").show();
-                } else {
-                    return;
+                Optional<String> motivo = DialogHelper.pedirTexto(
+                        "Bloquear Persona",
+                        "Restricción de Acceso Inmediata",
+                        "Ingrese el motivo de seguridad para bloquear a " + persona.getNombre() + ":",
+                        "Ej. Incumplimiento de normas de seguridad perimetral"
+                );
+                if (motivo.isPresent() && !motivo.get().trim().isEmpty()) {
+                    personaService.bloquearPersona(persona, motivo.get().trim(), SceneManager.getCurrentUser());
+                    refreshPersonas();
+                    DialogHelper.mostrarAdvertencia("Persona Bloqueada", "Restricción Activa",
+                            "La persona " + persona.getNombre() + " ha sido bloqueada en portería y auditada en la bitácora.");
                 }
             }
-            refreshPersonas();
         } catch (Exception e) {
-            new Alert(Alert.AlertType.ERROR, "Error: " + e.getMessage()).show();
+            DialogHelper.mostrarError("Error en Bloqueo/Desbloqueo", e.getMessage());
         }
     }
 
