@@ -155,6 +155,7 @@
                         <HBox alignment="CENTER_LEFT" spacing="12">
                             <Text text="Control de Visitas" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="txtBuscarVisita" promptText="🔍 Buscar por ID, documento, nombre, empresa..." prefWidth="380" styleClass="search-field" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TabPane fx:id="tabPaneVisitas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">

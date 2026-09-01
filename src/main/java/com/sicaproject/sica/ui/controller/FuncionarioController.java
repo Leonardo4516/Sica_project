@@ -15,6 +15,9 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -37,6 +40,7 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
 
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
+    @FXML private TextField txtBuscarPendientes;
     @FXML private TableView<Visita> tblPendientes;
     @FXML private TableColumn<Visita, String> colId;
     @FXML private TableColumn<Visita, String> colDocumento;
@@ -56,6 +60,9 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
     @FXML private ComboBox<Empresa> cmbEmpresa;
     @FXML private CheckBox chkPaseTemporal;
     @FXML private Label lblMsg;
+
+    private final ObservableList<Visita> masterPendientes = FXCollections.observableArrayList();
+    private FilteredList<Visita> filteredPendientes;
 
     private final VisitaService visitaService =
         CompositionRoot.getInstance().visitaService();
@@ -98,6 +105,16 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
         rbInvitado.setSelected(true);
 
         configurarColumnas();
+
+        filteredPendientes = new FilteredList<>(masterPendientes, p -> true);
+        SortedList<Visita> sortedPendientes = new SortedList<>(filteredPendientes);
+        sortedPendientes.comparatorProperty().bind(tblPendientes.comparatorProperty());
+        tblPendientes.setItems(sortedPendientes);
+
+        if (txtBuscarPendientes != null) {
+            txtBuscarPendientes.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltro(newVal));
+        }
+
         refreshTabla();
         RefreshScheduler.getInstance().register(this);
     }
@@ -323,10 +340,38 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
         refreshTabla();
     }
 
+    private boolean coincideVisita(Visita v, String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            return true;
+        }
+        String term = filtro.trim().toLowerCase();
+        if (String.valueOf(v.getId()).contains(term)) return true;
+        if (v.getPersona() != null) {
+            if (v.getPersona().getNombre() != null && v.getPersona().getNombre().toLowerCase().contains(term)) return true;
+            if (v.getPersona().getDocumento() != null && v.getPersona().getDocumento().toLowerCase().contains(term)) return true;
+            if (v.getPersona().getTipo() != null && v.getPersona().getTipo().toLowerCase().contains(term)) return true;
+        }
+        if (v.getEmpresaDestino() != null && v.getEmpresaDestino().getNombre() != null) {
+            if (v.getEmpresaDestino().getNombre().toLowerCase().contains(term)) return true;
+        }
+        if (v.getObservaciones() != null && v.getObservaciones().toLowerCase().contains(term)) return true;
+        return false;
+    }
+
+    private void aplicarFiltro(String filtro) {
+        if (filteredPendientes != null) {
+            filteredPendientes.setPredicate(v -> coincideVisita(v, filtro));
+        }
+    }
+
     private void refreshTabla() {
         var pendientes = visitaService.listarTodas().stream()
             .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
             .toList();
-        tblPendientes.getItems().setAll(pendientes);
+        masterPendientes.setAll(pendientes);
+
+        if (txtBuscarPendientes != null) {
+            aplicarFiltro(txtBuscarPendientes.getText());
+        }
     }
 }

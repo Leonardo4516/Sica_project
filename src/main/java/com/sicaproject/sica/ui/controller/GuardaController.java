@@ -23,6 +23,9 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -65,6 +68,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     @FXML private ImageView imgFotoVisitanteOut;
     @FXML private ImageView imgFotoPreview;
     private File fotoSeleccionada;
+    @FXML private TextField txtBuscarVisita;
     @FXML private TableView<Visita> tblActivas;
     @FXML private TableColumn<Visita, String> colGId;
     @FXML private TableColumn<Visita, String> colGPersona;
@@ -73,6 +77,14 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     @FXML private TableColumn<Visita, String> colGEstado;
     @FXML private TableView<Visita> tblAprobadas;
     @FXML private TableView<Visita> tblPendientes;
+
+    private final ObservableList<Visita> masterActivas = FXCollections.observableArrayList();
+    private final ObservableList<Visita> masterAprobadas = FXCollections.observableArrayList();
+    private final ObservableList<Visita> masterPendientes = FXCollections.observableArrayList();
+
+    private FilteredList<Visita> filteredActivas;
+    private FilteredList<Visita> filteredAprobadas;
+    private FilteredList<Visita> filteredPendientes;
 
     private final VisitaService visitaService = CompositionRoot.getInstance().visitaService();
     private final EmpresaService empresaService = CompositionRoot.getInstance().empresaService();
@@ -132,6 +144,26 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         configurarColumnasAprobadas();
         configurarColumnasPendientes();
         configurarSeleccionFilas();
+
+        filteredActivas = new FilteredList<>(masterActivas, p -> true);
+        filteredAprobadas = new FilteredList<>(masterAprobadas, p -> true);
+        filteredPendientes = new FilteredList<>(masterPendientes, p -> true);
+
+        SortedList<Visita> sortedActivas = new SortedList<>(filteredActivas);
+        sortedActivas.comparatorProperty().bind(tblActivas.comparatorProperty());
+        tblActivas.setItems(sortedActivas);
+
+        SortedList<Visita> sortedAprobadas = new SortedList<>(filteredAprobadas);
+        sortedAprobadas.comparatorProperty().bind(tblAprobadas.comparatorProperty());
+        tblAprobadas.setItems(sortedAprobadas);
+
+        SortedList<Visita> sortedPendientes = new SortedList<>(filteredPendientes);
+        sortedPendientes.comparatorProperty().bind(tblPendientes.comparatorProperty());
+        tblPendientes.setItems(sortedPendientes);
+
+        if (txtBuscarVisita != null) {
+            txtBuscarVisita.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltroVisitas(newVal));
+        }
 
         refreshTablas();
 
@@ -525,22 +557,53 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         SceneManager.logout();
     }
 
+    private boolean coincideVisita(Visita v, String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            return true;
+        }
+        String term = filtro.trim().toLowerCase();
+        if (String.valueOf(v.getId()).contains(term)) return true;
+        if (v.getPersona() != null) {
+            if (v.getPersona().getNombre() != null && v.getPersona().getNombre().toLowerCase().contains(term)) return true;
+            if (v.getPersona().getDocumento() != null && v.getPersona().getDocumento().toLowerCase().contains(term)) return true;
+            if (v.getPersona().getTipo() != null && v.getPersona().getTipo().toLowerCase().contains(term)) return true;
+        }
+        if (v.getEmpresaDestino() != null && v.getEmpresaDestino().getNombre() != null) {
+            if (v.getEmpresaDestino().getNombre().toLowerCase().contains(term)) return true;
+        }
+        if (v.getFuncionarioAnfitrion() != null && v.getFuncionarioAnfitrion().getUsername() != null) {
+            if (v.getFuncionarioAnfitrion().getUsername().toLowerCase().contains(term)) return true;
+        }
+        if (v.getObservaciones() != null && v.getObservaciones().toLowerCase().contains(term)) return true;
+        return false;
+    }
+
+    private void aplicarFiltroVisitas(String filtro) {
+        if (filteredActivas != null) filteredActivas.setPredicate(v -> coincideVisita(v, filtro));
+        if (filteredAprobadas != null) filteredAprobadas.setPredicate(v -> coincideVisita(v, filtro));
+        if (filteredPendientes != null) filteredPendientes.setPredicate(v -> coincideVisita(v, filtro));
+    }
+
     private void refreshTablas() {
         var todas = visitaService.listarTodas();
 
         var activas = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
             .toList();
-        tblActivas.getItems().setAll(activas);
+        masterActivas.setAll(activas);
 
         var aprobadas = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.APROBADA)
             .toList();
-        tblAprobadas.getItems().setAll(aprobadas);
+        masterAprobadas.setAll(aprobadas);
 
         var pendientes = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
             .toList();
-        tblPendientes.getItems().setAll(pendientes);
+        masterPendientes.setAll(pendientes);
+
+        if (txtBuscarVisita != null) {
+            aplicarFiltroVisitas(txtBuscarVisita.getText());
+        }
     }
 }

@@ -45,9 +45,10 @@
                 <!-- Tabla de pendientes -->
                 <StackPane styleClass="glass-panel" VBox.vgrow="ALWAYS">
                     <VBox styleClass="glass-panel-inner" spacing="12">
-                        <HBox alignment="CENTER_LEFT">
+                        <HBox alignment="CENTER_LEFT" spacing="12">
                             <Text text="Solicitudes Pendientes de Aprobacion" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="txtBuscarPendientes" promptText="🔍 Buscar por ID, documento, persona, empresa..." prefWidth="380" styleClass="search-field" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TableView fx:id="tblPendientes" VBox.vgrow="ALWAYS">
