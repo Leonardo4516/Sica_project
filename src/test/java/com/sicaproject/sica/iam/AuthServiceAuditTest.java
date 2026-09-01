@@ -1,10 +1,12 @@
 package com.sicaproject.sica.iam;
 
+import com.sicaproject.sica.TestDatabaseCleaner;
 import com.sicaproject.sica.auditoria.application.AuditoriaService;
 import com.sicaproject.sica.auditoria.domain.BitacoraAuditoria;
 import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,6 +19,11 @@ class AuthServiceAuditTest {
     private final CompositionRoot root = CompositionRoot.getInstance();
     private final AuthService authService = root.authService();
     private final AuditoriaService auditoriaService = root.auditoriaService();
+
+    @AfterAll
+    static void tearDownAll() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
+    }
 
     @Test
     void login_exitoso_registra_auditoria() {

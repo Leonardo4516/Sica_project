@@ -10,7 +10,10 @@ import com.sicaproject.sica.incidentes.domain.Incidente;
 import com.sicaproject.sica.incidentes.domain.SeveridadIncidente;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
+import com.sicaproject.sica.TestDatabaseCleaner;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +35,20 @@ class IncidenteServiceTest {
 
     @BeforeEach
     void setUp() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
         guarda = authService.login("guarda1", "123456").orElseThrow();
         admin = authService.login("admin1", "123456").orElseThrow();
         empresa = root.empresaService().listar().get(0);
+    }
+
+    @AfterEach
+    void tearDown() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
     }
 
     @Test
