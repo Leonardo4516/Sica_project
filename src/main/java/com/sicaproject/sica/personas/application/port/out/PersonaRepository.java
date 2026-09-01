@@ -11,4 +11,5 @@ public interface PersonaRepository {
     List<Persona> listarTodas();
     Persona guardar(Persona persona);
     void actualizar(Persona persona);
+    void eliminar(Long id);
 }

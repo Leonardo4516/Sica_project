@@ -140,15 +140,20 @@
                             <Tab text="Gestion de Personas">
                                 <VBox spacing="8">
                                     <padding><Insets top="10" /></padding>
+                                    <HBox alignment="CENTER_LEFT" spacing="12">
+                                        <Button text="+ Nueva Persona" styleClass="btn, btn-primary" onAction="#handleNuevaPersona" />
+                                        <Region HBox.hgrow="ALWAYS" />
+                                    </HBox>
                                     <TableView fx:id="tblPersonas" VBox.vgrow="ALWAYS">
                                         <columns>
                                             <TableColumn fx:id="colPerId" text="ID" prefWidth="50" />
-                                            <TableColumn fx:id="colPerDoc" text="Documento" prefWidth="140" />
-                                            <TableColumn fx:id="colPerNombre" text="Nombre Completo" prefWidth="220" />
-                                            <TableColumn fx:id="colPerTipo" text="Tipo" prefWidth="120" />
-                                            <TableColumn fx:id="colPerEstado" text="Restriccion de Acceso" prefWidth="160" />
-                                            <TableColumn fx:id="colPerVisitas" text="Total Visitas" prefWidth="90" />
-                                            <TableColumn fx:id="colPerAccion" text="Accion Bloqueo" prefWidth="140" />
+                                            <TableColumn fx:id="colPerDoc" text="Documento" prefWidth="130" />
+                                            <TableColumn fx:id="colPerNombre" text="Nombre Completo" prefWidth="200" />
+                                            <TableColumn fx:id="colPerTipo" text="Tipo" prefWidth="100" />
+                                            <TableColumn fx:id="colPerEmpresa" text="Empresa" prefWidth="160" />
+                                            <TableColumn fx:id="colPerEstado" text="Restriccion de Acceso" prefWidth="150" />
+                                            <TableColumn fx:id="colPerVisitas" text="Visitas" prefWidth="70" />
+                                            <TableColumn fx:id="colPerAccion" text="Acciones de Gestion" prefWidth="280" />
                                         </columns>
                                     </TableView>
                                 </VBox>
