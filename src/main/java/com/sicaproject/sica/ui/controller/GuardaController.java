@@ -401,6 +401,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         }
     }
 
+    @FXML
     private void handleSolicitarAcceso(ActionEvent event) {
         try {
             String nombre = txtNombreSolicitud.getText().trim();
