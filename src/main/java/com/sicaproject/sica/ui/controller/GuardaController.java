@@ -7,6 +7,13 @@ import com.sicaproject.sica.empresas.application.service.EmpresaService;
 import com.sicaproject.sica.empresas.domain.Empresa;
 import com.sicaproject.sica.iam.application.port.out.UsuarioRepository;
 import com.sicaproject.sica.iam.domain.Usuario;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import com.sicaproject.sica.incidentes.application.service.IncidenteService;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
@@ -54,6 +61,10 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     @FXML private Button btnSolicitar;
     @FXML private Button btnBuscar;
     @FXML private Label lblSolicitudMsg;
+    @FXML private ImageView imgFotoVisitanteIn;
+    @FXML private ImageView imgFotoVisitanteOut;
+    @FXML private ImageView imgFotoPreview;
+    private File fotoSeleccionada;
     @FXML private TableView<Visita> tblActivas;
     @FXML private TableColumn<Visita, String> colGId;
     @FXML private TableColumn<Visita, String> colGPersona;
@@ -131,6 +142,15 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         tblAprobadas.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             if (newV != null) {
                 txtVisitaIdIn.setText(String.valueOf(newV.getId()));
+                if (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty()) {
+                    try {
+                        imgFotoVisitanteIn.setImage(new Image(new File(newV.getPersona().getFotoUrl()).toURI().toString()));
+                    } catch (Exception e) {
+                        imgFotoVisitanteIn.setImage(null);
+                    }
+                } else {
+                    imgFotoVisitanteIn.setImage(null);
+                }
                 String foto = (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty())
                         ? newV.getPersona().getFotoUrl() : "Sin foto registrada";
                 String anfitrion = newV.getFuncionarioAnfitrion() != null ? newV.getFuncionarioAnfitrion().getUsername() : "—";
@@ -154,6 +174,15 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 txtVisitaIdOut.setText(String.valueOf(newV.getId()));
                 lblOutMsg.setText("Visita #" + newV.getId() + ": " + newV.getPersona().getNombre() + " (" + newV.getEmpresaDestino().getNombre() + ")");
                 lblOutMsg.setStyle("-fx-text-fill: #38bdf8;");
+                if (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty()) {
+                    try {
+                        imgFotoVisitanteOut.setImage(new Image(new File(newV.getPersona().getFotoUrl()).toURI().toString()));
+                    } catch (Exception e) {
+                        imgFotoVisitanteOut.setImage(null);
+                    }
+                } else {
+                    imgFotoVisitanteOut.setImage(null);
+                }
             }
         });
     }
@@ -341,6 +370,37 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     }
 
     @FXML
+    private void handleSeleccionarFoto(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar Fotografia");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imagenes", "*.png", "*.jpg", "*.jpeg")
+        );
+        File file = fileChooser.showOpenDialog(rootPane.getScene().getWindow());
+        if (file != null) {
+            fotoSeleccionada = file;
+            imgFotoPreview.setImage(new Image(file.toURI().toString()));
+        }
+    }
+
+    private void guardarFoto(com.sicaproject.sica.personas.domain.Persona persona) {
+        if (fotoSeleccionada != null) {
+            try {
+                File uploadDir = new File("photos");
+                if (!uploadDir.exists()) uploadDir.mkdirs();
+                String ext = "";
+                int i = fotoSeleccionada.getName().lastIndexOf(".");
+                if (i > 0) ext = fotoSeleccionada.getName().substring(i);
+                String nuevoNombre = persona.getTipoDocumento() + "_" + persona.getDocumento() + "_" + System.currentTimeMillis() + ext;
+                File destino = new File(uploadDir, nuevoNombre);
+                Files.copy(fotoSeleccionada.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                persona.setFotoUrl(destino.getAbsolutePath());
+            } catch (Exception e) {
+                System.err.println("Error al guardar la foto: " + e.getMessage());
+            }
+        }
+    }
+
     private void handleSolicitarAcceso(ActionEvent event) {
         try {
             String nombre = txtNombreSolicitud.getText().trim();
@@ -383,7 +443,8 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 if ("TRABAJADOR".equals(tipoPersona) && persona.getEmpresaId() == null) {
                     persona.setEmpresaId(empresa.getId());
                 }
-                personaService.guardar(persona, SceneManager.getCurrentUser());
+                guardarFoto(persona);
+                persona = personaService.guardar(persona, SceneManager.getCurrentUser());
                 txtNombreSolicitud.setText(persona.getNombre());
             } else {
                 if (nombre.isEmpty()) {
@@ -399,6 +460,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 if ("TRABAJADOR".equals(tipoPersona)) {
                     persona.setEmpresaId(empresa.getId());
                 }
+                guardarFoto(persona);
                 persona = personaService.guardar(persona, SceneManager.getCurrentUser());
             }
 
