@@ -10,7 +10,10 @@ import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
+import com.sicaproject.sica.TestDatabaseCleaner;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +35,20 @@ class BloqueoPersonaTest {
 
     @BeforeEach
     void setUp() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
         funcionario = authService.login("funcionario1", "123456").orElseThrow();
         guarda = authService.login("guarda1", "123456").orElseThrow();
         empresa = root.empresaService().listar().get(0);
+    }
+
+    @AfterEach
+    void tearDown() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
+    }
+
+    @AfterAll
+    static void tearDownAll() {
+        TestDatabaseCleaner.limpiarDatosDePrueba();
     }
 
     @Test

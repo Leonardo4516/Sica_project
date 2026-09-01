@@ -207,15 +207,15 @@ erDiagram
 
 ### Configuración con Docker:
 ```bash
-docker-compose up -d
+docker compose -f docker/docker-compose.yml up -d
 ```
 
 ### Inicialización manual de PostgreSQL:
 ```bash
 psql -U postgres -h localhost -c "CREATE USER sica_user WITH PASSWORD 'sica_pass';"
 psql -U postgres -h localhost -c "CREATE DATABASE sica_db OWNER sica_user;"
-psql -U sica_user -h localhost -d sica_db -f schema.sql
-psql -U sica_user -h localhost -d sica_db -f data.sql
+psql -U sica_user -h localhost -d sica_db -f database/schema.sql
+psql -U sica_user -h localhost -d sica_db -f database/data.sql
 ```
 
 ---

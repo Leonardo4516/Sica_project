@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -59,7 +61,10 @@
                                     <TextField fx:id="txtVisitaIdIn" promptText="ID de visita" HBox.hgrow="ALWAYS" />
                                     <Button fx:id="btnCheckIn" text="Ingresar" styleClass="btn, btn-success" onAction="#handleCheckIn" />
                                 </HBox>
-                                <Label fx:id="lblInMsg" styleClass="label-text" wrapText="true" />
+                                <HBox spacing="10">
+                                    <ImageView fx:id="imgFotoVisitanteIn" fitWidth="100" fitHeight="100" preserveRatio="true" />
+                                    <Label fx:id="lblInMsg" styleClass="label-text" wrapText="true" />
+                                </HBox>
                             </VBox>
 
                             <Separator opacity="0.15" />
@@ -70,7 +75,10 @@
                                     <TextField fx:id="txtVisitaIdOut" promptText="ID de visita" HBox.hgrow="ALWAYS" />
                                     <Button fx:id="btnCheckOut" text="Registrar Salida" styleClass="btn, btn-danger" onAction="#handleCheckOut" />
                                 </HBox>
-                                <Label fx:id="lblOutMsg" styleClass="label-text" wrapText="true" />
+                                <HBox spacing="10">
+                                    <ImageView fx:id="imgFotoVisitanteOut" fitWidth="100" fitHeight="100" preserveRatio="true" />
+                                    <Label fx:id="lblOutMsg" styleClass="label-text" wrapText="true" />
+                                </HBox>
                             </VBox>
                         </VBox>
                     </VBox>
@@ -110,6 +118,14 @@
                                 <Label text="Nombre completo" styleClass="label-text" />
                                 <TextField fx:id="txtNombreSolicitud" promptText="Nombre de la persona" />
                             </VBox>
+                            
+                            <VBox spacing="6">
+                                <Label text="Fotografía" styleClass="label-text" />
+                                <HBox spacing="10" alignment="CENTER_LEFT">
+                                    <ImageView fx:id="imgFotoPreview" fitWidth="60" fitHeight="60" preserveRatio="true" />
+                                    <Button text="Seleccionar Foto..." styleClass="btn, btn-secondary" onAction="#handleSeleccionarFoto" />
+                                </HBox>
+                            </VBox>
 
                             <HBox spacing="12">
                                 <VBox spacing="6" HBox.hgrow="ALWAYS">
@@ -139,6 +155,7 @@
                         <HBox alignment="CENTER_LEFT" spacing="12">
                             <Text text="Control de Visitas" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="txtBuscarVisita" promptText="🔍 Buscar por ID, documento, nombre, empresa..." prefWidth="380" styleClass="search-field" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TabPane fx:id="tabPaneVisitas" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">

@@ -19,6 +19,9 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -48,6 +51,8 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     @FXML private Label lblVisitasDentro;
     @FXML private Label lblPendientes;
     @FXML private Label lblCerradasHoy;
+    @FXML private TextField txtBuscarAdmin;
+    @FXML private TabPane tabPaneAdmin;
 
     // Evacuación de Emergencia
     @FXML private Label lblEvacuacionConteo;
@@ -97,6 +102,20 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     @FXML private TableColumn<Empresa, String> colENombre;
     @FXML private TableColumn<Empresa, String> colENit;
 
+    private final ObservableList<Visita> masterEvacuacion = FXCollections.observableArrayList();
+    private final ObservableList<Incidente> masterIncidentes = FXCollections.observableArrayList();
+    private final ObservableList<Persona> masterPersonas = FXCollections.observableArrayList();
+    private final ObservableList<Usuario> masterUsuarios = FXCollections.observableArrayList();
+    private final ObservableList<Rol> masterRoles = FXCollections.observableArrayList();
+    private final ObservableList<Empresa> masterEmpresas = FXCollections.observableArrayList();
+
+    private FilteredList<Visita> filteredEvacuacion;
+    private FilteredList<Incidente> filteredIncidentes;
+    private FilteredList<Persona> filteredPersonas;
+    private FilteredList<Usuario> filteredUsuarios;
+    private FilteredList<Rol> filteredRoles;
+    private FilteredList<Empresa> filteredEmpresas;
+
     private final VisitaService visitaService = CompositionRoot.getInstance().visitaService();
     private final IncidenteService incidenteService = CompositionRoot.getInstance().incidenteService();
     private final PersonaService personaService = CompositionRoot.getInstance().personaService();
@@ -117,6 +136,43 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         configurarColumnasIncidentes();
         configurarColumnasPersonas();
         configurarColumnasUsuarios();
+        configurarColumnasRoles();
+        configurarColumnasEmpresas();
+
+        filteredEvacuacion = new FilteredList<>(masterEvacuacion, p -> true);
+        SortedList<Visita> sortedEvac = new SortedList<>(filteredEvacuacion);
+        sortedEvac.comparatorProperty().bind(tblEvacuacion.comparatorProperty());
+        tblEvacuacion.setItems(sortedEvac);
+
+        filteredIncidentes = new FilteredList<>(masterIncidentes, p -> true);
+        SortedList<Incidente> sortedInc = new SortedList<>(filteredIncidentes);
+        sortedInc.comparatorProperty().bind(tblIncidentes.comparatorProperty());
+        tblIncidentes.setItems(sortedInc);
+
+        filteredPersonas = new FilteredList<>(masterPersonas, p -> true);
+        SortedList<Persona> sortedPer = new SortedList<>(filteredPersonas);
+        sortedPer.comparatorProperty().bind(tblPersonas.comparatorProperty());
+        tblPersonas.setItems(sortedPer);
+
+        filteredUsuarios = new FilteredList<>(masterUsuarios, p -> true);
+        SortedList<Usuario> sortedUsu = new SortedList<>(filteredUsuarios);
+        sortedUsu.comparatorProperty().bind(tblUsuarios.comparatorProperty());
+        tblUsuarios.setItems(sortedUsu);
+
+        filteredRoles = new FilteredList<>(masterRoles, p -> true);
+        SortedList<Rol> sortedRol = new SortedList<>(filteredRoles);
+        sortedRol.comparatorProperty().bind(tblRoles.comparatorProperty());
+        tblRoles.setItems(sortedRol);
+
+        filteredEmpresas = new FilteredList<>(masterEmpresas, p -> true);
+        SortedList<Empresa> sortedEmp = new SortedList<>(filteredEmpresas);
+        sortedEmp.comparatorProperty().bind(tblEmpresas.comparatorProperty());
+        tblEmpresas.setItems(sortedEmp);
+
+        if (txtBuscarAdmin != null) {
+            txtBuscarAdmin.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltrosAdmin(newVal));
+        }
+
         RefreshScheduler.getInstance().register(this);
         refreshAll();
     }
@@ -184,8 +240,9 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         List<Visita> activas = visitaService.listarTodas().stream()
                 .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
                 .toList();
-        tblEvacuacion.setItems(FXCollections.observableArrayList(activas));
+        masterEvacuacion.setAll(activas);
         lblEvacuacionConteo.setText("Personal dentro para conteo de evacuacion: " + activas.size() + " personas");
+        if (txtBuscarAdmin != null) aplicarFiltrosAdmin(txtBuscarAdmin.getText());
     }
 
     private void configurarColumnasIncidentes() {
@@ -261,7 +318,8 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     }
 
     private void refreshIncidentes() {
-        tblIncidentes.setItems(FXCollections.observableArrayList(incidenteService.listarTodos()));
+        masterIncidentes.setAll(incidenteService.listarTodos());
+        if (txtBuscarAdmin != null) aplicarFiltrosAdmin(txtBuscarAdmin.getText());
     }
 
     @FXML
@@ -361,10 +419,11 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     }
 
     private void refreshPersonas() {
-        tblPersonas.setItems(FXCollections.observableArrayList(personaService.listarTodas()));
+        masterPersonas.setAll(personaService.listarTodas());
+        if (txtBuscarAdmin != null) aplicarFiltrosAdmin(txtBuscarAdmin.getText());
     }
 
-    private void refreshRoles() {
+    private void configurarColumnasRoles() {
         colRolNombre.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().getNombre()));
         colRolPermisos.setCellValueFactory(data -> {
@@ -374,7 +433,11 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                 .collect(Collectors.joining(", "));
             return new SimpleStringProperty(lista.isEmpty() ? "(sin permisos)" : lista);
         });
-        tblRoles.setItems(FXCollections.observableArrayList(rolRepository.listarTodos()));
+    }
+
+    private void refreshRoles() {
+        masterRoles.setAll(rolRepository.listarTodos());
+        if (txtBuscarAdmin != null) aplicarFiltrosAdmin(txtBuscarAdmin.getText());
     }
 
     private void configurarColumnasUsuarios() {
@@ -420,16 +483,110 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     }
 
     private void refreshUsuarios() {
-        tblUsuarios.setItems(FXCollections.observableArrayList(usuarioRepository.findAll()));
+        masterUsuarios.setAll(usuarioRepository.findAll());
+        if (txtBuscarAdmin != null) aplicarFiltrosAdmin(txtBuscarAdmin.getText());
     }
 
-    private void refreshEmpresas() {
+    private void configurarColumnasEmpresas() {
         colEId.setCellValueFactory(data ->
             new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         colENombre.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().getNombre()));
         colENit.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().getNit()));
-        tblEmpresas.setItems(FXCollections.observableArrayList(empresaRepository.listar()));
+    }
+
+    private void refreshEmpresas() {
+        masterEmpresas.setAll(empresaRepository.listar());
+        if (txtBuscarAdmin != null) aplicarFiltrosAdmin(txtBuscarAdmin.getText());
+    }
+
+    private void aplicarFiltrosAdmin(String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            if (filteredEvacuacion != null) filteredEvacuacion.setPredicate(v -> true);
+            if (filteredIncidentes != null) filteredIncidentes.setPredicate(i -> true);
+            if (filteredPersonas != null) filteredPersonas.setPredicate(p -> true);
+            if (filteredUsuarios != null) filteredUsuarios.setPredicate(u -> true);
+            if (filteredRoles != null) filteredRoles.setPredicate(r -> true);
+            if (filteredEmpresas != null) filteredEmpresas.setPredicate(e -> true);
+            return;
+        }
+        String term = filtro.trim().toLowerCase();
+
+        if (filteredEvacuacion != null) {
+            filteredEvacuacion.setPredicate(v -> {
+                if (String.valueOf(v.getId()).contains(term)) return true;
+                if (v.getPersona() != null) {
+                    if (v.getPersona().getNombre() != null && v.getPersona().getNombre().toLowerCase().contains(term)) return true;
+                    if (v.getPersona().getDocumento() != null && v.getPersona().getDocumento().toLowerCase().contains(term)) return true;
+                    if (v.getPersona().getTipo() != null && v.getPersona().getTipo().toLowerCase().contains(term)) return true;
+                }
+                if (v.getEmpresaDestino() != null && v.getEmpresaDestino().getNombre() != null) {
+                    if (v.getEmpresaDestino().getNombre().toLowerCase().contains(term)) return true;
+                }
+                if (v.getFuncionarioAnfitrion() != null && v.getFuncionarioAnfitrion().getUsername() != null) {
+                    if (v.getFuncionarioAnfitrion().getUsername().toLowerCase().contains(term)) return true;
+                }
+                return false;
+            });
+        }
+
+        if (filteredIncidentes != null) {
+            filteredIncidentes.setPredicate(i -> {
+                if (String.valueOf(i.getId()).contains(term)) return true;
+                if (i.getTitulo() != null && i.getTitulo().toLowerCase().contains(term)) return true;
+                if (i.getDescripcion() != null && i.getDescripcion().toLowerCase().contains(term)) return true;
+                if (i.getSeveridad() != null && i.getSeveridad().name().toLowerCase().contains(term)) return true;
+                if (i.getEstado() != null && i.getEstado().toLowerCase().contains(term)) return true;
+                if (i.getPersona() != null && i.getPersona().getNombre() != null) {
+                    if (i.getPersona().getNombre().toLowerCase().contains(term)) return true;
+                }
+                if (i.getReportadoPor() != null && i.getReportadoPor().getUsername() != null) {
+                    if (i.getReportadoPor().getUsername().toLowerCase().contains(term)) return true;
+                }
+                return false;
+            });
+        }
+
+        if (filteredPersonas != null) {
+            filteredPersonas.setPredicate(p -> {
+                if (String.valueOf(p.getId()).contains(term)) return true;
+                if (p.getNombre() != null && p.getNombre().toLowerCase().contains(term)) return true;
+                if (p.getDocumento() != null && p.getDocumento().toLowerCase().contains(term)) return true;
+                if (p.getTipo() != null && p.getTipo().toLowerCase().contains(term)) return true;
+                if (p.getMotivoBloqueo() != null && p.getMotivoBloqueo().toLowerCase().contains(term)) return true;
+                return false;
+            });
+        }
+
+        if (filteredUsuarios != null) {
+            filteredUsuarios.setPredicate(u -> {
+                if (String.valueOf(u.getId()).contains(term)) return true;
+                if (u.getUsername() != null && u.getUsername().toLowerCase().contains(term)) return true;
+                if (u.getRol() != null && u.getRol().getNombre() != null) {
+                    if (u.getRol().getNombre().toLowerCase().contains(term)) return true;
+                }
+                if (u.getPersona() != null && u.getPersona().getNombre() != null) {
+                    if (u.getPersona().getNombre().toLowerCase().contains(term)) return true;
+                }
+                return false;
+            });
+        }
+
+        if (filteredRoles != null) {
+            filteredRoles.setPredicate(r -> {
+                if (r.getNombre() != null && r.getNombre().toLowerCase().contains(term)) return true;
+                return false;
+            });
+        }
+
+        if (filteredEmpresas != null) {
+            filteredEmpresas.setPredicate(e -> {
+                if (String.valueOf(e.getId()).contains(term)) return true;
+                if (e.getNombre() != null && e.getNombre().toLowerCase().contains(term)) return true;
+                if (e.getNit() != null && e.getNit().toLowerCase().contains(term)) return true;
+                return false;
+            });
+        }
     }
 }

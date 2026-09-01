@@ -92,6 +92,23 @@
     -fx-effect: dropshadow(gaussian, rgba(99, 102, 241, 0.35), 8, 0, 0, 0);
 }
 
+.search-field {
+    -fx-background-color: rgba(15, 23, 42, 0.85);
+    -fx-border-color: rgba(99, 102, 241, 0.45);
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 6 16;
+    -fx-font-size: 13px;
+    -fx-prompt-text-fill: #94a3b8;
+}
+
+.search-field:focused {
+    -fx-border-color: #818cf8;
+    -fx-border-width: 1.5;
+    -fx-background-color: #0f172a;
+    -fx-effect: dropshadow(gaussian, rgba(129, 140, 248, 0.45), 10, 0, 0, 0);
+}
+
 .combo-box,
 .date-picker {
     -fx-background-color: #111827;

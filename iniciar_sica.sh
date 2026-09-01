@@ -12,7 +12,7 @@ cd "$DIR"
 if ! pg_isready -h localhost -p 5432 -U sica_user -d sica_db >/dev/null 2>&1; then
     echo "Verificando base de datos PostgreSQL..."
     if command -v docker &>/dev/null; then
-        docker compose up -d >/dev/null 2>&1 || true
+        docker compose -f docker/docker-compose.yml up -d >/dev/null 2>&1 || docker compose up -d >/dev/null 2>&1 || true
         sleep 2
     fi
 fi

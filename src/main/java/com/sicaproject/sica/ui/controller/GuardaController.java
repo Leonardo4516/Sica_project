@@ -7,6 +7,13 @@ import com.sicaproject.sica.empresas.application.service.EmpresaService;
 import com.sicaproject.sica.empresas.domain.Empresa;
 import com.sicaproject.sica.iam.application.port.out.UsuarioRepository;
 import com.sicaproject.sica.iam.domain.Usuario;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import com.sicaproject.sica.incidentes.application.service.IncidenteService;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
@@ -16,6 +23,9 @@ import com.sicaproject.sica.ui.SceneManager;
 import com.sicaproject.sica.ui.util.DialogHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -54,6 +64,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     @FXML private Button btnSolicitar;
     @FXML private Button btnBuscar;
     @FXML private Label lblSolicitudMsg;
+    @FXML private ImageView imgFotoVisitanteIn;
+    @FXML private ImageView imgFotoVisitanteOut;
+    @FXML private ImageView imgFotoPreview;
+    private File fotoSeleccionada;
+    @FXML private TextField txtBuscarVisita;
     @FXML private TableView<Visita> tblActivas;
     @FXML private TableColumn<Visita, String> colGId;
     @FXML private TableColumn<Visita, String> colGPersona;
@@ -62,6 +77,14 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
     @FXML private TableColumn<Visita, String> colGEstado;
     @FXML private TableView<Visita> tblAprobadas;
     @FXML private TableView<Visita> tblPendientes;
+
+    private final ObservableList<Visita> masterActivas = FXCollections.observableArrayList();
+    private final ObservableList<Visita> masterAprobadas = FXCollections.observableArrayList();
+    private final ObservableList<Visita> masterPendientes = FXCollections.observableArrayList();
+
+    private FilteredList<Visita> filteredActivas;
+    private FilteredList<Visita> filteredAprobadas;
+    private FilteredList<Visita> filteredPendientes;
 
     private final VisitaService visitaService = CompositionRoot.getInstance().visitaService();
     private final EmpresaService empresaService = CompositionRoot.getInstance().empresaService();
@@ -122,6 +145,26 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         configurarColumnasPendientes();
         configurarSeleccionFilas();
 
+        filteredActivas = new FilteredList<>(masterActivas, p -> true);
+        filteredAprobadas = new FilteredList<>(masterAprobadas, p -> true);
+        filteredPendientes = new FilteredList<>(masterPendientes, p -> true);
+
+        SortedList<Visita> sortedActivas = new SortedList<>(filteredActivas);
+        sortedActivas.comparatorProperty().bind(tblActivas.comparatorProperty());
+        tblActivas.setItems(sortedActivas);
+
+        SortedList<Visita> sortedAprobadas = new SortedList<>(filteredAprobadas);
+        sortedAprobadas.comparatorProperty().bind(tblAprobadas.comparatorProperty());
+        tblAprobadas.setItems(sortedAprobadas);
+
+        SortedList<Visita> sortedPendientes = new SortedList<>(filteredPendientes);
+        sortedPendientes.comparatorProperty().bind(tblPendientes.comparatorProperty());
+        tblPendientes.setItems(sortedPendientes);
+
+        if (txtBuscarVisita != null) {
+            txtBuscarVisita.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltroVisitas(newVal));
+        }
+
         refreshTablas();
 
         RefreshScheduler.getInstance().register(this);
@@ -131,6 +174,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         tblAprobadas.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             if (newV != null) {
                 txtVisitaIdIn.setText(String.valueOf(newV.getId()));
+                imgFotoVisitanteIn.setImage(cargarImagen(newV.getPersona().getFotoUrl()));
                 String foto = (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty())
                         ? newV.getPersona().getFotoUrl() : "Sin foto registrada";
                 String anfitrion = newV.getFuncionarioAnfitrion() != null ? newV.getFuncionarioAnfitrion().getUsername() : "—";
@@ -154,6 +198,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 txtVisitaIdOut.setText(String.valueOf(newV.getId()));
                 lblOutMsg.setText("Visita #" + newV.getId() + ": " + newV.getPersona().getNombre() + " (" + newV.getEmpresaDestino().getNombre() + ")");
                 lblOutMsg.setStyle("-fx-text-fill: #38bdf8;");
+                imgFotoVisitanteOut.setImage(cargarImagen(newV.getPersona().getFotoUrl()));
             }
         });
     }
@@ -294,6 +339,27 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         }
     }
 
+    private Image cargarImagen(String fotoUrl) {
+        if (fotoUrl == null || fotoUrl.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            File f = new File(fotoUrl);
+            if (f.exists()) {
+                return new Image(f.toURI().toString());
+            }
+            if (fotoUrl.startsWith("http://") || fotoUrl.startsWith("https://") || fotoUrl.startsWith("file:")) {
+                return new Image(fotoUrl);
+            }
+            var res = getClass().getResource(fotoUrl);
+            if (res != null) {
+                return new Image(res.toExternalForm());
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
     @FXML
     private void handleBuscarPersona(ActionEvent event) {
         try {
@@ -317,6 +383,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 } else {
                     rbInvitado.setSelected(true);
                 }
+                
+                // Cargar fotografía de la persona si está registrada
+                imgFotoPreview.setImage(cargarImagen(persona.getFotoUrl()));
+                fotoSeleccionada = null;
+
                 if (persona.isBloqueado()) {
                     lblSolicitudMsg.setText("[ALERTA] Persona BLOQUEADA. Motivo: " +
                             (persona.getMotivoBloqueo() != null ? persona.getMotivoBloqueo() : "Restriccion de acceso") +
@@ -331,12 +402,46 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             } else {
                 txtNombreSolicitud.clear();
                 rbInvitado.setSelected(true);
+                imgFotoPreview.setImage(null);
+                fotoSeleccionada = null;
                 lblSolicitudMsg.setText("Persona no encontrada en el padron. Complete los datos para registrarla.");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #38bdf8;");
             }
         } catch (Exception e) {
             lblSolicitudMsg.setText("Error: " + e.getMessage());
             lblSolicitudMsg.setStyle("-fx-text-fill: #ef4444;");
+        }
+    }
+
+    @FXML
+    private void handleSeleccionarFoto(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar Fotografia");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Imagenes", "*.png", "*.jpg", "*.jpeg")
+        );
+        File file = fileChooser.showOpenDialog(rootPane.getScene().getWindow());
+        if (file != null) {
+            fotoSeleccionada = file;
+            imgFotoPreview.setImage(new Image(file.toURI().toString()));
+        }
+    }
+
+    private void guardarFoto(com.sicaproject.sica.personas.domain.Persona persona) {
+        if (fotoSeleccionada != null) {
+            try {
+                File uploadDir = new File("photos");
+                if (!uploadDir.exists()) uploadDir.mkdirs();
+                String ext = "";
+                int i = fotoSeleccionada.getName().lastIndexOf(".");
+                if (i > 0) ext = fotoSeleccionada.getName().substring(i);
+                String nuevoNombre = persona.getTipoDocumento() + "_" + persona.getDocumento() + "_" + System.currentTimeMillis() + ext;
+                File destino = new File(uploadDir, nuevoNombre);
+                Files.copy(fotoSeleccionada.toPath(), destino.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                persona.setFotoUrl(destino.getAbsolutePath());
+            } catch (Exception e) {
+                System.err.println("Error al guardar la foto: " + e.getMessage());
+            }
         }
     }
 
@@ -383,7 +488,8 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 if ("TRABAJADOR".equals(tipoPersona) && persona.getEmpresaId() == null) {
                     persona.setEmpresaId(empresa.getId());
                 }
-                personaService.guardar(persona, SceneManager.getCurrentUser());
+                guardarFoto(persona);
+                persona = personaService.guardar(persona, SceneManager.getCurrentUser());
                 txtNombreSolicitud.setText(persona.getNombre());
             } else {
                 if (nombre.isEmpty()) {
@@ -399,6 +505,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 if ("TRABAJADOR".equals(tipoPersona)) {
                     persona.setEmpresaId(empresa.getId());
                 }
+                guardarFoto(persona);
                 persona = personaService.guardar(persona, SceneManager.getCurrentUser());
             }
 
@@ -413,6 +520,8 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             lblSolicitudMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             txtDocSolicitud.clear();
             txtNombreSolicitud.clear();
+            imgFotoPreview.setImage(null);
+            fotoSeleccionada = null;
             chkPaseTemporalSolicitud.setSelected(false);
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);
@@ -448,22 +557,53 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         SceneManager.logout();
     }
 
+    private boolean coincideVisita(Visita v, String filtro) {
+        if (filtro == null || filtro.trim().isEmpty()) {
+            return true;
+        }
+        String term = filtro.trim().toLowerCase();
+        if (String.valueOf(v.getId()).contains(term)) return true;
+        if (v.getPersona() != null) {
+            if (v.getPersona().getNombre() != null && v.getPersona().getNombre().toLowerCase().contains(term)) return true;
+            if (v.getPersona().getDocumento() != null && v.getPersona().getDocumento().toLowerCase().contains(term)) return true;
+            if (v.getPersona().getTipo() != null && v.getPersona().getTipo().toLowerCase().contains(term)) return true;
+        }
+        if (v.getEmpresaDestino() != null && v.getEmpresaDestino().getNombre() != null) {
+            if (v.getEmpresaDestino().getNombre().toLowerCase().contains(term)) return true;
+        }
+        if (v.getFuncionarioAnfitrion() != null && v.getFuncionarioAnfitrion().getUsername() != null) {
+            if (v.getFuncionarioAnfitrion().getUsername().toLowerCase().contains(term)) return true;
+        }
+        if (v.getObservaciones() != null && v.getObservaciones().toLowerCase().contains(term)) return true;
+        return false;
+    }
+
+    private void aplicarFiltroVisitas(String filtro) {
+        if (filteredActivas != null) filteredActivas.setPredicate(v -> coincideVisita(v, filtro));
+        if (filteredAprobadas != null) filteredAprobadas.setPredicate(v -> coincideVisita(v, filtro));
+        if (filteredPendientes != null) filteredPendientes.setPredicate(v -> coincideVisita(v, filtro));
+    }
+
     private void refreshTablas() {
         var todas = visitaService.listarTodas();
 
         var activas = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.DENTRO)
             .toList();
-        tblActivas.getItems().setAll(activas);
+        masterActivas.setAll(activas);
 
         var aprobadas = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.APROBADA)
             .toList();
-        tblAprobadas.getItems().setAll(aprobadas);
+        masterAprobadas.setAll(aprobadas);
 
         var pendientes = todas.stream()
             .filter(v -> v.getEstado() == EstadoVisita.PENDIENTE_APROBACION)
             .toList();
-        tblPendientes.getItems().setAll(pendientes);
+        masterPendientes.setAll(pendientes);
+
+        if (txtBuscarVisita != null) {
+            aplicarFiltroVisitas(txtBuscarVisita.getText());
+        }
     }
 }

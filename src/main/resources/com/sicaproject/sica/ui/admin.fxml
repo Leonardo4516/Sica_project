@@ -88,6 +88,7 @@
                         <HBox alignment="CENTER_LEFT" spacing="12">
                             <Text text="Gestion Integral del Sistema" styleClass="title-md" />
                             <Region HBox.hgrow="ALWAYS" />
+                            <TextField fx:id="txtBuscarAdmin" promptText="🔍 Buscar por coincidencia (nombre, documento, usuario, empresa)..." prefWidth="440" styleClass="search-field" />
                             <Button text="Refrescar" styleClass="btn, btn-secondary" onAction="#handleRefresh" />
                         </HBox>
                         <TabPane fx:id="tabPaneAdmin" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
