@@ -142,15 +142,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         tblAprobadas.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             if (newV != null) {
                 txtVisitaIdIn.setText(String.valueOf(newV.getId()));
-                if (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty()) {
-                    try {
-                        imgFotoVisitanteIn.setImage(new Image(new File(newV.getPersona().getFotoUrl()).toURI().toString()));
-                    } catch (Exception e) {
-                        imgFotoVisitanteIn.setImage(null);
-                    }
-                } else {
-                    imgFotoVisitanteIn.setImage(null);
-                }
+                imgFotoVisitanteIn.setImage(cargarImagen(newV.getPersona().getFotoUrl()));
                 String foto = (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty())
                         ? newV.getPersona().getFotoUrl() : "Sin foto registrada";
                 String anfitrion = newV.getFuncionarioAnfitrion() != null ? newV.getFuncionarioAnfitrion().getUsername() : "—";
@@ -174,15 +166,7 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 txtVisitaIdOut.setText(String.valueOf(newV.getId()));
                 lblOutMsg.setText("Visita #" + newV.getId() + ": " + newV.getPersona().getNombre() + " (" + newV.getEmpresaDestino().getNombre() + ")");
                 lblOutMsg.setStyle("-fx-text-fill: #38bdf8;");
-                if (newV.getPersona().getFotoUrl() != null && !newV.getPersona().getFotoUrl().isEmpty()) {
-                    try {
-                        imgFotoVisitanteOut.setImage(new Image(new File(newV.getPersona().getFotoUrl()).toURI().toString()));
-                    } catch (Exception e) {
-                        imgFotoVisitanteOut.setImage(null);
-                    }
-                } else {
-                    imgFotoVisitanteOut.setImage(null);
-                }
+                imgFotoVisitanteOut.setImage(cargarImagen(newV.getPersona().getFotoUrl()));
             }
         });
     }
@@ -323,6 +307,27 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         }
     }
 
+    private Image cargarImagen(String fotoUrl) {
+        if (fotoUrl == null || fotoUrl.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            File f = new File(fotoUrl);
+            if (f.exists()) {
+                return new Image(f.toURI().toString());
+            }
+            if (fotoUrl.startsWith("http://") || fotoUrl.startsWith("https://") || fotoUrl.startsWith("file:")) {
+                return new Image(fotoUrl);
+            }
+            var res = getClass().getResource(fotoUrl);
+            if (res != null) {
+                return new Image(res.toExternalForm());
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
+    }
+
     @FXML
     private void handleBuscarPersona(ActionEvent event) {
         try {
@@ -346,6 +351,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 } else {
                     rbInvitado.setSelected(true);
                 }
+                
+                // Cargar fotografía de la persona si está registrada
+                imgFotoPreview.setImage(cargarImagen(persona.getFotoUrl()));
+                fotoSeleccionada = null;
+
                 if (persona.isBloqueado()) {
                     lblSolicitudMsg.setText("[ALERTA] Persona BLOQUEADA. Motivo: " +
                             (persona.getMotivoBloqueo() != null ? persona.getMotivoBloqueo() : "Restriccion de acceso") +
@@ -360,6 +370,8 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             } else {
                 txtNombreSolicitud.clear();
                 rbInvitado.setSelected(true);
+                imgFotoPreview.setImage(null);
+                fotoSeleccionada = null;
                 lblSolicitudMsg.setText("Persona no encontrada en el padron. Complete los datos para registrarla.");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #38bdf8;");
             }
@@ -476,6 +488,8 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             lblSolicitudMsg.setStyle("-fx-text-fill: #10b981; -fx-font-weight: bold;");
             txtDocSolicitud.clear();
             txtNombreSolicitud.clear();
+            imgFotoPreview.setImage(null);
+            fotoSeleccionada = null;
             chkPaseTemporalSolicitud.setSelected(false);
             rbCC.setSelected(true);
             rbInvitado.setSelected(true);
