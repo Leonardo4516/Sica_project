@@ -426,11 +426,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
 
     @FXML
     private void handleReportarIncidente(ActionEvent event) {
-        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Porteria Principal");
+        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Porteria Principal", personaService.listarTodas());
         if (res.isPresent()) {
             DialogHelper.IncidenteDialogData data = res.get();
             try {
-                incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, null, null, SceneManager.getCurrentUser());
+                incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, data.persona, null, SceneManager.getCurrentUser());
                 DialogHelper.mostrarExito("Incidente Reportado", "El incidente ha sido registrado en la bitacora central.");
             } catch (Exception e) {
                 DialogHelper.mostrarError("Error al registrar", e.getMessage());

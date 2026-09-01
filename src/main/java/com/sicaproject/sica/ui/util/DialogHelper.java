@@ -105,15 +105,17 @@ public final class DialogHelper {
         public final String titulo;
         public final String descripcion;
         public final SeveridadIncidente severidad;
+        public final com.sicaproject.sica.personas.domain.Persona persona;
 
-        public IncidenteDialogData(String titulo, String descripcion, SeveridadIncidente severidad) {
+        public IncidenteDialogData(String titulo, String descripcion, SeveridadIncidente severidad, com.sicaproject.sica.personas.domain.Persona persona) {
             this.titulo = titulo;
             this.descripcion = descripcion;
             this.severidad = severidad;
+            this.persona = persona;
         }
     }
 
-    public static Optional<IncidenteDialogData> mostrarDialogoReporteIncidente(String origen) {
+    public static Optional<IncidenteDialogData> mostrarDialogoReporteIncidente(String origen, java.util.List<com.sicaproject.sica.personas.domain.Persona> personas) {
         Dialog<IncidenteDialogData> dialog = new Dialog<>();
         dialog.setTitle("Reportar Incidente");
         dialog.setHeaderText("Registro de Incidente - " + origen);
@@ -135,10 +137,26 @@ public final class DialogHelper {
         cmbSev.setValue(SeveridadIncidente.MEDIA);
         cmbSev.setPrefWidth(380);
 
+        Label lblPer = new Label("Persona involucrada (opcional):");
+        lblPer.getStyleClass().add("label-text");
+        ComboBox<com.sicaproject.sica.personas.domain.Persona> cmbPer = new ComboBox<>(FXCollections.observableArrayList(personas));
+        cmbPer.setPrefWidth(380);
+        cmbPer.setPromptText("Seleccione una persona...");
+        cmbPer.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(com.sicaproject.sica.personas.domain.Persona p) {
+                return p == null ? "" : p.getNombre() + " (" + p.getDocumento() + ")";
+            }
+            @Override
+            public com.sicaproject.sica.personas.domain.Persona fromString(String string) {
+                return null;
+            }
+        });
+
         Label lblDesc = new Label("Descripcion detallada:");
         lblDesc.getStyleClass().add("label-text");
         TextArea txtDesc = new TextArea();
-        txtDesc.setPromptText("Detalles de lo ocurrido, lugar exacto, personas o vehiculos involucrados...");
+        txtDesc.setPromptText("Detalles de lo ocurrido...");
         txtDesc.setPrefRowCount(4);
         txtDesc.setPrefWidth(380);
         txtDesc.setWrapText(true);
@@ -147,8 +165,10 @@ public final class DialogHelper {
         grid.add(txtTitulo, 1, 0);
         grid.add(lblSev, 0, 1);
         grid.add(cmbSev, 1, 1);
-        grid.add(lblDesc, 0, 2);
-        grid.add(txtDesc, 1, 2);
+        grid.add(lblPer, 0, 2);
+        grid.add(cmbPer, 1, 2);
+        grid.add(lblDesc, 0, 3);
+        grid.add(txtDesc, 1, 3);
 
         dialog.getDialogPane().setContent(grid);
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -161,7 +181,70 @@ public final class DialogHelper {
                 if (tit.isEmpty() || desc.isEmpty()) {
                     return null;
                 }
-                return new IncidenteDialogData(tit, desc, cmbSev.getValue());
+                return new IncidenteDialogData(tit, desc, cmbSev.getValue(), cmbPer.getValue());
+            }
+            return null;
+        });
+
+        return dialog.showAndWait();
+    }
+
+    public static class UsuarioDialogData {
+        public final String nombreRol;
+        public final com.sicaproject.sica.personas.domain.Persona persona;
+
+        public UsuarioDialogData(String nombreRol, com.sicaproject.sica.personas.domain.Persona persona) {
+            this.nombreRol = nombreRol;
+            this.persona = persona;
+        }
+    }
+
+    public static Optional<UsuarioDialogData> mostrarDialogoEditarUsuario(com.sicaproject.sica.iam.domain.Usuario usuario, java.util.List<com.sicaproject.sica.iam.domain.Rol> roles, java.util.List<com.sicaproject.sica.personas.domain.Persona> personas) {
+        Dialog<UsuarioDialogData> dialog = new Dialog<>();
+        dialog.setTitle("Editar Usuario");
+        dialog.setHeaderText("Usuario: " + usuario.getUsername());
+
+        GridPane grid = new GridPane();
+        grid.setHgap(12);
+        grid.setVgap(14);
+        grid.setPadding(new Insets(16, 20, 16, 20));
+
+        Label lblRol = new Label("Rol del usuario:");
+        lblRol.getStyleClass().add("label-text");
+        ComboBox<String> cmbRol = new ComboBox<>();
+        for(com.sicaproject.sica.iam.domain.Rol r : roles) cmbRol.getItems().add(r.getNombre());
+        cmbRol.setValue(usuario.getRol().getNombre());
+        cmbRol.setPrefWidth(380);
+
+        Label lblPer = new Label("Persona vinculada (opcional):");
+        lblPer.getStyleClass().add("label-text");
+        ComboBox<com.sicaproject.sica.personas.domain.Persona> cmbPer = new ComboBox<>(FXCollections.observableArrayList(personas));
+        cmbPer.setPrefWidth(380);
+        cmbPer.setPromptText("Seleccione una persona...");
+        cmbPer.setConverter(new javafx.util.StringConverter<>() {
+            @Override
+            public String toString(com.sicaproject.sica.personas.domain.Persona p) {
+                return p == null ? "" : p.getNombre() + " (" + p.getDocumento() + ")";
+            }
+            @Override
+            public com.sicaproject.sica.personas.domain.Persona fromString(String string) {
+                return null;
+            }
+        });
+        cmbPer.setValue(usuario.getPersona());
+
+        grid.add(lblRol, 0, 0);
+        grid.add(cmbRol, 1, 0);
+        grid.add(lblPer, 0, 1);
+        grid.add(cmbPer, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        aplicarEstilo(dialog);
+
+        dialog.setResultConverter(bt -> {
+            if (bt == ButtonType.OK) {
+                return new UsuarioDialogData(cmbRol.getValue(), cmbPer.getValue());
             }
             return null;
         });

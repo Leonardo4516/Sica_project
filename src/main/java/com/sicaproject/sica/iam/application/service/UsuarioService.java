@@ -55,6 +55,31 @@ public class UsuarioService {
         return guardado;
     }
 
+    public Usuario actualizarUsuario(long usuarioId, String nombreRol, Persona personaAsociada, Usuario usuarioSolicitante) {
+        if (usuarioSolicitante != null && rbacService != null) {
+            rbacService.verificarPermiso(usuarioSolicitante, "gestionar_usuarios");
+        }
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + usuarioId));
+
+        Rol rol = rolRepository.porNombre(nombreRol)
+                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado: " + nombreRol));
+
+        usuario.setRol(rol);
+        usuario.setPersona(personaAsociada);
+
+        Usuario guardado = usuarioRepository.save(usuario);
+
+        if (auditoriaService != null) {
+            Long adminId = usuarioSolicitante != null ? usuarioSolicitante.getId() : null;
+            auditoriaService.registrar(adminId, "USUARIO_ACTUALIZADO", "USUARIO", guardado.getId(),
+                    "Usuario actualizado: " + usuario.getUsername() + " con rol " + nombreRol, "EXITOSO");
+        }
+
+        return guardado;
+    }
+
     public Usuario cambiarEstado(long usuarioId, boolean activo, Usuario usuarioSolicitante) {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_usuarios");

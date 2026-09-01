@@ -163,6 +163,7 @@
                                             <TableColumn fx:id="colURol" text="Rol" prefWidth="130" />
                                             <TableColumn fx:id="colUPersona" text="Persona Asignada" prefWidth="200" />
                                             <TableColumn fx:id="colUEstado" text="Estado" prefWidth="100" />
+                                            <TableColumn fx:id="colUAccion" text="Acciones" prefWidth="120" />
                                         </columns>
                                     </TableView>
                                 </VBox>

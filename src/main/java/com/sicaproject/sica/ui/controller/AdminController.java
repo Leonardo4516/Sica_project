@@ -38,7 +38,9 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
-public class AdminController implements Initializable {
+import com.sicaproject.sica.ui.RefreshScheduler;
+
+public class AdminController implements Initializable, RefreshScheduler.Refreshable {
 
     @FXML private StackPane rootPane;
     @FXML private Text txtUsuario;
@@ -86,6 +88,7 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<Usuario, String> colURol;
     @FXML private TableColumn<Usuario, String> colUPersona;
     @FXML private TableColumn<Usuario, String> colUEstado;
+    @FXML private TableColumn<Usuario, Void> colUAccion;
     @FXML private TableView<Rol> tblRoles;
     @FXML private TableColumn<Rol, String> colRolNombre;
     @FXML private TableColumn<Rol, String> colRolPermisos;
@@ -101,6 +104,7 @@ public class AdminController implements Initializable {
     private final RolRepository rolRepository = CompositionRoot.getInstance().rolRepository();
     private final UsuarioRepository usuarioRepository = CompositionRoot.getInstance().usuarioRepository();
     private final EmpresaRepository empresaRepository = CompositionRoot.getInstance().empresaRepository();
+    private final com.sicaproject.sica.iam.application.service.UsuarioService usuarioService = CompositionRoot.getInstance().usuarioService();
 
     private final DateTimeFormatter dateTimeFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -112,6 +116,13 @@ public class AdminController implements Initializable {
         configurarColumnasEvacuacion();
         configurarColumnasIncidentes();
         configurarColumnasPersonas();
+        configurarColumnasUsuarios();
+        RefreshScheduler.getInstance().register(this);
+        refreshAll();
+    }
+
+    @Override
+    public void refreshData() {
         refreshAll();
     }
 
@@ -255,11 +266,11 @@ public class AdminController implements Initializable {
 
     @FXML
     private void handleNuevoIncidente(ActionEvent event) {
-        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Panel de Administracion");
+        Optional<DialogHelper.IncidenteDialogData> res = DialogHelper.mostrarDialogoReporteIncidente("Panel de Administracion", personaService.listarTodas());
         if (res.isPresent()) {
             DialogHelper.IncidenteDialogData data = res.get();
             try {
-                incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, null, null, SceneManager.getCurrentUser());
+                incidenteService.reportarIncidente(data.titulo, data.descripcion, data.severidad, data.persona, null, SceneManager.getCurrentUser());
                 refreshIncidentes();
             } catch (Exception e) {
                 DialogHelper.mostrarError("Error al registrar incidente", e.getMessage());
@@ -366,7 +377,7 @@ public class AdminController implements Initializable {
         tblRoles.setItems(FXCollections.observableArrayList(rolRepository.listarTodos()));
     }
 
-    private void refreshUsuarios() {
+    private void configurarColumnasUsuarios() {
         colUId.setCellValueFactory(data ->
             new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         colUUsername.setCellValueFactory(data ->
@@ -378,6 +389,37 @@ public class AdminController implements Initializable {
                 ? data.getValue().getPersona().getNombre() : "—"));
         colUEstado.setCellValueFactory(data ->
             new SimpleStringProperty(data.getValue().isActivo() ? "Activo" : "Inactivo"));
+
+        colUAccion.setCellFactory(col -> new TableCell<>() {
+            private final Button btnEditar = new Button("Editar");
+            private final HBox box = new HBox(btnEditar);
+            {
+                box.setAlignment(Pos.CENTER);
+                btnEditar.setStyle("-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); -fx-text-fill: white; -fx-font-weight: bold;");
+                btnEditar.setOnAction(e -> {
+                    Usuario u = getTableView().getItems().get(getIndex());
+                    Optional<DialogHelper.UsuarioDialogData> res = DialogHelper.mostrarDialogoEditarUsuario(u, rolRepository.listarTodos(), personaService.listarTodas());
+                    if (res.isPresent()) {
+                        DialogHelper.UsuarioDialogData data = res.get();
+                        try {
+                            usuarioService.actualizarUsuario(u.getId(), data.nombreRol, data.persona, SceneManager.getCurrentUser());
+                            refreshUsuarios();
+                        } catch (Exception ex) {
+                            DialogHelper.mostrarError("Error al editar usuario", ex.getMessage());
+                        }
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : box);
+            }
+        });
+    }
+
+    private void refreshUsuarios() {
         tblUsuarios.setItems(FXCollections.observableArrayList(usuarioRepository.findAll()));
     }
 
