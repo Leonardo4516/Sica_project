@@ -486,7 +486,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         confirmacion.setHeaderText("¿Confirmar eliminación de persona?");
         confirmacion.setContentText("¿Está seguro de que desea eliminar a '" + persona.getNombre() +
                 "' (Documento: " + persona.getDocumento() + ") del sistema SICA?\n\n" +
-                "Esta acción es irreversible y quedará registrada en la bitácora de auditoría.");
+                "Esta acción eliminará su registro y desvinculará sus registros asociados. Es irreversible y quedará registrada en la bitácora de auditoría.");
         DialogHelper.aplicarEstilo(confirmacion);
 
         Optional<ButtonType> respuesta = confirmacion.showAndWait();
@@ -494,10 +494,10 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
             try {
                 personaService.eliminarPersona(persona.getId(), SceneManager.getCurrentUser());
                 refreshPersonas();
-                DialogHelper.mostrarExito("Persona Eliminada", "La persona ha sido eliminada del sistema.");
+                DialogHelper.mostrarExito("Persona Eliminada", "La persona '" + persona.getNombre() + "' ha sido eliminada exitosamente del sistema.");
             } catch (Exception e) {
-                DialogHelper.mostrarError("No se pudo eliminar la persona",
-                        "No es posible eliminar esta persona porque cuenta con registros históricos vinculados (visitas, incidentes o usuario).\nDetalle: " + e.getMessage());
+                DialogHelper.mostrarError("Error al Eliminar Persona",
+                        "No se pudo completar la eliminación.\nDetalle: " + e.getMessage());
             }
         }
     }

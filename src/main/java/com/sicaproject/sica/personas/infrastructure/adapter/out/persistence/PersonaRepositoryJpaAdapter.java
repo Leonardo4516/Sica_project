@@ -133,6 +133,22 @@ public class PersonaRepositoryJpaAdapter implements PersonaRepository {
         EntityManager em = JpaConfig.newEntityManager();
         try {
             em.getTransaction().begin();
+            // 1. Desvincular de cuentas de usuario del sistema (persona_id -> null)
+            em.createQuery("UPDATE UsuarioEntity u SET u.persona = null WHERE u.persona.id = :id")
+                    .setParameter("id", id)
+                    .executeUpdate();
+
+            // 2. Desvincular de incidentes de seguridad (persona_id -> null) preservando el registro de la anomalía
+            em.createQuery("UPDATE IncidenteEntity i SET i.persona = null WHERE i.persona.id = :id")
+                    .setParameter("id", id)
+                    .executeUpdate();
+
+            // 3. Eliminar visitas asociadas a la persona
+            em.createQuery("DELETE FROM VisitaEntity v WHERE v.persona.id = :id")
+                    .setParameter("id", id)
+                    .executeUpdate();
+
+            // 4. Eliminar físicamente el registro de la persona
             PersonaEntity entity = em.find(PersonaEntity.class, id);
             if (entity != null) {
                 em.remove(entity);
