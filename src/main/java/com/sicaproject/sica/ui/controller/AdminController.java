@@ -82,6 +82,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     @FXML private TableColumn<Persona, String> colPerDoc;
     @FXML private TableColumn<Persona, String> colPerNombre;
     @FXML private TableColumn<Persona, String> colPerTipo;
+    @FXML private TableColumn<Persona, String> colPerEmpresa;
     @FXML private TableColumn<Persona, String> colPerEstado;
     @FXML private TableColumn<Persona, String> colPerVisitas;
     @FXML private TableColumn<Persona, Void> colPerAccion;
@@ -343,6 +344,11 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                         (data.getValue().getDocumento() != null ? data.getValue().getDocumento() : "")));
         colPerNombre.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNombre()));
         colPerTipo.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTipo()));
+        colPerEmpresa.setCellValueFactory(data -> {
+            Long empId = data.getValue().getEmpresaId();
+            if (empId == null) return new SimpleStringProperty("—");
+            return new SimpleStringProperty(empresaRepository.porId(empId).map(Empresa::getNombre).orElse("—"));
+        });
         colPerEstado.setCellValueFactory(data -> new SimpleStringProperty(
                 data.getValue().isBloqueado() ? "[BLOQUEADO] (" + data.getValue().getMotivoBloqueo() + ")" : "[AUTORIZADO]"));
         colPerVisitas.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().getTotalVisitas())));
@@ -366,13 +372,28 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         });
 
         colPerAccion.setCellFactory(col -> new TableCell<>() {
+            private final Button btnEditar = new Button("Editar");
             private final Button btnBloqueo = new Button();
-            private final HBox box = new HBox(btnBloqueo);
+            private final Button btnEliminar = new Button("Eliminar");
+            private final HBox box = new HBox(6, btnEditar, btnBloqueo, btnEliminar);
             {
                 box.setAlignment(Pos.CENTER);
+                btnEditar.setStyle("-fx-background-color: linear-gradient(to right, #3b82f6, #2563eb); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 8;");
+                btnEliminar.setStyle("-fx-background-color: linear-gradient(to right, #ef4444, #b91c1c); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 8;");
+
+                btnEditar.setOnAction(e -> {
+                    Persona p = getTableView().getItems().get(getIndex());
+                    editarPersona(p);
+                });
+
                 btnBloqueo.setOnAction(e -> {
                     Persona p = getTableView().getItems().get(getIndex());
                     toggleBloqueoPersona(p);
+                });
+
+                btnEliminar.setOnAction(e -> {
+                    Persona p = getTableView().getItems().get(getIndex());
+                    eliminarPersona(p);
                 });
             }
 
@@ -385,15 +406,107 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                     Persona p = getTableView().getItems().get(getIndex());
                     if (p.isBloqueado()) {
                         btnBloqueo.setText("Desbloquear");
-                        btnBloqueo.setStyle("-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold;");
+                        btnBloqueo.setStyle("-fx-background-color: linear-gradient(to right, #10b981, #059669); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 8;");
                     } else {
                         btnBloqueo.setText("Bloquear");
-                        btnBloqueo.setStyle("-fx-background-color: linear-gradient(to right, #ef4444, #dc2626); -fx-text-fill: white; -fx-font-weight: bold;");
+                        btnBloqueo.setStyle("-fx-background-color: linear-gradient(to right, #f59e0b, #d97706); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 11px; -fx-padding: 4 8;");
                     }
                     setGraphic(box);
                 }
             }
         });
+    }
+
+    @FXML
+    private void handleNuevaPersona(ActionEvent event) {
+        Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(null, empresaRepository.listar());
+        if (res.isPresent()) {
+            DialogHelper.PersonaDialogData data = res.get();
+            try {
+                String fotoFinal = procesarArchivoFoto(data.documento, data.fotoArchivo, data.fotoUrl);
+                Persona nueva = new Persona();
+                nueva.setNombre(data.nombre);
+                nueva.setTipoDocumento(data.tipoDocumento);
+                nueva.setDocumento(data.documento);
+                nueva.setTipo(data.tipo);
+                nueva.setEmpresaId(data.empresa != null ? data.empresa.getId() : null);
+                nueva.setFotoUrl(fotoFinal);
+
+                personaService.guardar(nueva, SceneManager.getCurrentUser());
+                refreshPersonas();
+                DialogHelper.mostrarExito("Persona Creada", "La persona '" + nueva.getNombre() + "' fue registrada con éxito.");
+            } catch (Exception e) {
+                DialogHelper.mostrarError("Error al registrar persona", e.getMessage());
+            }
+        }
+    }
+
+    private void editarPersona(Persona persona) {
+        Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(persona, empresaRepository.listar());
+        if (res.isPresent()) {
+            DialogHelper.PersonaDialogData data = res.get();
+            try {
+                String fotoFinal = procesarArchivoFoto(data.documento, data.fotoArchivo, data.fotoUrl);
+                persona.setNombre(data.nombre);
+                persona.setTipoDocumento(data.tipoDocumento);
+                persona.setDocumento(data.documento);
+                persona.setTipo(data.tipo);
+                persona.setEmpresaId(data.empresa != null ? data.empresa.getId() : null);
+                persona.setFotoUrl(fotoFinal);
+
+                personaService.guardar(persona, SceneManager.getCurrentUser());
+                refreshPersonas();
+                DialogHelper.mostrarExito("Persona Actualizada", "Los datos y fotografía de '" + persona.getNombre() + "' fueron actualizados.");
+            } catch (Exception e) {
+                DialogHelper.mostrarError("Error al editar persona", e.getMessage());
+            }
+        }
+    }
+
+    private void eliminarPersona(Persona persona) {
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.setTitle("Eliminar Persona");
+        confirmacion.setHeaderText("¿Confirmar eliminación de persona?");
+        confirmacion.setContentText("¿Está seguro de que desea eliminar a '" + persona.getNombre() +
+                "' (Documento: " + persona.getDocumento() + ") del sistema SICA?\n\n" +
+                "Esta acción es irreversible y quedará registrada en la bitácora de auditoría.");
+        DialogHelper.aplicarEstilo(confirmacion);
+
+        Optional<ButtonType> respuesta = confirmacion.showAndWait();
+        if (respuesta.isPresent() && respuesta.get() == ButtonType.OK) {
+            try {
+                personaService.eliminarPersona(persona.getId(), SceneManager.getCurrentUser());
+                refreshPersonas();
+                DialogHelper.mostrarExito("Persona Eliminada", "La persona ha sido eliminada del sistema.");
+            } catch (Exception e) {
+                DialogHelper.mostrarError("No se pudo eliminar la persona",
+                        "No es posible eliminar esta persona porque cuenta con registros históricos vinculados (visitas, incidentes o usuario).\nDetalle: " + e.getMessage());
+            }
+        }
+    }
+
+    private String procesarArchivoFoto(String documento, java.io.File archivoFoto, String fotoUrlActual) {
+        if (archivoFoto != null) {
+            try {
+                java.io.File photosDir = new java.io.File("photos");
+                if (!photosDir.exists()) {
+                    photosDir.mkdirs();
+                }
+                String ext = "jpg";
+                String name = archivoFoto.getName().toLowerCase();
+                if (name.endsWith(".png")) ext = "png";
+                else if (name.endsWith(".jpeg")) ext = "jpeg";
+
+                String docSanitized = documento.replaceAll("[^a-zA-Z0-9_-]", "_");
+                String nuevoNombre = "persona_" + docSanitized + "_" + System.currentTimeMillis() + "." + ext;
+                java.io.File destino = new java.io.File(photosDir, nuevoNombre);
+                java.nio.file.Files.copy(archivoFoto.toPath(), destino.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                return "photos/" + nuevoNombre;
+            } catch (Exception e) {
+                DialogHelper.mostrarError("Error al Guardar Foto", "No se pudo copiar el archivo de foto: " + e.getMessage());
+            }
+        }
+        return fotoUrlActual;
     }
 
     private void toggleBloqueoPersona(Persona persona) {

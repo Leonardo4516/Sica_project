@@ -104,4 +104,19 @@ public class PersonaService {
             auditoriaService.registrar(usuarioId, "PERSONA_DESBLOQUEADA", "PERSONA", persona.getId(), detalle, "EXITOSO");
         }
     }
+
+    public void eliminarPersona(Long id, Usuario usuarioSolicitante) {
+        if (usuarioSolicitante != null && rbacService != null) {
+            rbacService.verificarPermiso(usuarioSolicitante, "ver_panel_admin");
+        }
+        Optional<Persona> personaOpt = personaRepository.porId(id);
+        personaRepository.eliminar(id);
+
+        if (auditoriaService != null && personaOpt.isPresent()) {
+            Persona p = personaOpt.get();
+            Long usuarioId = usuarioSolicitante != null ? usuarioSolicitante.getId() : null;
+            String detalle = "Eliminación de persona del sistema: " + p.getNombre() + " (" + p.getTipoDocumento() + " " + p.getDocumento() + ")";
+            auditoriaService.registrar(usuarioId, "PERSONA_ELIMINADA", "PERSONA", id, detalle, "EXITOSO");
+        }
+    }
 }

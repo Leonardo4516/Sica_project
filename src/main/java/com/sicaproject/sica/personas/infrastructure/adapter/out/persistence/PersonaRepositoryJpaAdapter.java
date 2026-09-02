@@ -121,4 +121,22 @@ public class PersonaRepositoryJpaAdapter implements PersonaRepository {
             em.close();
         }
     }
+
+    @Override
+    public void eliminar(Long id) {
+        EntityManager em = JpaConfig.newEntityManager();
+        try {
+            em.getTransaction().begin();
+            PersonaEntity entity = em.find(PersonaEntity.class, id);
+            if (entity != null) {
+                em.remove(entity);
+            }
+            em.getTransaction().commit();
+        } catch (RuntimeException e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
 }
