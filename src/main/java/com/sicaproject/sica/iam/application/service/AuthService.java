@@ -24,25 +24,22 @@ public class AuthService {
     // AUTENTICACIÓN CENTRAL Y AUDITORÍA DE INICIOS DE SESIÓN
     // =========================================================================
     /**
-     * Autentica a un usuario comparando su contraseña en texto plano contra el hash BCrypt en BD.
+     * Autentica credenciales de usuario mediante verificación criptográfica BCrypt
+     * y genera trazabilidad inmutable de cada intento (exitoso o fallido).
      * 
-     * [LÓGICA DEL NEGOCIO]:
-     * 1. Busca el usuario en PostgreSQL por su username exacto.
-     * 2. Si no existe: audita LOGIN_FALLIDO y retorna Optional.empty().
-     * 3. Si existe pero está inactivo: audita LOGIN_FALLIDO y retorna Optional.empty().
-     * 4. Valida la contraseña usando BCrypt.checkpw(passwordPlano, usuario.getPasswordHash()).
-     *    ¡NUNCA uses .equals() para comparar hashes de BCrypt porque BCrypt usa salt aleatorio!
-     * 5. Si coincide: audita LOGIN_EXITOSO y retorna Optional.of(usuario).
+     * Flujo de validación:
+     * 1. Consulta el registro de usuario por su nombre de usuario en persistencia.
+     * 2. Si no existe: audita 'LOGIN_FALLIDO' y retorna Optional.empty().
+     * 3. Si la cuenta está desactivada: audita 'LOGIN_FALLIDO' y retorna Optional.empty().
+     * 4. Valida la contraseña mediante BCrypt.checkpw (contraseña en texto plano vs hash con salt).
+     * 5. Si es correcta: audita 'LOGIN_EXITOSO' y retorna Optional.of(usuario).
      * 
-     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
-     * - Si te borran el chequeo BCrypt.checkpw: la contraseña no se validará o fallará.
-     *   Línea clave: if (!BCrypt.checkpw(passwordPlano, usuario.getPasswordHash())) return Optional.empty();
-     * - Si te cambian checkpw por equals(): NUNCA dará true porque el salt de BCrypt es diferente cada vez.
-     * - Si te borran !usuario.isActivo(): un usuario desactivado por el administrador podrá entrar.
-     * - Si te borran la auditoría: los tests de auditoría (AuthServiceAuditTest) fallarán.
+     * @param username Nombre de usuario provisto en el login.
+     * @param passwordPlano Contraseña en texto plano ingresada en la interfaz.
+     * @return Optional con el Usuario autenticado, o Optional.empty() si las credenciales son inválidas.
      */
     public Optional<Usuario> login(String username, String passwordPlano) {
-        // 1. Consulta del usuario por nombre de usuario
+        // Consulta del usuario por nombre de usuario en repositorio JPA
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
         if (usuarioOpt.isEmpty()) {
             registrarAuditoria(null, "LOGIN_FALLIDO", 0L,
@@ -52,7 +49,7 @@ public class AuthService {
 
         Usuario usuario = usuarioOpt.get();
 
-        // 2. Comprobar que la cuenta no haya sido desactivada por el Admin
+        // Validar estado de activación de la cuenta
         if (!usuario.isActivo()) {
             registrarAuditoria(usuario.getId(), "LOGIN_FALLIDO", usuario.getId(),
                     "Intento de login fallido: usuario '" + username + "' se encuentra inactivo", "FALLIDO");

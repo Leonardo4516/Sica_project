@@ -20,16 +20,12 @@ public class RbacService implements RbacUseCase {
     // VERIFICACIÓN DE PERMISOS DINÁMICOS EN BASE DE DATOS (RBAC)
     // =========================================================================
     /**
-     * Comprueba si un usuario tiene un permiso específico.
+     * Evalúa si un usuario cuenta con un permiso específico consultando la matriz
+     * de roles y permisos persistida en base de datos.
      * 
-     * [LÓGICA DEL NEGOCIO]:
-     * - Si usuario es null, no tiene rol o está inactivo -> retorna false.
-     * - Consulta a usuario.getRol().tienePermiso(permisoCodigo), que a su vez
-     *   recorre la colección de permisos traídos desde la tabla 'rol_permiso' de PostgreSQL.
-     * 
-     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
-     * - Si te borran !usuario.isActivo(): usuarios desactivados podrán hacer operaciones.
-     * - Si te borran usuario.getRol().tienePermiso(permisoCodigo): nadie tendrá permisos o todos los tendrán.
+     * @param usuario Usuario a evaluar.
+     * @param permisoCodigo Código único del permiso (ej. 'registrar_visita', 'bloquear_persona').
+     * @return true si el usuario está activo y su rol contiene el permiso; false en caso contrario.
      */
     @Override
     public boolean tienePermiso(Usuario usuario, String permisoCodigo) {
@@ -46,13 +42,12 @@ public class RbacService implements RbacUseCase {
     }
 
     /**
-     * Lanza excepción de dominio PermisoDenegadoException si el usuario no tiene el permiso.
+     * Valida de manera estricta que el usuario posea el permiso requerido para una acción sensible.
+     * Si no lo posee, interrumpe el flujo lanzando una excepción de dominio.
      * 
-     * [PISTAS PARA EL DEBUG]:
-     * - Todos los servicios (VisitaService, PersonaService, etc.) llaman a este método ANTES
-     *   de ejecutar cualquier operación sensible.
-     * - Si te borran el 'throw new PermisoDenegadoException(usuario, permisoCodigo);',
-     *   las pruebas de seguridad RBAC fallarán.
+     * @param usuario Usuario solicitante.
+     * @param permisoCodigo Código del permiso exigido por la operación.
+     * @throws PermisoDenegadoException Si el usuario no cuenta con la autorización necesaria.
      */
     public void verificarPermiso(Usuario usuario, String permisoCodigo) {
         if (!tienePermiso(usuario, permisoCodigo)) {

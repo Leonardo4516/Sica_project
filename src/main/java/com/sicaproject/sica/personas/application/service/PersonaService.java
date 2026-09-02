@@ -36,12 +36,12 @@ public class PersonaService {
     // CREACIÓN Y ACTUALIZACIÓN DE PERSONAS CON AUDITORÍA
     // =========================================================================
     /**
-     * Guarda una persona en PostgreSQL (creación si id == 0, actualización si id > 0).
+     * Persiste o actualiza los datos de una persona (trabajador o visitante),
+     * registrando el evento correspondiente en la bitácora de auditoría.
      * 
-     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
-     * - boolean esNueva = (persona.getId() == 0L);
-     * - Si persona.getId() == 0, el repositorio hace persist(entity); si no, hace merge(entity).
-     * - Audita PERSONA_CREADA o PERSONA_ACTUALIZADA según corresponda.
+     * @param persona Datos de la persona a persistir.
+     * @param usuarioSolicitante Usuario autenticado que realiza la acción.
+     * @return Entidad Persona persistida en base de datos.
      */
     public Persona guardar(Persona persona, Usuario usuarioSolicitante) {
         boolean esNueva = (persona.getId() == 0L);
@@ -82,14 +82,13 @@ public class PersonaService {
     // RESTRICCIÓN DE ACCESO: BLOQUEO (LISTA NEGRA)
     // =========================================================================
     /**
-     * Bloquea a una persona para que no pueda ingresar a Zona Acme bajo ninguna circunstancia.
+     * Aplica una restricción de acceso perimetral inmediata (bloqueo en lista negra)
+     * a una persona por motivos de seguridad o disciplina.
      * 
-     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
-     * - Requiere permiso 'bloquear_persona'.
-     * - Fija persona.setBloqueado(true);
-     * - Fija persona.setMotivoBloqueo(motivo);
-     * - Audita acción 'PERSONA_BLOQUEADA'.
-     * - Si borran el llamado a personaRepository.actualizar(persona), el cambio no se guardará en PostgreSQL.
+     * @param persona Persona a bloquear.
+     * @param motivo Justificación del bloqueo perimetral.
+     * @param usuarioSolicitante Usuario operador que ejecuta el bloqueo.
+     * @throws PermisoDenegadoException Si el operador carece del permiso 'bloquear_persona'.
      */
     public void bloquearPersona(Persona persona, String motivo) {
         bloquearPersona(persona, motivo, null);
@@ -114,12 +113,11 @@ public class PersonaService {
     // RESTRICCIÓN DE ACCESO: DESBLOQUEO
     // =========================================================================
     /**
-     * Levanta el bloqueo de acceso a una persona.
+     * Levanta la restricción de acceso perimetral a una persona previamente bloqueada.
      * 
-     * [PISTAS PARA EL DEBUG]:
-     * - persona.setBloqueado(false);
-     * - persona.setMotivoBloqueo(null);
-     * - Audita 'PERSONA_DESBLOQUEADA'.
+     * @param persona Persona a desbloquear.
+     * @param usuarioSolicitante Usuario operador que ejecuta el desbloqueo.
+     * @throws PermisoDenegadoException Si el operador carece del permiso 'bloquear_persona'.
      */
     public void desbloquearPersona(Persona persona) {
         desbloquearPersona(persona, null);
@@ -144,14 +142,11 @@ public class PersonaService {
     // ELIMINACIÓN DE PERSONAS (EXCLUSIVO ADMINISTRADOR)
     // =========================================================================
     /**
-     * Elimina físicamente a una persona del sistema.
+     * Elimina el registro de una persona del sistema tras validar permisos de administrador.
      * 
-     * [PISTAS PARA EL DEBUG]:
-     * - Verifica que el usuario tenga permiso de administrador ('ver_panel_admin').
-     * - Llama a personaRepository.eliminar(id);
-     * - Audita 'PERSONA_ELIMINADA'.
-     * - Si la persona tiene llaves foráneas activas (visitas previas), JPA lanzará una excepción
-     *   que el controlador captura para proteger la integridad referencial.
+     * @param id Identificador único de la persona.
+     * @param usuarioSolicitante Usuario administrador autenticado.
+     * @throws PermisoDenegadoException Si el usuario no cuenta con privilegios administrativos.
      */
     public void eliminarPersona(Long id, Usuario usuarioSolicitante) {
         if (usuarioSolicitante != null && rbacService != null) {

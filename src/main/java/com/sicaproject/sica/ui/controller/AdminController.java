@@ -418,14 +418,11 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
     }
 
     // =========================================================================
-    // CRUD DE PERSONAS: CREACIÓN CON SUBIDA DE FOTOGRAFÍA
+    // GESTIÓN DE PADRÓN DE PERSONAS: CREACIÓN, EDICIÓN Y ELIMINACIÓN
     // =========================================================================
     /**
-     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
-     * - Abre el diálogo modal DialogHelper.mostrarDialogoPersona(null, ...).
-     * - Procesa el archivo de foto local y lo copia a 'photos/persona_<doc>_<timestamp>.jpg'.
-     * - Fija persona.setFotoUrl(...) con la ruta relativa del archivo.
-     * - Guarda en BD con personaService.guardar(nueva, currentUser) y refresca la tabla.
+     * Despliega el diálogo modal de registro para incorporar una nueva persona al padrón.
+     * Gestiona la carga y persistencia física de su fotografía en el directorio local 'photos/'.
      */
     @FXML
     private void handleNuevaPersona(ActionEvent event) {
@@ -433,6 +430,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         if (res.isPresent()) {
             DialogHelper.PersonaDialogData data = res.get();
             try {
+                // Copiar fotografía al directorio local y obtener ruta relativa sanitizada
                 String fotoFinal = procesarArchivoFoto(data.documento, data.fotoArchivo, data.fotoUrl);
                 Persona nueva = new Persona();
                 nueva.setNombre(data.nombre);
@@ -442,6 +440,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                 nueva.setEmpresaId(data.empresa != null ? data.empresa.getId() : null);
                 nueva.setFotoUrl(fotoFinal);
 
+                // Persistir nueva persona y actualizar vista
                 personaService.guardar(nueva, SceneManager.getCurrentUser());
                 refreshPersonas();
                 DialogHelper.mostrarExito("Persona Creada", "La persona '" + nueva.getNombre() + "' fue registrada con éxito.");
@@ -451,20 +450,15 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         }
     }
 
-    // =========================================================================
-    // CRUD DE PERSONAS: EDICIÓN DE DATOS Y ACTUALIZACIÓN DE FOTO
-    // =========================================================================
     /**
-     * [PISTAS PARA EL DEBUG]:
-     * - Pasa la persona existente al modal para pre-llenar los campos.
-     * - Si se seleccionó una foto nueva, la copia a 'photos/' y actualiza fotoUrl.
-     * - Actualiza campos en el objeto y llama a personaService.guardar(persona, currentUser).
+     * Permite modificar la información y la fotografía de una persona existente.
      */
     private void editarPersona(Persona persona) {
         Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(persona, empresaRepository.listar());
         if (res.isPresent()) {
             DialogHelper.PersonaDialogData data = res.get();
             try {
+                // Actualizar fotografía si fue seleccionada una nueva
                 String fotoFinal = procesarArchivoFoto(data.documento, data.fotoArchivo, data.fotoUrl);
                 persona.setNombre(data.nombre);
                 persona.setTipoDocumento(data.tipoDocumento);
@@ -473,6 +467,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                 persona.setEmpresaId(data.empresa != null ? data.empresa.getId() : null);
                 persona.setFotoUrl(fotoFinal);
 
+                // Guardar cambios en persistencia y refrescar tabla
                 personaService.guardar(persona, SceneManager.getCurrentUser());
                 refreshPersonas();
                 DialogHelper.mostrarExito("Persona Actualizada", "Los datos y fotografía de '" + persona.getNombre() + "' fueron actualizados.");
@@ -482,15 +477,8 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         }
     }
 
-    // =========================================================================
-    // CRUD DE PERSONAS: ELIMINACIÓN SEGURA CON AUDITORÍA
-    // =========================================================================
     /**
-     * [PISTAS PARA EL DEBUG]:
-     * - Muestra un diálogo de confirmación AlertType.CONFIRMATION.
-     * - Si el usuario pulsa OK, ejecuta personaService.eliminarPersona(id, currentUser).
-     * - Si falla por integridad referencial (visitas o incidentes vinculados a esta persona),
-     *   el bloque catch muestra un mensaje amigable indicando la causa exacta.
+     * Solicita confirmación y ejecuta la eliminación de una persona en base de datos.
      */
     private void eliminarPersona(Persona persona) {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
