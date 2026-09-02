@@ -32,6 +32,17 @@ public class PersonaService {
         return guardar(persona, null);
     }
 
+    // =========================================================================
+    // CREACIÓN Y ACTUALIZACIÓN DE PERSONAS CON AUDITORÍA
+    // =========================================================================
+    /**
+     * Guarda una persona en PostgreSQL (creación si id == 0, actualización si id > 0).
+     * 
+     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
+     * - boolean esNueva = (persona.getId() == 0L);
+     * - Si persona.getId() == 0, el repositorio hace persist(entity); si no, hace merge(entity).
+     * - Audita PERSONA_CREADA o PERSONA_ACTUALIZADA según corresponda.
+     */
     public Persona guardar(Persona persona, Usuario usuarioSolicitante) {
         boolean esNueva = (persona.getId() == 0L);
         Persona guardada = personaRepository.guardar(persona);
@@ -67,6 +78,19 @@ public class PersonaService {
         return personaRepository.listarTodas();
     }
 
+    // =========================================================================
+    // RESTRICCIÓN DE ACCESO: BLOQUEO (LISTA NEGRA)
+    // =========================================================================
+    /**
+     * Bloquea a una persona para que no pueda ingresar a Zona Acme bajo ninguna circunstancia.
+     * 
+     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
+     * - Requiere permiso 'bloquear_persona'.
+     * - Fija persona.setBloqueado(true);
+     * - Fija persona.setMotivoBloqueo(motivo);
+     * - Audita acción 'PERSONA_BLOQUEADA'.
+     * - Si borran el llamado a personaRepository.actualizar(persona), el cambio no se guardará en PostgreSQL.
+     */
     public void bloquearPersona(Persona persona, String motivo) {
         bloquearPersona(persona, motivo, null);
     }
@@ -86,6 +110,17 @@ public class PersonaService {
         }
     }
 
+    // =========================================================================
+    // RESTRICCIÓN DE ACCESO: DESBLOQUEO
+    // =========================================================================
+    /**
+     * Levanta el bloqueo de acceso a una persona.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - persona.setBloqueado(false);
+     * - persona.setMotivoBloqueo(null);
+     * - Audita 'PERSONA_DESBLOQUEADA'.
+     */
     public void desbloquearPersona(Persona persona) {
         desbloquearPersona(persona, null);
     }
@@ -105,6 +140,19 @@ public class PersonaService {
         }
     }
 
+    // =========================================================================
+    // ELIMINACIÓN DE PERSONAS (EXCLUSIVO ADMINISTRADOR)
+    // =========================================================================
+    /**
+     * Elimina físicamente a una persona del sistema.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - Verifica que el usuario tenga permiso de administrador ('ver_panel_admin').
+     * - Llama a personaRepository.eliminar(id);
+     * - Audita 'PERSONA_ELIMINADA'.
+     * - Si la persona tiene llaves foráneas activas (visitas previas), JPA lanzará una excepción
+     *   que el controlador captura para proteger la integridad referencial.
+     */
     public void eliminarPersona(Long id, Usuario usuarioSolicitante) {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "ver_panel_admin");

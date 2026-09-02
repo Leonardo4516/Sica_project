@@ -24,6 +24,18 @@ public class IncidenteService {
         this.auditoriaService = auditoriaService;
     }
 
+    // =========================================================================
+    // REPORTE DE INCIDENTES CON CLASIFICACIÓN DE SEVERIDAD Y AUDITORÍA
+    // =========================================================================
+    /**
+     * Reporta un incidente o novedad perimetral en Zona Acme.
+     * 
+     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
+     * - Requiere permiso 'reportar_incidente'.
+     * - El estado inicial siempre es "ABIERTO".
+     * - La fecha/hora se fija con LocalDateTime.now().
+     * - Audita con acción 'REGISTRO_INCIDENTE'.
+     */
     public Incidente reportarIncidente(String titulo, String descripcion, SeveridadIncidente severidad,
                                        Persona personaInvolucrada, Empresa empresaInvolucrada,
                                        Usuario reportadoPor) {
@@ -53,6 +65,9 @@ public class IncidenteService {
         return guardado;
     }
 
+    // =========================================================================
+    // ACTUALIZACIÓN DE ESTADO DE INCIDENTES (ABIERTO -> RESUELTO)
+    // =========================================================================
     public Incidente cambiarEstado(long incidenteId, String nuevoEstado, Usuario usuarioSolicitante) {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_incidentes");

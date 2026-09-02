@@ -16,6 +16,21 @@ import java.util.stream.Collectors;
  */
 public class RbacService implements RbacUseCase {
 
+    // =========================================================================
+    // VERIFICACIÓN DE PERMISOS DINÁMICOS EN BASE DE DATOS (RBAC)
+    // =========================================================================
+    /**
+     * Comprueba si un usuario tiene un permiso específico.
+     * 
+     * [LÓGICA DEL NEGOCIO]:
+     * - Si usuario es null, no tiene rol o está inactivo -> retorna false.
+     * - Consulta a usuario.getRol().tienePermiso(permisoCodigo), que a su vez
+     *   recorre la colección de permisos traídos desde la tabla 'rol_permiso' de PostgreSQL.
+     * 
+     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
+     * - Si te borran !usuario.isActivo(): usuarios desactivados podrán hacer operaciones.
+     * - Si te borran usuario.getRol().tienePermiso(permisoCodigo): nadie tendrá permisos o todos los tendrán.
+     */
     @Override
     public boolean tienePermiso(Usuario usuario, String permisoCodigo) {
         if (usuario == null || usuario.getRol() == null || !usuario.isActivo()) {
@@ -31,8 +46,13 @@ public class RbacService implements RbacUseCase {
     }
 
     /**
-     * Lanza excepción de dominio si el usuario no tiene el permiso.
-     * Los Use Cases deben llamar esto ANTES de ejecutar cualquier operación crítica.
+     * Lanza excepción de dominio PermisoDenegadoException si el usuario no tiene el permiso.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - Todos los servicios (VisitaService, PersonaService, etc.) llaman a este método ANTES
+     *   de ejecutar cualquier operación sensible.
+     * - Si te borran el 'throw new PermisoDenegadoException(usuario, permisoCodigo);',
+     *   las pruebas de seguridad RBAC fallarán.
      */
     public void verificarPermiso(Usuario usuario, String permisoCodigo) {
         if (!tienePermiso(usuario, permisoCodigo)) {

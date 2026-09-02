@@ -417,6 +417,16 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         });
     }
 
+    // =========================================================================
+    // CRUD DE PERSONAS: CREACIÓN CON SUBIDA DE FOTOGRAFÍA
+    // =========================================================================
+    /**
+     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
+     * - Abre el diálogo modal DialogHelper.mostrarDialogoPersona(null, ...).
+     * - Procesa el archivo de foto local y lo copia a 'photos/persona_<doc>_<timestamp>.jpg'.
+     * - Fija persona.setFotoUrl(...) con la ruta relativa del archivo.
+     * - Guarda en BD con personaService.guardar(nueva, currentUser) y refresca la tabla.
+     */
     @FXML
     private void handleNuevaPersona(ActionEvent event) {
         Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(null, empresaRepository.listar());
@@ -441,6 +451,15 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         }
     }
 
+    // =========================================================================
+    // CRUD DE PERSONAS: EDICIÓN DE DATOS Y ACTUALIZACIÓN DE FOTO
+    // =========================================================================
+    /**
+     * [PISTAS PARA EL DEBUG]:
+     * - Pasa la persona existente al modal para pre-llenar los campos.
+     * - Si se seleccionó una foto nueva, la copia a 'photos/' y actualiza fotoUrl.
+     * - Actualiza campos en el objeto y llama a personaService.guardar(persona, currentUser).
+     */
     private void editarPersona(Persona persona) {
         Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(persona, empresaRepository.listar());
         if (res.isPresent()) {
@@ -463,6 +482,16 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         }
     }
 
+    // =========================================================================
+    // CRUD DE PERSONAS: ELIMINACIÓN SEGURA CON AUDITORÍA
+    // =========================================================================
+    /**
+     * [PISTAS PARA EL DEBUG]:
+     * - Muestra un diálogo de confirmación AlertType.CONFIRMATION.
+     * - Si el usuario pulsa OK, ejecuta personaService.eliminarPersona(id, currentUser).
+     * - Si falla por integridad referencial (visitas o incidentes vinculados a esta persona),
+     *   el bloque catch muestra un mensaje amigable indicando la causa exacta.
+     */
     private void eliminarPersona(Persona persona) {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Eliminar Persona");

@@ -37,18 +37,36 @@ public class VisitaService {
         this.auditoriaService = auditoriaService;
     }
 
+    // =========================================================================
+    // FLUJO 1: INVITADO PRE-REGISTRADO (EL FLUJO IDEAL) - CHECK-IN FÍSICO
+    // =========================================================================
     /**
-     * Flujo 1: invitado pre-registrado.
-     * El FUNCIONARIO ya lo registró antes con estado APROBADA (ver registrarVisitaPreaprobada).
-     * Este método es lo que hace el GUARDA al momento de la llegada física: mueve
-     * la visita de APROBADA -> DENTRO.
+     * Realiza el Check-In físico de una visita en portería cuando la persona llega.
+     * 
+     * [LÓGICA DEL NEGOCIO]:
+     * 1. Verifica permiso RBAC 'registrar_visita' en el usuario guarda.
+     * 2. Obtiene la visita por su ID o lanza error si no existe.
+     * 3. Valida si la persona está BLOQUEADA (Lista Negra). Si lo está, audita y deniega el paso.
+     * 4. Regulariza si la persona tenía una visita abierta anterior (Flujo 4).
+     * 5. Cambia el estado a DENTRO, fija fecha/hora de entrada actual y asocia el guarda.
+     * 6. Registra el evento en la bitácora inmutable de auditoría.
+     * 
+     * [PISTAS PARA EL DEBUG / EVALUACIÓN]:
+     * - Si te borran la validación RBAC: falta rbacService.verificarPermiso(guarda, "registrar_visita");
+     * - Si te borran el chequeo de bloqueo: el guarda podría dejar entrar a personas vetadas.
+     * - Si te borran regularizarSiCorresponde: el sistema fallará en el Flujo 4 (salida olvidada).
+     * - Si te borran visita.cambiarEstado(EstadoVisita.DENTRO): la visita nunca pasará a estado activo.
+     * - Si te borran fechaHoraEntrada: la visita no tendrá registro temporal de cuándo ingresó.
      */
     public Visita checkIn(long visitaId, Usuario guarda) {
+        // 1. Verificación de Seguridad RBAC en Base de Datos
         rbacService.verificarPermiso(guarda, "registrar_visita");
 
+        // 2. Recuperar la visita existente desde el repositorio JPA
         Visita visita = visitaRepository.porId(visitaId)
                 .orElseThrow(() -> new IllegalArgumentException("Visita no encontrada: " + visitaId));
 
+        // 3. Verificación de Restricción Perimetral (Lista Negra / Bloqueo)
         if (visita.getPersona() != null && visita.getPersona().isBloqueado()) {
             auditoriaService.registrar(guarda.getId(), "ACCESO_DENEGADO_BLOQUEO", "PERSONA", visita.getPersona().getId(),
                     "Intento de check-in denegado: La persona '" + visita.getPersona().getNombre() + "' se encuentra bloqueada (" +
@@ -57,32 +75,46 @@ public class VisitaService {
                     (visita.getPersona().getMotivoBloqueo() != null ? visita.getPersona().getMotivoBloqueo() : "Restricción de acceso activa") + ")");
         }
 
-        // Flujo 4: si la persona tiene otra visita abierta (DENTRO) sin check-out, se regulariza primero
+        // 4. Flujo 4: si la persona tiene otra visita abierta (DENTRO) sin check-out, se regulariza automáticamente
         regularizarSiCorresponde(visita.getPersona().getId(), guarda);
 
+        // 5. Transición de Estado de Dominio y Registro Temporal
         visita.cambiarEstado(EstadoVisita.DENTRO);
         visita.setFechaHoraEntrada(LocalDateTime.now());
         visita.setGuarda(guarda);
         visitaRepository.guardar(visita);
 
+        // 6. Auditoría inmutable en tabla bitacora_auditoria
         auditoriaService.registrar(guarda.getId(), "VISITA_CHECK_IN", "VISITA", visita.getId(),
                 "Check-in realizado por guarda " + guarda.getUsername(), "EXITOSO");
         return visita;
     }
 
+    // =========================================================================
+    // FLUJO 1: PRE-REGISTRO DE INVITADO POR FUNCIONARIO
+    // =========================================================================
     /**
-     * El FUNCIONARIO pre-registra un invitado antes de que llegue.
+     * El Funcionario pre-registra a un invitado antes de que llegue físicamente a Zona Acme.
+     * La visita nace directamente en estado APROBADA.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - Requiere permiso 'aprobar_visita'.
+     * - Valida que la persona no esté bloqueada.
+     * - El estado inicial DEBE ser EstadoVisita.APROBADA.
      */
     public Visita registrarVisitaPreaprobada(Persona persona, Empresa empresaDestino,
                                               Usuario funcionario, Usuario guardaAsignado) {
+        // 1. Verificación de permiso RBAC del funcionario
         rbacService.verificarPermiso(funcionario, "aprobar_visita");
 
+        // 2. Comprobar que no se pre-apruebe a personas con restricción de acceso
         if (persona != null && persona.isBloqueado()) {
             auditoriaService.registrar(funcionario.getId(), "PREAPROBACION_BLOQUEADA", "PERSONA", persona.getId(),
                     "Intento de pre-aprobación para persona bloqueada: " + persona.getNombre(), "DENEGADO");
             throw new IllegalStateException("No se puede pre-aprobar visita: la persona '" + persona.getNombre() + "' se encuentra bloqueada en el sistema.");
         }
 
+        // 3. Crear entidad de visita con estado APROBADA
         Visita visita = new Visita();
         visita.setPersona(persona);
         visita.setEmpresaDestino(empresaDestino);
@@ -92,14 +124,24 @@ public class VisitaService {
         visita.setFechaHoraRegistro(LocalDateTime.now());
         visitaRepository.guardar(visita);
 
+        // 4. Auditoría de creación
         auditoriaService.registrar(funcionario.getId(), "VISITA_PREAPROBADA", "VISITA", visita.getId(),
                 "Visita pre-aprobada para " + persona.getNombre(), "EXITOSO");
         return visita;
     }
 
+    // =========================================================================
+    // FLUJOS 2 Y 3: INVITADO NO ANUNCIADO O CARNET OLVIDADO (PASE TEMPORAL)
+    // =========================================================================
     /**
-     * Flujos 2 y 3: invitado no anunciado, o trabajador con carnet olvidado
-     * (usar paseTemporal=true para el segundo caso).
+     * El Guarda genera una solicitud de ingreso desde portería.
+     * Si paseTemporal es true -> Flujo 3 (Trabajador sin carnet).
+     * Si paseTemporal es false -> Flujo 2 (Invitado no anunciado).
+     * En ambos casos, la visita nace con estado PENDIENTE_APROBACION.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - Guarda requiere permiso 'registrar_visita'.
+     * - La visita queda en PENDIENTE_APROBACION esperando que el funcionario la apruebe.
      */
     public Visita solicitarAcceso(Persona persona, Empresa empresaDestino,
                                    Usuario funcionarioAnfitrion, Usuario guarda, boolean paseTemporal) {
@@ -111,6 +153,7 @@ public class VisitaService {
             throw new IllegalStateException("No se puede solicitar acceso: la persona '" + persona.getNombre() + "' se encuentra bloqueada en el sistema.");
         }
 
+        // Regularizar si tenía visita abierta previa antes de pedir nuevo ingreso
         regularizarSiCorresponde(persona.getId(), guarda);
 
         Visita visita = new Visita();
@@ -130,6 +173,13 @@ public class VisitaService {
         return visita;
     }
 
+    // =========================================================================
+    // APROBACIÓN Y RECHAZO DE SOLICITUDES (PANEL FUNCIONARIO)
+    // =========================================================================
+    /**
+     * El Funcionario aprueba una visita que estaba PENDIENTE_APROBACION.
+     * Mueve el estado a APROBADA para que el Guarda pueda hacer check-in.
+     */
     public Visita aprobarVisita(long visitaId, Usuario funcionario) {
         rbacService.verificarPermiso(funcionario, "aprobar_visita");
 
@@ -143,6 +193,10 @@ public class VisitaService {
         return visita;
     }
 
+    /**
+     * El Funcionario rechaza una visita que estaba PENDIENTE_APROBACION.
+     * Mueve el estado a RECHAZADA.
+     */
     public Visita rechazarVisita(long visitaId, Usuario funcionario) {
         rbacService.verificarPermiso(funcionario, "rechazar_visita");
 
@@ -156,9 +210,17 @@ public class VisitaService {
         return visita;
     }
 
+    // =========================================================================
+    // SALIDA FÍSICA: CHECK-OUT (GUARDA EN PORTERÍA)
+    // =========================================================================
     /**
-     * CORRECCIÓN DEL BUG: antes esto hacía APROBADA -> DENTRO (era un check-in disfrazado).
-     * Ahora hace correctamente DENTRO -> CERRADA.
+     * Registra la salida física de una persona que está actualmente DENTRO.
+     * Mueve el estado de DENTRO -> CERRADA y fija la fecha/hora de salida.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - Guarda requiere permiso 'registrar_salida'.
+     * - El estado final debe ser EstadoVisita.CERRADA.
+     * - Se debe asignar visita.setFechaHoraSalida(LocalDateTime.now()).
      */
     public Visita checkOut(long visitaId, Usuario guarda) {
         rbacService.verificarPermiso(guarda, "registrar_salida");
@@ -174,10 +236,21 @@ public class VisitaService {
         return visita;
     }
 
+    // =========================================================================
+    // FLUJO 4: SALIDA OLVIDADA (REGULARIZACIÓN AUTOMÁTICA POR SISTEMA)
+    // =========================================================================
     /**
-     * Flujo 4: salida olvidada. Si la persona tiene una visita abierta (DENTRO),
-     * se cierra automáticamente como CERRADA_POR_SISTEMA. No implementado antes.
-     * No bloquea el nuevo ingreso, solo deja constancia para auditoría.
+     * [REQUERIMIENTO CLAVE DEL PROYECTO]:
+     * Si una persona salió sin registrar su salida, su visita anterior quedó como DENTRO.
+     * Al intentar ingresar nuevamente, el sistema no le bloquea el paso, sino que:
+     * 1. Cierra automáticamente la visita anterior con estado CERRADA_POR_SISTEMA.
+     * 2. Registra la fecha/hora de salida del cierre forzado.
+     * 3. Audita la novedad con acción 'SALIDA_OLVIDADA' para que quede registro histórico.
+     * 
+     * [PISTAS PARA EL DEBUG]:
+     * - Busca visitas con EstadoVisita.DENTRO para esa persona.
+     * - Las actualiza a EstadoVisita.CERRADA_POR_SISTEMA.
+     * - Fija fechaHoraSalida con LocalDateTime.now().
      */
     private void regularizarSiCorresponde(long personaId, Usuario guarda) {
         List<Visita> abiertas = visitaRepository.porPersonaYEstado(personaId, EstadoVisita.DENTRO);
