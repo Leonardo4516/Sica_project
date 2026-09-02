@@ -158,6 +158,13 @@ public class BitacoraController implements Initializable {
     private void refreshTabla() {
         LocalDate desde = dpDesde.getValue();
         LocalDate hasta = dpHasta.getValue();
+
+        if (desde != null && hasta != null && desde.isAfter(hasta)) {
+            DialogHelper.mostrarAdvertencia("Rango de Fechas Inválido", "Fechas Inconsistentes",
+                    "La fecha 'Desde' no puede ser posterior a la fecha 'Hasta'.");
+            return;
+        }
+
         var filtradas = auditoriaService.listarTodas().stream()
             .filter(b -> {
                 if (b.getFechaHora() == null) return true;

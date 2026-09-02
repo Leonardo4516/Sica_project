@@ -131,8 +131,10 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
         colId.setCellValueFactory(data ->
             new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         colDocumento.setCellValueFactory(data -> {
-            String tipo = data.getValue().getPersona().getTipoDocumento();
-            String doc = data.getValue().getPersona().getDocumento();
+            Persona p = data.getValue().getPersona();
+            if (p == null) return new SimpleStringProperty("—");
+            String tipo = p.getTipoDocumento();
+            String doc = p.getDocumento();
             return new SimpleStringProperty((tipo != null ? tipo : "") + " " + (doc != null ? doc : ""));
         });
         colPersona.setCellValueFactory(data -> {
@@ -141,15 +143,18 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             return new SimpleStringProperty(p != null && p.isBloqueado() ? nom + " [BLOQUEADO]" : nom);
         });
         colEmpresa.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+            new SimpleStringProperty(data.getValue().getEmpresaDestino() != null
+                ? data.getValue().getEmpresaDestino().getNombre() : "—"));
         colFecha.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraRegistro();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
         colTipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
+            new SimpleStringProperty((data.getValue().getPersona() != null && data.getValue().getPersona().getTipo() != null)
+                ? data.getValue().getPersona().getTipo() : "—"));
         colVisitas.setCellValueFactory(data ->
-            new SimpleStringProperty(String.valueOf(data.getValue().getPersona().getTotalVisitas())));
+            new SimpleStringProperty(data.getValue().getPersona() != null
+                ? String.valueOf(data.getValue().getPersona().getTotalVisitas()) : "0"));
 
         colAcciones.setCellFactory(col -> new TableCell<>() {
             private final Button btnAprobar = new Button("Aprobar");

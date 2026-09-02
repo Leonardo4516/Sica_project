@@ -205,9 +205,11 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
         tblActivas.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             if (newV != null) {
                 txtVisitaIdOut.setText(String.valueOf(newV.getId()));
-                lblOutMsg.setText("Visita #" + newV.getId() + ": " + newV.getPersona().getNombre() + " (" + newV.getEmpresaDestino().getNombre() + ")");
+                String nom = newV.getPersona() != null ? newV.getPersona().getNombre() : "Sin persona";
+                String emp = newV.getEmpresaDestino() != null ? newV.getEmpresaDestino().getNombre() : "Sin empresa";
+                lblOutMsg.setText("Visita #" + newV.getId() + ": " + nom + " (" + emp + ")");
                 lblOutMsg.setStyle("-fx-text-fill: #38bdf8;");
-                imgFotoVisitanteOut.setImage(cargarImagen(newV.getPersona().getFotoUrl()));
+                imgFotoVisitanteOut.setImage(newV.getPersona() != null ? cargarImagen(newV.getPersona().getFotoUrl()) : null);
             }
         });
     }
@@ -226,12 +228,14 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             String nombre = p != null ? p.getNombre() : "—";
             return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " [BLOQUEADO]" : nombre);
         });
-        colEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        colEmpresa.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getEmpresaDestino() != null ? data.getValue().getEmpresaDestino().getNombre() : "—"));
         colHora.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraEntrada();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
-        colEstado.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEstado().name()));
+        colEstado.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getEstado() != null ? data.getValue().getEstado().name() : "—"));
 
         colEstado.setCellFactory(col -> new TableCell<>() {
             @Override
@@ -263,15 +267,17 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " [BLOQUEADO]" : nombre);
         });
         TableColumn<Visita, String> colAEmpresa = new TableColumn<>("Empresa");
-        colAEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        colAEmpresa.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getEmpresaDestino() != null ? data.getValue().getEmpresaDestino().getNombre() : "—"));
         TableColumn<Visita, String> colAHora = new TableColumn<>("Hora Registro");
         colAHora.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraRegistro();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
         TableColumn<Visita, String> colATipo = new TableColumn<>("Tipo");
-        colATipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
+        colATipo.setCellValueFactory(data -> new SimpleStringProperty(
+                (data.getValue().getPersona() != null && data.getValue().getPersona().getTipo() != null)
+                        ? data.getValue().getPersona().getTipo() : "—"));
         tblAprobadas.getColumns().addAll(colAId, colAPersona, colAEmpresa, colAHora, colATipo);
     }
 
@@ -286,15 +292,17 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
             return new SimpleStringProperty(p != null && p.isBloqueado() ? nombre + " [BLOQUEADO]" : nombre);
         });
         TableColumn<Visita, String> colPEmpresa = new TableColumn<>("Empresa");
-        colPEmpresa.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+        colPEmpresa.setCellValueFactory(data -> new SimpleStringProperty(
+                data.getValue().getEmpresaDestino() != null ? data.getValue().getEmpresaDestino().getNombre() : "—"));
         TableColumn<Visita, String> colPHora = new TableColumn<>("Hora Registro");
         colPHora.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraRegistro();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
         TableColumn<Visita, String> colPTipo = new TableColumn<>("Tipo");
-        colPTipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
+        colPTipo.setCellValueFactory(data -> new SimpleStringProperty(
+                (data.getValue().getPersona() != null && data.getValue().getPersona().getTipo() != null)
+                        ? data.getValue().getPersona().getTipo() : "—"));
         tblPendientes.getColumns().addAll(colPId, colPPersona, colPEmpresa, colPHora, colPTipo);
     }
 

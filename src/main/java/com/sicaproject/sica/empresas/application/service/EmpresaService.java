@@ -49,6 +49,10 @@ public class EmpresaService {
         }
         com.sicaproject.sica.shared.util.InputValidator.validarNit(empresa.getNit());
 
+        if (empresaRepository.porNit(empresa.getNit().trim()).isPresent()) {
+            throw new IllegalArgumentException("Ya existe una empresa registrada con el NIT: " + empresa.getNit());
+        }
+
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_empresas");
         }

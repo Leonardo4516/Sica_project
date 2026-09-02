@@ -183,7 +183,10 @@ public final class DialogHelper {
             if (bt == ButtonType.OK) {
                 String tit = txtTitulo.getText().trim();
                 String desc = txtDesc.getText().trim();
-                if (tit.isEmpty() || desc.isEmpty()) {
+                try {
+                    com.sicaproject.sica.shared.util.InputValidator.validarIncidente(tit, desc);
+                } catch (IllegalArgumentException ex) {
+                    mostrarError("Datos de Incidente Inválidos", ex.getMessage());
                     return null;
                 }
                 return new IncidenteDialogData(tit, desc, cmbSev.getValue(), cmbPer.getValue());
