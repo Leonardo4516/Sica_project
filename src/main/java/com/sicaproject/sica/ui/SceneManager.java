@@ -8,8 +8,9 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 /**
- * Administrador global de escenas para la UI JavaFX.
- * Maneja la carga de FXML y navegación entre pantallas según el rol del usuario.
+ * Administrador global de escenas y enrutamiento dinámico de la interfaz gráfica JavaFX.
+ * Centraliza la carga de plantillas FXML, aplicación de estilos CSS globales y redirección
+ * contextual de pantallas según el rol del usuario autenticado (RBAC Navigation).
  */
 public class SceneManager {
 
@@ -28,6 +29,9 @@ public class SceneManager {
         return currentUser;
     }
 
+    /**
+     * Determina la ruta FXML de la consola operativa correspondiente al rol del usuario.
+     */
     public static String fxmlForRole(Usuario usuario) {
         if (usuario == null || usuario.getRol() == null || usuario.getRol().getNombre() == null) {
             throw new IllegalStateException("El usuario autenticado no tiene rol cargado");
@@ -40,15 +44,21 @@ public class SceneManager {
         };
     }
 
+    /**
+     * Provee el título formal de ventana correspondiente al panel asignado al usuario.
+     */
     public static String titleForRole(Usuario usuario) {
         return switch (usuario.getRol().getNombre().toUpperCase()) {
-            case "GUARDA" -> "SICA — Panel Guardía";
+            case "GUARDA" -> "SICA — Panel Guardia";
             case "FUNCIONARIO" -> "SICA — Panel Funcionario";
             case "ADMIN" -> "SICA — Administración";
             default -> "SICA";
         };
     }
 
+    /**
+     * Carga y renderiza un nuevo archivo FXML aplicando la hoja de estilos compartida styles.css.
+     */
     public static void loadScene(String fxmlPath, String title) {
         try {
             var resource = SceneManager.class.getResource(fxmlPath);
@@ -70,6 +80,9 @@ public class SceneManager {
         }
     }
 
+    /**
+     * Enruta al usuario autenticado hacia su consola especializada tras un login exitoso.
+     */
     public static void navigateAfterLogin(Usuario usuario) {
         currentUser = usuario;
         loadScene(fxmlForRole(usuario), titleForRole(usuario));
@@ -83,6 +96,9 @@ public class SceneManager {
         return current;
     }
 
+    /**
+     * Cierra la sesión activa, desuscribe observadores de refresco y retorna a la pantalla de login.
+     */
     public static void logout() {
         try {
             RefreshScheduler.getInstance().clear();

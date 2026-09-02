@@ -6,6 +6,8 @@ import com.sicaproject.sica.auditoria.domain.BitacoraAuditoria;
 import com.sicaproject.sica.empresas.domain.Empresa;
 import com.sicaproject.sica.iam.application.service.AuthService;
 import com.sicaproject.sica.iam.domain.Usuario;
+import com.sicaproject.sica.acceso.domain.Visita;
+import com.sicaproject.sica.incidentes.domain.Incidente;
 import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.domain.Persona;
 import com.sicaproject.sica.shared.infrastructure.config.CompositionRoot;
@@ -52,7 +54,7 @@ class PersonaCrudAdminTest {
         Persona nueva = new Persona();
         nueva.setNombre("Persona CRUD Admin Test");
         nueva.setTipoDocumento("CC");
-        nueva.setDocumento("CRUD-TEST-" + System.currentTimeMillis());
+        nueva.setDocumento(String.valueOf(100000000L + (System.currentTimeMillis() % 899999999L)));
         nueva.setTipo("TRABAJADOR");
         nueva.setEmpresaId(empresa.getId());
         nueva.setFotoUrl("photos/test_crud.jpg");
@@ -92,5 +94,41 @@ class PersonaCrudAdminTest {
                 "PERSONA_ELIMINADA".equals(b.getAccion()) &&
                 b.getEntidadId() == personaId);
         assertTrue(auditEliminada, "Debe auditar la eliminación de la persona");
+    }
+
+    @Test
+    void admin_puede_eliminar_persona_con_visitas_e_incidentes_vinculados() {
+        // Crear persona
+        Persona p = new Persona();
+        p.setNombre("Persona Vinculada Test");
+        p.setTipoDocumento("CC");
+        p.setDocumento(String.valueOf(300000000L + (System.currentTimeMillis() % 699999999L)));
+        p.setTipo("TRABAJADOR");
+        p.setEmpresaId(empresa.getId());
+        Persona persona = personaService.guardar(p, admin);
+        long personaId = persona.getId();
+
+        // Crear visita vinculada
+        Visita v = root.visitaService().registrarVisitaPreaprobada(persona, empresa, admin, null);
+        assertNotNull(v.getId());
+
+        // Crear incidente vinculado
+        Incidente inc = root.incidenteService().reportarIncidente(
+                "Novedad con persona vinculada",
+                "Descripción detallada del incidente vinculado a la persona",
+                com.sicaproject.sica.incidentes.domain.SeveridadIncidente.MEDIA,
+                persona, empresa, admin
+        );
+        assertNotNull(inc.getId());
+
+        // Eliminar persona desde admin
+        assertDoesNotThrow(() -> personaService.eliminarPersona(personaId, admin));
+
+        // Verificar que la persona fue eliminada
+        assertTrue(personaService.porId(personaId).isEmpty());
+
+        // Verificar que el incidente sigue existiendo pero su persona_id quedó desvinculada (null)
+        Incidente incActualizado = root.incidenteService().porId(inc.getId()).orElseThrow();
+        assertNull(incActualizado.getPersona());
     }
 }

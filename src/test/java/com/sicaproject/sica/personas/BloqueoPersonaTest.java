@@ -54,7 +54,8 @@ class BloqueoPersonaTest {
     @Test
     void bloquear_y_desbloquear_persona_con_auditoria() {
         Persona p = new Persona();
-        p.setDocumento("DOC-TEST-" + System.currentTimeMillis());
+        p.setTipoDocumento("CC");
+        p.setDocumento(String.valueOf(100000000L + (System.currentTimeMillis() % 899999999L)));
         p.setNombre("Persona Bloqueo Test");
         p.setTipo("INVITADO");
         Persona persona = personaService.guardar(p, funcionario);
@@ -92,7 +93,8 @@ class BloqueoPersonaTest {
     @Test
     void persona_bloqueada_no_puede_hacer_checkin_y_se_audita() {
         Persona p = new Persona();
-        p.setDocumento("DOC-CHECKIN-BLOCK-" + System.currentTimeMillis());
+        p.setTipoDocumento("CC");
+        p.setDocumento(String.valueOf(200000000L + (System.currentTimeMillis() % 799999999L)));
         p.setNombre("Persona Bloqueada Checkin");
         p.setTipo("INVITADO");
         Persona persona = personaService.guardar(p, funcionario);

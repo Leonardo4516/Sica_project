@@ -11,6 +11,11 @@ import javafx.scene.layout.VBox;
 
 import java.util.Optional;
 
+/**
+ * Utilidad transversal para la construcción, personalización y despliegue de cuadros de diálogo modales.
+ * Aplica de forma automática la paleta de colores oscuros del tema glassmorphism de SICA,
+ * e incluye builders para diálogos de alerta, confirmación, reporte de incidentes y CRUD de personas con fotografía.
+ */
 public final class DialogHelper {
 
     private DialogHelper() {}
@@ -178,7 +183,10 @@ public final class DialogHelper {
             if (bt == ButtonType.OK) {
                 String tit = txtTitulo.getText().trim();
                 String desc = txtDesc.getText().trim();
-                if (tit.isEmpty() || desc.isEmpty()) {
+                try {
+                    com.sicaproject.sica.shared.util.InputValidator.validarIncidente(tit, desc);
+                } catch (IllegalArgumentException ex) {
+                    mostrarError("Datos de Incidente Inválidos", ex.getMessage());
                     return null;
                 }
                 return new IncidenteDialogData(tit, desc, cmbSev.getValue(), cmbPer.getValue());
@@ -419,11 +427,15 @@ public final class DialogHelper {
             if (bt == ButtonType.OK) {
                 String nom = txtNombre.getText().trim();
                 String doc = txtDoc.getText().trim();
-                if (nom.isEmpty() || doc.isEmpty()) {
-                    mostrarError("Campos obligatorios", "El nombre y el documento no pueden estar vacíos.");
+                String tipoDoc = cmbTipoDoc.getValue() != null ? cmbTipoDoc.getValue() : "CC";
+                try {
+                    com.sicaproject.sica.shared.util.InputValidator.validarDocumento(tipoDoc, doc);
+                    com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nom);
+                } catch (IllegalArgumentException ex) {
+                    mostrarError("Datos Inválidos", ex.getMessage());
                     return null;
                 }
-                return new PersonaDialogData(nom, cmbTipoDoc.getValue(), doc, cmbTipo.getValue(),
+                return new PersonaDialogData(nom, tipoDoc, doc, cmbTipo.getValue(),
                         cmbEmp.getValue(), fotoUrlRef.get(), fotoSeleccionadaRef.get());
             }
             return null;

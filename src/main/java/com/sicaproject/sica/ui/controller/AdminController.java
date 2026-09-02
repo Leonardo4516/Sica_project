@@ -417,12 +417,20 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         });
     }
 
+    // =========================================================================
+    // GESTIÓN DE PADRÓN DE PERSONAS: CREACIÓN, EDICIÓN Y ELIMINACIÓN
+    // =========================================================================
+    /**
+     * Despliega el diálogo modal de registro para incorporar una nueva persona al padrón.
+     * Gestiona la carga y persistencia física de su fotografía en el directorio local 'photos/'.
+     */
     @FXML
     private void handleNuevaPersona(ActionEvent event) {
         Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(null, empresaRepository.listar());
         if (res.isPresent()) {
             DialogHelper.PersonaDialogData data = res.get();
             try {
+                // Copiar fotografía al directorio local y obtener ruta relativa sanitizada
                 String fotoFinal = procesarArchivoFoto(data.documento, data.fotoArchivo, data.fotoUrl);
                 Persona nueva = new Persona();
                 nueva.setNombre(data.nombre);
@@ -432,6 +440,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                 nueva.setEmpresaId(data.empresa != null ? data.empresa.getId() : null);
                 nueva.setFotoUrl(fotoFinal);
 
+                // Persistir nueva persona y actualizar vista
                 personaService.guardar(nueva, SceneManager.getCurrentUser());
                 refreshPersonas();
                 DialogHelper.mostrarExito("Persona Creada", "La persona '" + nueva.getNombre() + "' fue registrada con éxito.");
@@ -441,11 +450,15 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         }
     }
 
+    /**
+     * Permite modificar la información y la fotografía de una persona existente.
+     */
     private void editarPersona(Persona persona) {
         Optional<DialogHelper.PersonaDialogData> res = DialogHelper.mostrarDialogoPersona(persona, empresaRepository.listar());
         if (res.isPresent()) {
             DialogHelper.PersonaDialogData data = res.get();
             try {
+                // Actualizar fotografía si fue seleccionada una nueva
                 String fotoFinal = procesarArchivoFoto(data.documento, data.fotoArchivo, data.fotoUrl);
                 persona.setNombre(data.nombre);
                 persona.setTipoDocumento(data.tipoDocumento);
@@ -454,6 +467,7 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
                 persona.setEmpresaId(data.empresa != null ? data.empresa.getId() : null);
                 persona.setFotoUrl(fotoFinal);
 
+                // Guardar cambios en persistencia y refrescar tabla
                 personaService.guardar(persona, SceneManager.getCurrentUser());
                 refreshPersonas();
                 DialogHelper.mostrarExito("Persona Actualizada", "Los datos y fotografía de '" + persona.getNombre() + "' fueron actualizados.");
@@ -463,13 +477,16 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
         }
     }
 
+    /**
+     * Solicita confirmación y ejecuta la eliminación de una persona en base de datos.
+     */
     private void eliminarPersona(Persona persona) {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
         confirmacion.setTitle("Eliminar Persona");
         confirmacion.setHeaderText("¿Confirmar eliminación de persona?");
         confirmacion.setContentText("¿Está seguro de que desea eliminar a '" + persona.getNombre() +
                 "' (Documento: " + persona.getDocumento() + ") del sistema SICA?\n\n" +
-                "Esta acción es irreversible y quedará registrada en la bitácora de auditoría.");
+                "Esta acción eliminará su registro y desvinculará sus registros asociados. Es irreversible y quedará registrada en la bitácora de auditoría.");
         DialogHelper.aplicarEstilo(confirmacion);
 
         Optional<ButtonType> respuesta = confirmacion.showAndWait();
@@ -477,10 +494,10 @@ public class AdminController implements Initializable, RefreshScheduler.Refresha
             try {
                 personaService.eliminarPersona(persona.getId(), SceneManager.getCurrentUser());
                 refreshPersonas();
-                DialogHelper.mostrarExito("Persona Eliminada", "La persona ha sido eliminada del sistema.");
+                DialogHelper.mostrarExito("Persona Eliminada", "La persona '" + persona.getNombre() + "' ha sido eliminada exitosamente del sistema.");
             } catch (Exception e) {
-                DialogHelper.mostrarError("No se pudo eliminar la persona",
-                        "No es posible eliminar esta persona porque cuenta con registros históricos vinculados (visitas, incidentes o usuario).\nDetalle: " + e.getMessage());
+                DialogHelper.mostrarError("Error al Eliminar Persona",
+                        "No se pudo completar la eliminación.\nDetalle: " + e.getMessage());
             }
         }
     }

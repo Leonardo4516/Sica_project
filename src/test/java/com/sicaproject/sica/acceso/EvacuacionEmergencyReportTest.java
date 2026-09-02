@@ -52,14 +52,16 @@ class EvacuacionEmergencyReportTest {
     void recuento_de_personal_dentro_para_evacuacion_de_emergencia() {
         // Crear 2 personas e ingresar al complejo
         Persona p1 = new Persona();
-        p1.setDocumento("EVAC-1-" + System.currentTimeMillis());
-        p1.setNombre("Trabajador Evacuacion 1");
+        p1.setTipoDocumento("CC");
+        p1.setDocumento(String.valueOf(100000000L + (System.currentTimeMillis() % 899999999L)));
+        p1.setNombre("Trabajador Evacuacion Uno");
         p1.setTipo("TRABAJADOR");
         p1 = personaService.guardar(p1, funcionario);
 
         Persona p2 = new Persona();
-        p2.setDocumento("EVAC-2-" + System.currentTimeMillis());
-        p2.setNombre("Invitado Evacuacion 2");
+        p2.setTipoDocumento("CC");
+        p2.setDocumento(String.valueOf(200000000L + (System.currentTimeMillis() % 799999999L)));
+        p2.setNombre("Invitado Evacuacion Dos");
         p2.setTipo("INVITADO");
         p2 = personaService.guardar(p2, funcionario);
 

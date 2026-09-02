@@ -15,6 +15,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Componente central de sincronización y refresco automático de la interfaz de usuario.
+ * Implementa el patrón Observer combinando un ScheduledExecutorService en segundo plano
+ * con Platform.runLater() para sincronizar de manera segura los datos con el hilo UI de JavaFX (JavaFX Application Thread).
+ */
 public class RefreshScheduler {
 
     private static RefreshScheduler instance;
@@ -40,6 +45,7 @@ public class RefreshScheduler {
         this.rbacService = rbacService;
         this.authService = authService;
         this.auditoriaService = auditoriaService;
+        // Hilo demonio en segundo plano para no bloquear el apagado de la aplicación
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "sica-refresh-scheduler");
             t.setDaemon(true);
@@ -65,12 +71,18 @@ public class RefreshScheduler {
         }
     }
 
+    /**
+     * Registra un controlador de vista como observador para recibir notificaciones periódicas.
+     */
     public synchronized void register(Refreshable listener) {
         if (!listeners.contains(listener)) {
             listeners.add(listener);
         }
     }
 
+    /**
+     * Desregistra un controlador de vista al salir de pantalla.
+     */
     public synchronized void unregister(Refreshable listener) {
         listeners.remove(listener);
     }
@@ -79,6 +91,12 @@ public class RefreshScheduler {
         listeners.clear();
     }
 
+    /**
+     * Inicia la tarea de temporización periódica en segundo plano.
+     * Consulta y actualiza los controladores activos en el hilo de interfaz gráfica de JavaFX.
+     * 
+     * @param interval Intervalo de refresco (ej. Duration.seconds(5)).
+     */
     public void startRefresh(Duration interval) {
         scheduler.scheduleWithFixedDelay(() -> {
             List<Refreshable> copy;
@@ -86,22 +104,29 @@ public class RefreshScheduler {
                 if (listeners.isEmpty()) return;
                 copy = new ArrayList<>(listeners);
             }
+            // Delegar la actualización de los nodos visuales al JavaFX Application Thread
             Platform.runLater(() -> {
                 for (Refreshable listener : copy) {
                     try {
                         listener.refreshData();
                     } catch (Exception e) {
-                        // ignore background refresh errors
+                        // Ignorar excepciones transitorias de segundo plano
                     }
                 }
             });
         }, (long) interval.toSeconds(), (long) interval.toSeconds(), TimeUnit.SECONDS);
     }
 
+    /**
+     * Detiene de manera ordenada el hilo ejecutor al cerrar la aplicación.
+     */
     public void stop() {
         scheduler.shutdownNow();
     }
 
+    /**
+     * Interfaz observadora para controladores que requieren sincronización de datos en vivo.
+     */
     public interface Refreshable {
         void refreshData();
     }

@@ -36,6 +36,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador de la consola de funcionario anfitrión (Panel Funcionario).
+ * Permite a los empleados residentes:
+ * - Pre-registrar visitantes autorizados (Flujo 1) que llegarán al complejo.
+ * - Aprobar o rechazar en tiempo real las solicitudes de ingreso provenientes de portería.
+ * - Reportar incidentes de seguridad relacionados con su área o empresa.
+ * - Monitorear el historial y estado de visitas dirigidas a su persona o empresa.
+ */
 public class FuncionarioController implements Initializable, RefreshScheduler.Refreshable {
 
     @FXML private StackPane rootPane;
@@ -123,8 +131,10 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
         colId.setCellValueFactory(data ->
             new SimpleStringProperty(String.valueOf(data.getValue().getId())));
         colDocumento.setCellValueFactory(data -> {
-            String tipo = data.getValue().getPersona().getTipoDocumento();
-            String doc = data.getValue().getPersona().getDocumento();
+            Persona p = data.getValue().getPersona();
+            if (p == null) return new SimpleStringProperty("—");
+            String tipo = p.getTipoDocumento();
+            String doc = p.getDocumento();
             return new SimpleStringProperty((tipo != null ? tipo : "") + " " + (doc != null ? doc : ""));
         });
         colPersona.setCellValueFactory(data -> {
@@ -133,15 +143,18 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
             return new SimpleStringProperty(p != null && p.isBloqueado() ? nom + " [BLOQUEADO]" : nom);
         });
         colEmpresa.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getEmpresaDestino().getNombre()));
+            new SimpleStringProperty(data.getValue().getEmpresaDestino() != null
+                ? data.getValue().getEmpresaDestino().getNombre() : "—"));
         colFecha.setCellValueFactory(data -> {
             LocalDateTime f = data.getValue().getFechaHoraRegistro();
             return new SimpleStringProperty(f != null ? f.format(dateTimeFmt) : "—");
         });
         colTipo.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getPersona().getTipo()));
+            new SimpleStringProperty((data.getValue().getPersona() != null && data.getValue().getPersona().getTipo() != null)
+                ? data.getValue().getPersona().getTipo() : "—"));
         colVisitas.setCellValueFactory(data ->
-            new SimpleStringProperty(String.valueOf(data.getValue().getPersona().getTotalVisitas())));
+            new SimpleStringProperty(data.getValue().getPersona() != null
+                ? String.valueOf(data.getValue().getPersona().getTotalVisitas()) : "0"));
 
         colAcciones.setCellFactory(col -> new TableCell<>() {
             private final Button btnAprobar = new Button("Aprobar");
@@ -271,11 +284,15 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
 
             String tipoPersona = rbTrabajador.isSelected() ? "TRABAJADOR" : "INVITADO";
 
+            // Validar formato estricto de documento de identidad
+            com.sicaproject.sica.shared.util.InputValidator.validarDocumento(tipoDocumento, documento);
+
             Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
             Persona persona;
             if (personaOpt.isPresent()) {
                 persona = personaOpt.get();
                 if (!nombre.isEmpty()) {
+                    com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nombre);
                     persona.setNombre(nombre);
                 }
                 persona.setTipoDocumento(tipoDocumento);
@@ -291,6 +308,9 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                     lblMsg.setStyle("-fx-text-fill: #f59e0b;");
                     return;
                 }
+                // Validar formato de nombre
+                com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nombre);
+
                 persona = new Persona();
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);

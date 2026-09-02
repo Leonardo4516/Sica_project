@@ -9,6 +9,10 @@ import com.sicaproject.sica.personas.domain.Persona;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de aplicación para la administración de cuentas de usuario del sistema SICA.
+ * Gestiona el alta, modificación de roles, activación/desactivación y reseteo de credenciales con hashing BCrypt.
+ */
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -30,6 +34,10 @@ public class UsuarioService {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_usuarios");
         }
 
+        // Validación de formato de username y robustez de password
+        com.sicaproject.sica.shared.util.InputValidator.validarUsername(username);
+        com.sicaproject.sica.shared.util.InputValidator.validarPassword(passwordPlano);
+
         if (usuarioRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Ya existe un usuario con el username: " + username);
         }
@@ -38,7 +46,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado: " + nombreRol));
 
         Usuario nuevo = new Usuario();
-        nuevo.setUsername(username);
+        nuevo.setUsername(username.trim());
         nuevo.setPasswordHash(AuthService.hashPassword(passwordPlano));
         nuevo.setActivo(true);
         nuevo.setRol(rol);

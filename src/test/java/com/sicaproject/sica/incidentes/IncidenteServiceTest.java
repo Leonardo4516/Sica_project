@@ -54,7 +54,8 @@ class IncidenteServiceTest {
     @Test
     void reportar_incidente_crea_registro_y_audita() {
         Persona persona = new Persona();
-        persona.setDocumento("INC-TEST-" + System.currentTimeMillis());
+        persona.setTipoDocumento("CC");
+        persona.setDocumento(String.valueOf(100000000L + (System.currentTimeMillis() % 899999999L)));
         persona.setNombre("Persona Incidente Test");
         persona.setTipo("INVITADO");
         persona = personaService.guardar(persona, guarda);

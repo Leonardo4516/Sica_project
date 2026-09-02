@@ -8,6 +8,10 @@ import com.sicaproject.sica.iam.domain.Usuario;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de aplicación para la administración del registro de empresas residentes en el complejo Zona Acme.
+ * Proporciona métodos para consulta por NIT, ID y alta de nuevas empresas con validación RBAC y auditoría.
+ */
 public class EmpresaService {
 
     private final EmpresaRepository empresaRepository;
@@ -37,6 +41,18 @@ public class EmpresaService {
     }
 
     public Empresa crear(Empresa empresa, Usuario usuarioSolicitante) {
+        if (empresa == null) {
+            throw new IllegalArgumentException("La empresa no puede ser nula.");
+        }
+        if (empresa.getNombre() == null || empresa.getNombre().trim().length() < 2) {
+            throw new IllegalArgumentException("El nombre o razón social de la empresa es obligatorio.");
+        }
+        com.sicaproject.sica.shared.util.InputValidator.validarNit(empresa.getNit());
+
+        if (empresaRepository.porNit(empresa.getNit().trim()).isPresent()) {
+            throw new IllegalArgumentException("Ya existe una empresa registrada con el NIT: " + empresa.getNit());
+        }
+
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_empresas");
         }

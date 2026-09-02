@@ -16,6 +16,17 @@ import java.util.stream.Collectors;
  */
 public class RbacService implements RbacUseCase {
 
+    // =========================================================================
+    // VERIFICACIÓN DE PERMISOS DINÁMICOS EN BASE DE DATOS (RBAC)
+    // =========================================================================
+    /**
+     * Evalúa si un usuario cuenta con un permiso específico consultando la matriz
+     * de roles y permisos persistida en base de datos.
+     * 
+     * @param usuario Usuario a evaluar.
+     * @param permisoCodigo Código único del permiso (ej. 'registrar_visita', 'bloquear_persona').
+     * @return true si el usuario está activo y su rol contiene el permiso; false en caso contrario.
+     */
     @Override
     public boolean tienePermiso(Usuario usuario, String permisoCodigo) {
         if (usuario == null || usuario.getRol() == null || !usuario.isActivo()) {
@@ -31,8 +42,12 @@ public class RbacService implements RbacUseCase {
     }
 
     /**
-     * Lanza excepción de dominio si el usuario no tiene el permiso.
-     * Los Use Cases deben llamar esto ANTES de ejecutar cualquier operación crítica.
+     * Valida de manera estricta que el usuario posea el permiso requerido para una acción sensible.
+     * Si no lo posee, interrumpe el flujo lanzando una excepción de dominio.
+     * 
+     * @param usuario Usuario solicitante.
+     * @param permisoCodigo Código del permiso exigido por la operación.
+     * @throws PermisoDenegadoException Si el usuario no cuenta con la autorización necesaria.
      */
     public void verificarPermiso(Usuario usuario, String permisoCodigo) {
         if (!tienePermiso(usuario, permisoCodigo)) {

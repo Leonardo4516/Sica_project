@@ -23,15 +23,15 @@ import com.sicaproject.sica.personas.application.service.PersonaService;
 import com.sicaproject.sica.personas.infrastructure.adapter.out.persistence.PersonaRepositoryJpaAdapter;
 
 /**
- * Único lugar del proyecto donde se conectan los puertos con sus adaptadores
- * concretos ("cableado" manual, sin framework de inyección de dependencias).
- * Los controladores de la futura UI JavaFX deben pedir sus servicios AQUÍ,
- * nunca instanciar un *RepositoryJpaAdapter directamente.
+ * Contenedor central de Inyección de Dependencias (IoC) e Inversión de Control manual.
+ * Implementa el patrón Singleton para centralizar la instanciación y el cableado de adaptadores
+ * de infraestructura JPA hacia los servicios de aplicación del dominio hexagonal.
  */
 public final class CompositionRoot {
 
     private static CompositionRoot instance;
 
+    // Adaptadores de infraestructura JPA (Puertos de salida)
     private final EmpresaRepository empresaRepository = new EmpresaRepositoryJpaAdapter();
     private final PersonaRepository personaRepository = new PersonaRepositoryJpaAdapter();
     private final UsuarioRepository usuarioRepository = new UsuarioRepositoryJpaAdapter();
@@ -40,6 +40,7 @@ public final class CompositionRoot {
     private final RolRepository rolRepository = new RolRepositoryJpaAdapter();
     private final IncidenteRepository incidenteRepository = new IncidenteRepositoryJpaAdapter();
 
+    // Servicios de aplicación con dependencias inyectadas
     private final AuditoriaService auditoriaService = new AuditoriaService(bitacoraRepository);
     private final RbacService rbacService = new RbacService();
     private final AuthService authService = new AuthService(usuarioRepository, auditoriaService);
@@ -52,6 +53,9 @@ public final class CompositionRoot {
 
     private CompositionRoot() {}
 
+    /**
+     * Retorna la instancia única de CompositionRoot de manera segura para entornos multihilo.
+     */
     public static synchronized CompositionRoot getInstance() {
         if (instance == null) {
             instance = new CompositionRoot();

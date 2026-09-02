@@ -20,6 +20,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador para la visualización y exportación de la bitácora de auditoría.
+ * Permite filtrar eventos históricos por rango de fechas, consultar detalles forenses
+ * y exportar la traza a formatos de texto plano o CSV para fines de cumplimiento normativo.
+ */
 public class BitacoraController implements Initializable {
 
     @FXML private StackPane rootPane;
@@ -153,6 +158,13 @@ public class BitacoraController implements Initializable {
     private void refreshTabla() {
         LocalDate desde = dpDesde.getValue();
         LocalDate hasta = dpHasta.getValue();
+
+        if (desde != null && hasta != null && desde.isAfter(hasta)) {
+            DialogHelper.mostrarAdvertencia("Rango de Fechas Inválido", "Fechas Inconsistentes",
+                    "La fecha 'Desde' no puede ser posterior a la fecha 'Hasta'.");
+            return;
+        }
+
         var filtradas = auditoriaService.listarTodas().stream()
             .filter(b -> {
                 if (b.getFechaHora() == null) return true;

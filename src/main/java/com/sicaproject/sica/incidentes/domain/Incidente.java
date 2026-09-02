@@ -5,16 +5,21 @@ import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.domain.Persona;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad de Dominio que modela un evento anómalo o incidente de seguridad en el complejo.
+ * Almacena el título, descripción, clasificación de riesgo (severidad), estado de resolución,
+ * personas o empresas involucradas, usuario reportante y marca temporal.
+ */
 public class Incidente {
     private long id;
     private String titulo;
     private String descripcion;
-    private SeveridadIncidente severidad;
-    private String estado; // ABIERTO, EN_PROCESO, RESUELTO, CERRADO
-    private Persona persona;
-    private Empresa empresa;
-    private Usuario reportadoPor;
-    private LocalDateTime fechaHora;
+    private SeveridadIncidente severidad; // Nivel de criticidad: BAJA, MEDIA, ALTA, CRITICA
+    private String estado; // Estado de ciclo de vida: ABIERTO, EN_PROCESO, RESUELTO, CERRADO
+    private Persona persona; // Persona involucrada en la anomalía (opcional)
+    private Empresa empresa; // Empresa residente vinculada (opcional)
+    private Usuario reportadoPor; // Usuario operador o funcionario que generó la alerta
+    private LocalDateTime fechaHora; // Timestamp exacto del reporte
 
     public Incidente() {
         this.severidad = SeveridadIncidente.MEDIA;

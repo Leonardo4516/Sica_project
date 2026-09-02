@@ -5,6 +5,7 @@ import com.sicaproject.sica.iam.application.service.RbacService;
 import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.application.port.out.PersonaRepository;
 import com.sicaproject.sica.personas.domain.Persona;
+import com.sicaproject.sica.shared.util.InputValidator;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +33,25 @@ public class PersonaService {
         return guardar(persona, null);
     }
 
+    // =========================================================================
+    // CREACIÓN Y ACTUALIZACIÓN DE PERSONAS CON AUDITORÍA
+    // =========================================================================
+    /**
+     * Persiste o actualiza los datos de una persona (trabajador o visitante),
+     * registrando el evento correspondiente en la bitácora de auditoría.
+     * 
+     * @param persona Datos de la persona a persistir.
+     * @param usuarioSolicitante Usuario autenticado que realiza la acción.
+     * @return Entidad Persona persistida en base de datos.
+     */
     public Persona guardar(Persona persona, Usuario usuarioSolicitante) {
+        if (persona == null) {
+            throw new IllegalArgumentException("La entidad persona no puede ser nula.");
+        }
+        // Validación estricta de formato de documento de identidad y nombre
+        InputValidator.validarDocumento(persona.getTipoDocumento(), persona.getDocumento());
+        InputValidator.validarNombrePersona(persona.getNombre());
+
         boolean esNueva = (persona.getId() == 0L);
         Persona guardada = personaRepository.guardar(persona);
         if (auditoriaService != null) {
@@ -67,6 +86,18 @@ public class PersonaService {
         return personaRepository.listarTodas();
     }
 
+    // =========================================================================
+    // RESTRICCIÓN DE ACCESO: BLOQUEO (LISTA NEGRA)
+    // =========================================================================
+    /**
+     * Aplica una restricción de acceso perimetral inmediata (bloqueo en lista negra)
+     * a una persona por motivos de seguridad o disciplina.
+     * 
+     * @param persona Persona a bloquear.
+     * @param motivo Justificación del bloqueo perimetral.
+     * @param usuarioSolicitante Usuario operador que ejecuta el bloqueo.
+     * @throws PermisoDenegadoException Si el operador carece del permiso 'bloquear_persona'.
+     */
     public void bloquearPersona(Persona persona, String motivo) {
         bloquearPersona(persona, motivo, null);
     }
@@ -75,6 +106,8 @@ public class PersonaService {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "bloquear_persona");
         }
+        InputValidator.validarMotivoBloqueo(motivo);
+
         persona.setBloqueado(true);
         persona.setMotivoBloqueo(motivo);
         personaRepository.actualizar(persona);
@@ -86,6 +119,16 @@ public class PersonaService {
         }
     }
 
+    // =========================================================================
+    // RESTRICCIÓN DE ACCESO: DESBLOQUEO
+    // =========================================================================
+    /**
+     * Levanta la restricción de acceso perimetral a una persona previamente bloqueada.
+     * 
+     * @param persona Persona a desbloquear.
+     * @param usuarioSolicitante Usuario operador que ejecuta el desbloqueo.
+     * @throws PermisoDenegadoException Si el operador carece del permiso 'bloquear_persona'.
+     */
     public void desbloquearPersona(Persona persona) {
         desbloquearPersona(persona, null);
     }
@@ -105,6 +148,16 @@ public class PersonaService {
         }
     }
 
+    // =========================================================================
+    // ELIMINACIÓN DE PERSONAS (EXCLUSIVO ADMINISTRADOR)
+    // =========================================================================
+    /**
+     * Elimina el registro de una persona del sistema tras validar permisos de administrador.
+     * 
+     * @param id Identificador único de la persona.
+     * @param usuarioSolicitante Usuario administrador autenticado.
+     * @throws PermisoDenegadoException Si el usuario no cuenta con privilegios administrativos.
+     */
     public void eliminarPersona(Long id, Usuario usuarioSolicitante) {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "ver_panel_admin");

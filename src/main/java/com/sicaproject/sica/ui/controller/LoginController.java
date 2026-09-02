@@ -23,6 +23,14 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador de la pantalla de autenticación y acceso al sistema (Login).
+ * Maneja:
+ * - Validación de entradas de usuario y contraseña.
+ * - Invocación segura de AuthService con BCrypt.
+ * - Redirección automática de escena según el rol obtenido.
+ * - Animación gráfica de partículas flotantes con AnimationTimer en el fondo del panel.
+ */
 public class LoginController implements Initializable {
 
     @FXML private TextField txtUsuario;

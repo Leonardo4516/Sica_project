@@ -24,12 +24,30 @@ public class IncidenteService {
         this.auditoriaService = auditoriaService;
     }
 
+    // =========================================================================
+    // REPORTE DE INCIDENTES CON CLASIFICACIÓN DE SEVERIDAD Y AUDITORÍA
+    // =========================================================================
+    /**
+     * Registra un nuevo incidente o novedad de seguridad perimetral en las instalaciones,
+     * asociándolo opcionalmente a personas o empresas involucradas.
+     * 
+     * @param titulo Resumen descriptivo del incidente.
+     * @param descripcion Detalle pormenorizado de los hechos.
+     * @param severidad Nivel de riesgo asignado (BAJA, MEDIA, ALTA, CRITICA).
+     * @param personaInvolucrada Persona relacionada con el evento (opcional).
+     * @param empresaInvolucrada Empresa residente afectada (opcional).
+     * @param reportadoPor Usuario operador o funcionario que emite el reporte.
+     * @return Entidad Incidente persistida en estado inicial ABIERTO.
+     */
     public Incidente reportarIncidente(String titulo, String descripcion, SeveridadIncidente severidad,
                                        Persona personaInvolucrada, Empresa empresaInvolucrada,
                                        Usuario reportadoPor) {
         if (reportadoPor != null && rbacService != null) {
             rbacService.verificarPermiso(reportadoPor, "reportar_incidente");
         }
+
+        // Validación de coherencia del reporte
+        com.sicaproject.sica.shared.util.InputValidator.validarIncidente(titulo, descripcion);
 
         Incidente incidente = new Incidente();
         incidente.setTitulo(titulo);
@@ -53,6 +71,17 @@ public class IncidenteService {
         return guardado;
     }
 
+    // =========================================================================
+    // GESTIÓN Y RESOLUCIÓN DE INCIDENTES (ABIERTO -> RESUELTO / EN_INVESTIGACION)
+    // =========================================================================
+    /**
+     * Actualiza el estado operativo de un incidente registrado.
+     * 
+     * @param incidenteId Identificador único del incidente.
+     * @param nuevoEstado Nuevo estado asignado (ej. 'RESUELTO', 'EN_PROCESO').
+     * @param usuarioSolicitante Usuario que ejecuta la actualización.
+     * @return Entidad Incidente con estado actualizado y registrado en auditoría.
+     */
     public Incidente cambiarEstado(long incidenteId, String nuevoEstado, Usuario usuarioSolicitante) {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_incidentes");
