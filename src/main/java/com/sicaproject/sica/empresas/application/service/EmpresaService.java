@@ -8,6 +8,10 @@ import com.sicaproject.sica.iam.domain.Usuario;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de aplicación para la administración del registro de empresas residentes en el complejo Zona Acme.
+ * Proporciona métodos para consulta por NIT, ID y alta de nuevas empresas con validación RBAC y auditoría.
+ */
 public class EmpresaService {
 
     private final EmpresaRepository empresaRepository;

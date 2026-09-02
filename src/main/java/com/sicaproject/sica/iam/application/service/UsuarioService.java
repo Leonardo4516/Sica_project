@@ -9,6 +9,10 @@ import com.sicaproject.sica.personas.domain.Persona;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de aplicación para la administración de cuentas de usuario del sistema SICA.
+ * Gestiona el alta, modificación de roles, activación/desactivación y reseteo de credenciales con hashing BCrypt.
+ */
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;

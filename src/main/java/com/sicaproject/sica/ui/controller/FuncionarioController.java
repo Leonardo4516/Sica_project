@@ -36,6 +36,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador de la consola de funcionario anfitrión (Panel Funcionario).
+ * Permite a los empleados residentes:
+ * - Pre-registrar visitantes autorizados (Flujo 1) que llegarán al complejo.
+ * - Aprobar o rechazar en tiempo real las solicitudes de ingreso provenientes de portería.
+ * - Reportar incidentes de seguridad relacionados con su área o empresa.
+ * - Monitorear el historial y estado de visitas dirigidas a su persona o empresa.
+ */
 public class FuncionarioController implements Initializable, RefreshScheduler.Refreshable {
 
     @FXML private StackPane rootPane;

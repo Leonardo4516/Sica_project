@@ -41,6 +41,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador de la consola operativa de portería principal (Panel Guardia).
+ * Gestiona el ciclo de vida de los accesos físicos:
+ * - Flujo 1: Check-in inmediato de visitas pre-aprobadas con visualización de foto.
+ * - Flujo 2 y 3: Solicitud de acceso en tiempo real (invitados no anunciados o pase temporal).
+ * - Salida física (Check-out) de personas en estado DENTRO.
+ * - Registro de novedades e incidentes de seguridad perimetral.
+ * - Filtrado en tiempo real con FilteredList y sincronización reactiva con RefreshScheduler.
+ */
 public class GuardaController implements Initializable, RefreshScheduler.Refreshable {
 
     @FXML private StackPane rootPane;
