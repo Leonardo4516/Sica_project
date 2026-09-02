@@ -7,6 +7,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.Optional;
 
+/**
+ * Adaptador de Infraestructura JPA para el puerto de salida UsuarioRepository.
+ * Consulta y persiste credenciales de usuario trayendo de forma ansiosa (JOIN FETCH)
+ * su rol y el conjunto de permisos asociados desde la tabla puente 'rol_permiso' para la evaluación RBAC.
+ */
 public class UsuarioRepositoryJpaAdapter implements UsuarioRepository {
 
     @Override

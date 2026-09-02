@@ -12,8 +12,15 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de Infraestructura JPA para el puerto de salida VisitaRepository.
+ * Implementa las operaciones CRUD y consultas especializadas de visitas contra PostgreSQL.
+ * Utiliza consultas JPQL optimizadas con 'JOIN FETCH' (FETCH_GRAPH) para evitar el problema N+1.
+ */
 public class VisitaRepositoryJpaAdapter implements VisitaRepository {
 
+    // Grafo de carga ansiosa (Eager Loading) que trae en una sola consulta SQL
+    // la visita, su persona, la empresa de la persona, la empresa destino, el guarda y el anfitrión.
     private static final String FETCH_GRAPH =
             "SELECT DISTINCT v FROM VisitaEntity v "
                     + "LEFT JOIN FETCH v.persona p "
@@ -22,6 +29,10 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
                     + "LEFT JOIN FETCH v.guarda "
                     + "LEFT JOIN FETCH v.funcionarioAnfitrion ";
 
+    /**
+     * Persiste una visita nueva o actualiza una existente dentro de una transacción atómica JPA.
+     * Realiza rollback automático en caso de fallo y garantiza el cierre del EntityManager.
+     */
     @Override
     public Visita guardar(Visita visita) {
         EntityManager em = JpaConfig.newEntityManager();
@@ -29,8 +40,10 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
             em.getTransaction().begin();
             VisitaEntity entity;
             if (visita.getId() != 0L) {
+                // Actualización de registro existente
                 entity = em.find(VisitaEntity.class, visita.getId());
             } else {
+                // Nuevo registro
                 entity = new VisitaEntity();
             }
             VisitaMapper.copyToEntity(visita, entity);

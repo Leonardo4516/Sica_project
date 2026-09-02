@@ -1,16 +1,21 @@
 package com.sicaproject.sica.personas.domain;
 
+/**
+ * Entidad de Dominio que modela una persona en el sistema SICA (trabajador residente o invitado).
+ * Almacena información de identificación (tipo y número de documento), pertenencia empresarial,
+ * fotografía perimetral, contador de accesos y estado de restricción (Lista Negra).
+ */
 public class Persona {
     private long id;
-    private String tipo = "INVITADO"; // Valor por defecto
-    private String tipoDocumento = "CC"; // Valor por defecto
+    private String tipo = "INVITADO"; // Clasificación: TRABAJADOR o INVITADO
+    private String tipoDocumento = "CC"; // Tipo de documento: CC, CE, PASAPORTE
     private String nombre;
     private String documento;
-    private String fotoUrl;
-    private Long empresaId;
-    private boolean bloqueado;
-    private String motivoBloqueo;
-    private int totalVisitas;
+    private String fotoUrl; // Ruta local relativa o URL de la fotografía de seguridad
+    private Long empresaId; // Identificador de la empresa empleadora (para trabajadores)
+    private boolean bloqueado; // Indicador de restricción perimetral / lista negra
+    private String motivoBloqueo; // Razón de seguridad que justifica el veto de acceso
+    private int totalVisitas; // Contador histórico de visitas acumuladas
 
     public Persona() {}
 

@@ -11,6 +11,11 @@ import javafx.scene.layout.VBox;
 
 import java.util.Optional;
 
+/**
+ * Utilidad transversal para la construcción, personalización y despliegue de cuadros de diálogo modales.
+ * Aplica de forma automática la paleta de colores oscuros del tema glassmorphism de SICA,
+ * e incluye builders para diálogos de alerta, confirmación, reporte de incidentes y CRUD de personas con fotografía.
+ */
 public final class DialogHelper {
 
     private DialogHelper() {}

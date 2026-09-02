@@ -9,6 +9,12 @@ import jakarta.persistence.TypedQuery;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Adaptador de Infraestructura JPA para el puerto de salida PersonaRepository.
+ * Gestiona el acceso a datos de trabajadores e invitados en PostgreSQL:
+ * consultas por documento/tipo de documento, guardado idempotente (persist/merge),
+ * actualización de restricciones perimetrales y eliminación física.
+ */
 public class PersonaRepositoryJpaAdapter implements PersonaRepository {
 
     @Override

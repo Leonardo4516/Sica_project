@@ -1,5 +1,10 @@
 package com.sicaproject.sica.acceso.domain;
 
+/**
+ * Entidad de Dominio que representa un evento de visita o acceso físico en Zona Acme.
+ * Encapsula la persona visitante/trabajador, la empresa receptora, el funcionario anfitrión,
+ * el operador en portería, los timestamps de entrada/salida y las reglas de transición de estado.
+ */
 public class Visita {
     private long id;
     private com.sicaproject.sica.personas.domain.Persona persona;
@@ -34,9 +39,12 @@ public class Visita {
     public void setEstado(EstadoVisita estado) { this.estado = estado; }
 
     /**
-     * Punto único para cambiar de estado. Valida contra EstadoVisita.puedeTransicionarA
-     * antes de aplicar el cambio -- evita que el sistema quede en un estado inconsistente
-     * (ej. intentar hacer check-out de una visita que nunca hizo check-in).
+     * Punto centralizado para la mutación de estado de la visita.
+     * Valida de manera estricta contra la máquina de estados EstadoVisita.puedeTransicionarA
+     * impidiendo inconsistencias en la base de datos (por ejemplo, check-out sin previo check-in).
+     * 
+     * @param nuevoEstado Estado al que se desea mover la visita.
+     * @throws IllegalStateException Si la transición solicitada viola las reglas de negocio.
      */
     public void cambiarEstado(EstadoVisita nuevoEstado) {
         if (this.estado != null && !this.estado.puedeTransicionarA(nuevoEstado)) {

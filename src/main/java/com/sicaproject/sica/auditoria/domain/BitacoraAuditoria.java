@@ -2,15 +2,20 @@ package com.sicaproject.sica.auditoria.domain;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entidad de Dominio que modela una entrada inmutable en la bitácora de auditoría.
+ * Registra cada evento crítico del sistema proporcionando trazabilidad forense:
+ * quién realizó la acción, qué entidad fue afectada, cuál fue el resultado y en qué momento exacto.
+ */
 public class BitacoraAuditoria {
     private long id;
-    private Long usuarioId;
-    private String accion;
-    private String entidadAfectada;
-    private long entidadId;
-    private String detalle;
-    private String resultado; // EXITOSO / FALLIDO
-    private LocalDateTime fechaHora;
+    private Long usuarioId; // Identificador del usuario emisor (null si es intento anónimo)
+    private String accion; // Tipo de evento (ej. 'LOGIN_EXITOSO', 'VISITA_CHECK_IN', 'PERSONA_BLOQUEADA')
+    private String entidadAfectada; // Recurso impactado ('USUARIO', 'VISITA', 'PERSONA', 'INCIDENTE')
+    private long entidadId; // ID del registro impactado
+    private String detalle; // Explicación contextual del suceso
+    private String resultado; // Resultado de la operación: 'EXITOSO', 'FALLIDO', 'DENEGADO'
+    private LocalDateTime fechaHora; // Timestamp inmutable de la ocurrencia
 
     public BitacoraAuditoria() {}
 

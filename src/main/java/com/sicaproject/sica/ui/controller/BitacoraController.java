@@ -20,6 +20,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 
+/**
+ * Controlador para la visualización y exportación de la bitácora de auditoría.
+ * Permite filtrar eventos históricos por rango de fechas, consultar detalles forenses
+ * y exportar la traza a formatos de texto plano o CSV para fines de cumplimiento normativo.
+ */
 public class BitacoraController implements Initializable {
 
     @FXML private StackPane rootPane;
