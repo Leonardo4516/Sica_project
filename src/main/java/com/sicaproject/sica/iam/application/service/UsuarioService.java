@@ -34,6 +34,10 @@ public class UsuarioService {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_usuarios");
         }
 
+        // Validación de formato de username y robustez de password
+        com.sicaproject.sica.shared.util.InputValidator.validarUsername(username);
+        com.sicaproject.sica.shared.util.InputValidator.validarPassword(passwordPlano);
+
         if (usuarioRepository.findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("Ya existe un usuario con el username: " + username);
         }
@@ -42,7 +46,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado: " + nombreRol));
 
         Usuario nuevo = new Usuario();
-        nuevo.setUsername(username);
+        nuevo.setUsername(username.trim());
         nuevo.setPasswordHash(AuthService.hashPassword(passwordPlano));
         nuevo.setActivo(true);
         nuevo.setRol(rol);

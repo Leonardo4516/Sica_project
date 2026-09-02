@@ -41,6 +41,14 @@ public class EmpresaService {
     }
 
     public Empresa crear(Empresa empresa, Usuario usuarioSolicitante) {
+        if (empresa == null) {
+            throw new IllegalArgumentException("La empresa no puede ser nula.");
+        }
+        if (empresa.getNombre() == null || empresa.getNombre().trim().length() < 2) {
+            throw new IllegalArgumentException("El nombre o razón social de la empresa es obligatorio.");
+        }
+        com.sicaproject.sica.shared.util.InputValidator.validarNit(empresa.getNit());
+
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "gestionar_empresas");
         }

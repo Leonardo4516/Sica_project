@@ -5,6 +5,7 @@ import com.sicaproject.sica.iam.application.service.RbacService;
 import com.sicaproject.sica.iam.domain.Usuario;
 import com.sicaproject.sica.personas.application.port.out.PersonaRepository;
 import com.sicaproject.sica.personas.domain.Persona;
+import com.sicaproject.sica.shared.util.InputValidator;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +45,13 @@ public class PersonaService {
      * @return Entidad Persona persistida en base de datos.
      */
     public Persona guardar(Persona persona, Usuario usuarioSolicitante) {
+        if (persona == null) {
+            throw new IllegalArgumentException("La entidad persona no puede ser nula.");
+        }
+        // Validación estricta de formato de documento de identidad y nombre
+        InputValidator.validarDocumento(persona.getTipoDocumento(), persona.getDocumento());
+        InputValidator.validarNombrePersona(persona.getNombre());
+
         boolean esNueva = (persona.getId() == 0L);
         Persona guardada = personaRepository.guardar(persona);
         if (auditoriaService != null) {
@@ -98,6 +106,8 @@ public class PersonaService {
         if (usuarioSolicitante != null && rbacService != null) {
             rbacService.verificarPermiso(usuarioSolicitante, "bloquear_persona");
         }
+        InputValidator.validarMotivoBloqueo(motivo);
+
         persona.setBloqueado(true);
         persona.setMotivoBloqueo(motivo);
         personaRepository.actualizar(persona);

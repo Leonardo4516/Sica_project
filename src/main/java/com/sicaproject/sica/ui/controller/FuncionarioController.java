@@ -279,11 +279,15 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
 
             String tipoPersona = rbTrabajador.isSelected() ? "TRABAJADOR" : "INVITADO";
 
+            // Validar formato estricto de documento de identidad
+            com.sicaproject.sica.shared.util.InputValidator.validarDocumento(tipoDocumento, documento);
+
             Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
             Persona persona;
             if (personaOpt.isPresent()) {
                 persona = personaOpt.get();
                 if (!nombre.isEmpty()) {
+                    com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nombre);
                     persona.setNombre(nombre);
                 }
                 persona.setTipoDocumento(tipoDocumento);
@@ -299,6 +303,9 @@ public class FuncionarioController implements Initializable, RefreshScheduler.Re
                     lblMsg.setStyle("-fx-text-fill: #f59e0b;");
                     return;
                 }
+                // Validar formato de nombre
+                com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nombre);
+
                 persona = new Persona();
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);

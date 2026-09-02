@@ -55,10 +55,11 @@ class VisitaServiceFlowsTest {
     }
 
     private Persona crearPersonaTest(String prefijo) {
-        String doc = prefijo + "-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 10000);
+        String doc = String.valueOf(100000000L + (long)(Math.random() * 899999999L));
         Persona p = new Persona();
+        p.setTipoDocumento("CC");
         p.setDocumento(doc);
-        p.setNombre("Test " + prefijo);
+        p.setNombre("Persona Prueba Flujo");
         p.setTipo("INVITADO");
         p.setEmpresaId(empresa.getId());
         return personaService.guardar(p);

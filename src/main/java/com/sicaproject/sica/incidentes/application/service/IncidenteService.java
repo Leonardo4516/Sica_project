@@ -46,6 +46,9 @@ public class IncidenteService {
             rbacService.verificarPermiso(reportadoPor, "reportar_incidente");
         }
 
+        // Validación de coherencia del reporte
+        com.sicaproject.sica.shared.util.InputValidator.validarIncidente(titulo, descripcion);
+
         Incidente incidente = new Incidente();
         incidente.setTitulo(titulo);
         incidente.setDescripcion(descripcion);

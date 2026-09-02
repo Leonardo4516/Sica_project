@@ -424,11 +424,15 @@ public final class DialogHelper {
             if (bt == ButtonType.OK) {
                 String nom = txtNombre.getText().trim();
                 String doc = txtDoc.getText().trim();
-                if (nom.isEmpty() || doc.isEmpty()) {
-                    mostrarError("Campos obligatorios", "El nombre y el documento no pueden estar vacíos.");
+                String tipoDoc = cmbTipoDoc.getValue() != null ? cmbTipoDoc.getValue() : "CC";
+                try {
+                    com.sicaproject.sica.shared.util.InputValidator.validarDocumento(tipoDoc, doc);
+                    com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nom);
+                } catch (IllegalArgumentException ex) {
+                    mostrarError("Datos Inválidos", ex.getMessage());
                     return null;
                 }
-                return new PersonaDialogData(nom, cmbTipoDoc.getValue(), doc, cmbTipo.getValue(),
+                return new PersonaDialogData(nom, tipoDoc, doc, cmbTipo.getValue(),
                         cmbEmp.getValue(), fotoUrlRef.get(), fotoSeleccionadaRef.get());
             }
             return null;

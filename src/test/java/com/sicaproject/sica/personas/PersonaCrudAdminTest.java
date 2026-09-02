@@ -52,7 +52,7 @@ class PersonaCrudAdminTest {
         Persona nueva = new Persona();
         nueva.setNombre("Persona CRUD Admin Test");
         nueva.setTipoDocumento("CC");
-        nueva.setDocumento("CRUD-TEST-" + System.currentTimeMillis());
+        nueva.setDocumento(String.valueOf(100000000L + (System.currentTimeMillis() % 899999999L)));
         nueva.setTipo("TRABAJADOR");
         nueva.setEmpresaId(empresa.getId());
         nueva.setFotoUrl("photos/test_crud.jpg");

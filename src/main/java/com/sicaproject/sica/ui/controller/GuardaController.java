@@ -383,6 +383,9 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 return;
             }
 
+            // Validar formato formal de documento
+            com.sicaproject.sica.shared.util.InputValidator.validarDocumento(tipoDocumento, documento);
+
             Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
             if (personaOpt.isPresent()) {
                 Persona persona = personaOpt.get();
@@ -416,6 +419,9 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 lblSolicitudMsg.setText("Persona no encontrada en el padron. Complete los datos para registrarla.");
                 lblSolicitudMsg.setStyle("-fx-text-fill: #38bdf8;");
             }
+        } catch (IllegalArgumentException e) {
+            lblSolicitudMsg.setText(e.getMessage());
+            lblSolicitudMsg.setStyle("-fx-text-fill: #ef4444; -fx-font-weight: bold;");
         } catch (Exception e) {
             lblSolicitudMsg.setText("Error: " + e.getMessage());
             lblSolicitudMsg.setStyle("-fx-text-fill: #ef4444;");
@@ -485,11 +491,15 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                 return;
             }
 
+            // Validar formato de documento de identidad
+            com.sicaproject.sica.shared.util.InputValidator.validarDocumento(tipoDocumento, documento);
+
             Optional<Persona> personaOpt = personaService.porTipoYDocumento(tipoDocumento, documento);
             Persona persona;
             if (personaOpt.isPresent()) {
                 persona = personaOpt.get();
                 if (!nombre.isEmpty()) {
+                    com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nombre);
                     persona.setNombre(nombre);
                 }
                 persona.setTipoDocumento(tipoDocumento);
@@ -506,6 +516,9 @@ public class GuardaController implements Initializable, RefreshScheduler.Refresh
                     lblSolicitudMsg.setStyle("-fx-text-fill: #f59e0b;");
                     return;
                 }
+                // Validar formato de nombre
+                com.sicaproject.sica.shared.util.InputValidator.validarNombrePersona(nombre);
+
                 persona = new Persona();
                 persona.setNombre(nombre);
                 persona.setDocumento(documento);
