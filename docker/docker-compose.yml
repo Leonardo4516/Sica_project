@@ -1,21 +1,30 @@
 version: '3.8'
 
 services:
+  # =========================================================================
+  # 1. SICA-DB (POSTGRESQL): El motor principal de la base de datos de SICA
+  # =========================================================================
   sica-db:
+    # Usamos la versión 15-alpine por ser altamente estable y liviana. (La v18 daba problemas de volúmenes)
     image: postgres:15-alpine
     container_name: sica-postgres
-    restart: always
+    restart: always # Si la computadora se apaga, Docker lo vuelve a prender automáticamente
     environment:
       POSTGRES_DB: sica_db
       POSTGRES_USER: sica_user
       POSTGRES_PASSWORD: sica_pass
     ports:
-      - "5432:5432"
+      - "5432:5432" # Expone el puerto para que Java (Hibernate) pueda conectarse
     volumes:
+      # Persistencia de datos: Si el contenedor se destruye, los datos sobreviven en este volumen
       - sica_pgdata:/var/lib/postgresql/data
+      # Scripts de inicialización: Se ejecutan solos la primera vez que arranca para crear las tablas
       - ../database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ../database/data.sql:/docker-entrypoint-initdb.d/02-data.sql
 
+  # =========================================================================
+  # 2. EVOLUTION API: Microservicio Node.js para conectar SICA con WhatsApp
+  # =========================================================================
   evolution-api:
     image: evoapicloud/evolution-api:latest
     container_name: sica-evolution-api

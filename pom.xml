@@ -21,6 +21,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- JavaFX: Librerías para la interfaz gráfica de usuario (UI) de escritorio -->
             <dependency>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-controls</artifactId>
@@ -31,11 +32,15 @@
                 <artifactId>javafx-fxml</artifactId>
                 <version>${javafx.version}</version>
             </dependency>
+            
+            <!-- PostgreSQL: El Driver JDBC que permite a Java conectarse a la base de datos PostgreSQL en Docker -->
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
             </dependency>
+            
+            <!-- JPA (Jakarta Persistence API): El estándar de Java para mapeo objeto-relacional (ORM) -->
             <dependency>
                 <groupId>jakarta.persistence</groupId>
                 <artifactId>jakarta.persistence-api</artifactId>
@@ -46,11 +51,15 @@
                 <artifactId>jakarta.transaction-api</artifactId>
                 <version>2.0.0</version>
             </dependency>
+            
+            <!-- Hibernate: La implementación concreta de JPA. Es el motor que traduce nuestras clases (@Entity) a consultas SQL reales -->
             <dependency>
                 <groupId>org.hibernate.orm</groupId>
                 <artifactId>hibernate-core</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
+            
+            <!-- jBcrypt: Librería de encriptación unidireccional (hashing) para almacenar contraseñas seguras. Protege los datos incluso si la BD es comprometida -->
             <dependency>
                 <groupId>org.mindrot</groupId>
                 <artifactId>jbcrypt</artifactId>

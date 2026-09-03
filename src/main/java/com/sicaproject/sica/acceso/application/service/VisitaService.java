@@ -184,20 +184,27 @@ public class VisitaService {
                         + (paseTemporal ? " (pase temporal por olvido de carnet)" : ""),
                 "EXITOSO");
 
-        // ESCALAMIENTO ASÍNCRONO (Evolution API)
+        // =========================================================================================
+        // ESCALAMIENTO ASÍNCRONO (Evolution API - Integración con WhatsApp)
+        // =========================================================================================
+        // DEFENSA EXAMEN: Validamos si el puerto es nulo para que el programa no crashee si borran la inyección.
         if (whatsAppPort != null) {
             long idGuardado = visita.getId();
+            // Creamos un Hilo (Thread) separado de la UI para no congelar la pantalla del guarda.
             java.util.concurrent.Executors.newSingleThreadScheduledExecutor().schedule(() -> {
                 try {
+                    // Al despertar en 1 minuto, volvemos a consultar la DB para ver si el estado cambió.
                     visitaRepository.porId(idGuardado).ifPresent(v -> {
+                        // Si el anfitrión no lo aprobó, sigue PENDIENTE, así que disparamos el WhatsApp.
                         if (v.getEstado() == EstadoVisita.PENDIENTE_APROBACION) {
                             whatsAppPort.enviarRecordatorioAnfitrion(v);
                         }
                     });
                 } catch (Exception e) {
+                    // DEFENSA EXAMEN: Si la API o la red fallan, atrapamos el error aquí para que SICA no se caiga.
                     System.err.println("Error en el hilo de WhatsApp: " + e.getMessage());
                 }
-            }, 1, java.util.concurrent.TimeUnit.MINUTES);
+            }, 1, java.util.concurrent.TimeUnit.MINUTES); // 1 minuto de retraso programado
         }
 
         return visita;

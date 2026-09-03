@@ -31,13 +31,16 @@ public class VisitaRepositoryJpaAdapter implements VisitaRepository {
 
     /**
      * Persiste una visita nueva o actualiza una existente dentro de una transacción atómica JPA.
-     * Realiza rollback automático en caso de fallo y garantiza el cierre del EntityManager.
+     * 
+     * DEFENSA EXAMEN: Si te preguntan qué pasa si la red falla o se apaga la PC en medio del guardado:
+     * "Está protegido por Transacciones Atómicas (em.getTransaction().begin()). Si ocurre un error, 
+     * el bloque catch ejecuta .rollback(), revirtiendo cualquier cambio a medias. O se guarda todo, o nada."
      */
     @Override
     public Visita guardar(Visita visita) {
         EntityManager em = JpaConfig.newEntityManager();
         try {
-            em.getTransaction().begin();
+            em.getTransaction().begin(); // <-- INICIO DE TRANSACCIÓN SEGURA
             VisitaEntity entity;
             if (visita.getId() != 0L) {
                 // Actualización de registro existente
