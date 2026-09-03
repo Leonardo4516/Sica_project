@@ -51,7 +51,13 @@ public final class CompositionRoot {
     private final com.sicaproject.sica.iam.application.service.UsuarioService usuarioService =
             new com.sicaproject.sica.iam.application.service.UsuarioService(usuarioRepository, rolRepository, rbacService, auditoriaService);
 
-    private CompositionRoot() {}
+    // Adaptadores de API Externa
+    private final com.sicaproject.sica.acceso.application.port.out.WhatsAppPort whatsAppPort = 
+            new com.sicaproject.sica.acceso.infrastructure.adapter.out.api.EvolutionApiAdapter();
+
+    private CompositionRoot() {
+        visitaService.setWhatsAppPort(whatsAppPort);
+    }
 
     /**
      * Retorna la instancia única de CompositionRoot de manera segura para entornos multihilo.

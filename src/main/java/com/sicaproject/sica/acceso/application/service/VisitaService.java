@@ -131,6 +131,12 @@ public class VisitaService {
         return visita;
     }
 
+    private com.sicaproject.sica.acceso.application.port.out.WhatsAppPort whatsAppPort;
+
+    public void setWhatsAppPort(com.sicaproject.sica.acceso.application.port.out.WhatsAppPort whatsAppPort) {
+        this.whatsAppPort = whatsAppPort;
+    }
+
     // =========================================================================
     // FLUJOS 2 Y 3: SOLICITUD EN TIEMPO REAL (NO ANUNCIADO O CARNET OLVIDADO)
     // =========================================================================
@@ -177,6 +183,23 @@ public class VisitaService {
                 "Solicitud de acceso para " + persona.getNombre() + " en " + empresaDestino.getNombre()
                         + (paseTemporal ? " (pase temporal por olvido de carnet)" : ""),
                 "EXITOSO");
+
+        // ESCALAMIENTO ASÍNCRONO (Evolution API)
+        if (whatsAppPort != null) {
+            long idGuardado = visita.getId();
+            java.util.concurrent.Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+                try {
+                    visitaRepository.porId(idGuardado).ifPresent(v -> {
+                        if (v.getEstado() == EstadoVisita.PENDIENTE_APROBACION) {
+                            whatsAppPort.enviarRecordatorioAnfitrion(v);
+                        }
+                    });
+                } catch (Exception e) {
+                    System.err.println("Error en el hilo de WhatsApp: " + e.getMessage());
+                }
+            }, 1, java.util.concurrent.TimeUnit.MINUTES);
+        }
+
         return visita;
     }
 
